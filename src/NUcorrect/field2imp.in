@@ -1,0 +1,208 @@
+#!xPERLx -w
+#---------------------------------------------------------------------------
+#@COPYRIGHT :
+#             Copyright 1996, John G. Sled, 
+#             McConnell Brain Imaging Centre,
+#             Montreal Neurological Institute, McGill University.
+#             Permission to use, copy, modify, and distribute this
+#             software and its documentation for any purpose and without
+#             fee is hereby granted, provided that the above copyright
+#             notice appear in all copies.  The author and McGill University
+#             make no representations about the suitability of this
+#             software for any purpose.  It is provided "as is" without
+#             express or implied warranty.
+#---------------------------------------------------------------------------- 
+#$RCSfile: field2imp.in,v $
+#$Revision: 1.1 $
+#$Author: bert $
+#$Date: 2003-04-16 14:29:34 $
+#$State: Exp $
+#---------------------------------------------------------------------------
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : field2imp
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: create a compact representation of the given field
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : August 28, 1996      J.G.Sled  
+#@MODIFIED   : 
+#  $Id: field2imp.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#-----------------------------------------------------------------------------
+use MNI::Startup qw(nocputimes);
+use MNI::Spawn;
+use MNI::FileUtilities qw(check_output_dirs);
+use MNI::PathUtilities qw(split_path);
+use Getopt::Tabular;
+
+# these values are chosen to be less smooth than most fields
+$lambda = 0.01;
+$distance = 50;
+$subsample = 4;
+
+&Initialize;
+
+   # Set global variables for calling various programs
+MNI::Spawn::SetOptions (strict  => 2);
+&RegisterPrograms([qw(spline_smooth)]);
+
+Spawn(['spline_smooth', '-full_support', '-distance', $distance, '-b_spline',
+             '-lambda', $lambda, '-subsample', $subsample, '-novolume',
+             $input_volume, '-compact', $output_imp, '-clobber']);
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &SetHelp
+#@INPUT      : none
+#@OUTPUT     : none
+#@RETURNS    : nothing
+#@DESCRIPTION: Sets the $Help and $Usage globals, and registers them
+#              with ParseArgs so that user gets useful error and help
+#              messages.
+#@METHOD     : 
+#@GLOBALS    : $Help, $Usage
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub SetHelp
+{
+   $Version = 'xVERSIONx';
+   $LongVersion = 'xLONG_VERSIONx';
+
+   $Usage = <<USAGE;
+$ProgramName, version $Version
+
+Usage: $ProgramName [-help] input.mnc output.imp
+USAGE
+
+   $Help = <<HELP;
+
+$ProgramName is a script that reduces a MINC volume into a compact spline
+representation. 
+
+HELP
+   
+   Getopt::Tabular::SetHelp ($Help, $Usage);       
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &SetupArgTables
+#@INPUT      : none
+#@OUTPUT     : none
+#@RETURNS    : References to the two option tables:
+#                @pref_args
+#@DESCRIPTION: Defines the tables of command line (and config file) 
+#              options that we pass to ParseArgs.
+#@METHOD     : 
+#@GLOBALS    : makes references to many globals (almost all of 'em in fact)
+#              even though most of them won't have been defined when
+#              this is called
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub SetupArgTables
+{
+   my (@pref_args);
+
+   sub print_version
+   {
+      print "Program $ProgramName, built from:\n$LongVersion\n";
+      exit;
+   }
+
+   # Preferences -- these shouldn't affect the results
+
+   @pref_args = 
+      (["General Options", "section"],
+       ["-verbose|-quiet", "boolean", 0, \$Verbose, 
+	"be noisy [default; opposite is -quiet]" ],
+       ["-execute|-noexecute", "boolean", 0, \$Execute, 
+	"actually execute planned commands [default]"],
+       ["-clobber|-noclobber", "boolean", 0, \$Clobber,
+	"overwrite output files [default: -noclobber]"],
+       ["-version", "call", undef, \&print_version,
+        "print version and quit"] );
+
+   (\@pref_args);
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &ValidateArgs
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Checks global variables for inconsistencies caused by bad
+#               combinations of arguments
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ValidateArgs
+{
+   # check whether $output_volume can be over written
+   ((-e $output_imp || -e "$output_imp.gz" ) && ! $Clobber) &&
+      (die("Clobber option not given.  Cannot overwrite file:\n"
+              ." $output_imp\n"));
+
+   &check_output_dirs($output_directory);
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &Initialize
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Sets global variables, parses command line.  Dies on
+#              any error.
+#@METHOD     : 
+#@GLOBALS    : preferences: $Verbose, $Execute, $Clobber, $Debug, $KeepTmp
+#              
+#@CALLS      : &SetSpawnOptions
+#              &SetupArgTables
+#              &ParseArgs::Parse
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub Initialize
+{
+   my ($pref_tbl, @reducedARGV);
+
+   # Set defaults for the global variables.  These can be overridden by 
+   # the command line.
+   $Verbose      = 1;
+
+   &SetHelp;
+ 
+   # Parse command line arguments
+   ($pref_tbl) = &SetupArgTables;
+   GetOptions($pref_tbl, \@ARGV, \@reducedARGV)
+         || exit 1;
+
+   if (@reducedARGV != 2) 
+   { 
+      print STDERR "Leftover args: @reducedARGV\n" if @reducedARGV;
+      print STDERR $Usage;
+      die "Incorrect number of arguments\n";
+   }
+   ($input_volume, $output_imp) = @reducedARGV;
+
+   # expand some arguments
+   ($output_directory) = split_path($output_imp);
+
+   # validate argument combinations and check filenames
+   ValidateArgs;
+
+}
+
+
+
+
+
+
+

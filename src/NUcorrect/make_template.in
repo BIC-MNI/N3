@@ -1,0 +1,263 @@
+#!xPERLx -w
+#---------------------------------------------------------------------------
+#@COPYRIGHT :
+#             Copyright 1996, John G. Sled, 
+#             McConnell Brain Imaging Centre,
+#             Montreal Neurological Institute, McGill University.
+#             Permission to use, copy, modify, and distribute this
+#             software and its documentation for any purpose and without
+#             fee is hereby granted, provided that the above copyright
+#             notice appear in all copies.  The author and McGill University
+#             make no representations about the suitability of this
+#             software for any purpose.  It is provided "as is" without
+#             express or implied warranty.
+#---------------------------------------------------------------------------- 
+#$RCSfile: make_template.in,v $
+#$Revision: 1.1 $
+#$Author: bert $
+#$Date: 2003-04-16 14:29:34 $
+#$State: Exp $
+#---------------------------------------------------------------------------
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : make_template
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: 
+#@            
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : August 15, 1996      J.G.Sled  
+#@MODIFIED   : 
+#  $Id: make_template.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#-----------------------------------------------------------------------------
+
+use MNI::Startup qw(nocputimes);
+use MNI::Spawn;
+use MNI::MincUtilities qw(:geometry);
+use Getopt::Tabular;
+use POSIX qw(:math_h);
+
+# Start main program ------------------------------------------------
+&Initialize;
+self_announce;
+
+&MakeTemplate($input_volume, $output_volume, $shrink_factor);
+
+#  End of Main Program
+#-----------------------------------------------------------------------------
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : ShrinkVolume
+#@INPUT      : volume, shrink factor
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: reduce sampling in finest sampling direction by given factor
+#              reduce other sampling directions only if reduced sampling is 
+#               less.  Uses nearest neighbour resampling.
+#@METHOD     : 
+#@GLOBALS    : Standard ($Execute, ...)
+#@CALLS      : 
+#@CREATED    : 96/05/29 J.G.Sled
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub MakeTemplate
+{
+   my ($input_volume, $output_volume, $shink_factor) = @_;
+   my (@step, @length, $newstep);
+
+   volume_params($input_volume, undef, \@step, \@length, undef, undef);
+   
+   if($shrink_factor > 1) {
+      # find smallest step size
+      $newstep = (abs($step[0]) < abs($step[1])) ? $step[0] : $step[1]; 
+      $newstep = (abs($step[2]) < abs($newstep)) ? $step[2] : $newstep;
+
+      $newstep = abs($newstep * $shrink_factor);
+      
+      for($i = 0; $i < 3; $i++) {
+         if(abs($step[$i]) < $newstep) {
+            $step[$i] = $step[$i] * $shrink_factor;
+            $length[$i] = POSIX::ceil(($length[$i]-1)/$shrink_factor)+1;
+         }
+      }
+   }
+   
+   # generate volume
+   Spawn(['mincresample', $input_volume, $output_volume, '-nearest_neighbour',
+         '-step', @step, '-nelements', @length, '-clobber']);
+   
+   # cut the template down to 32k
+   Spawn([qw(dd bs=512 count=64), 
+        "if=$output_volume", "of=$output_volume.temp"]);
+   Spawn("mv $output_volume.temp $output_volume");
+
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : SetupArgTables
+#@INPUT      : none
+#@OUTPUT     : none
+#@RETURNS    : References to the two option tables:
+#                @pref_args
+#                @protocol_args
+#@DESCRIPTION: Defines the tables of command line (and config file) 
+#              options that we pass to ParseArgs.
+#@METHOD     : 
+#@GLOBALS    : makes references to many globals (almost all of 'em in fact)
+#              even though most of them won't have been defined when
+#              this is called
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub SetupArgTables
+{
+   my (@pref_args, @protocol_args);
+
+   sub print_version
+   {
+      print "Program $ProgramName, built from:\n$LongVersion\n";
+      exit;
+   }
+
+   # Preferences -- these shouldn't affect the results
+
+   @pref_args = 
+      (["General Options", "section"],
+       ["-verbose|-quiet", "boolean", 0, \$Verbose, 
+	"be noisy [default; opposite is -quiet]" ],
+       ["-clobber|-noclobber", "boolean", 0, \$Clobber,
+	"overwrite output files [default: -noclobber]"],
+       ["-version", "call", undef, \&print_version,
+        "print version and quit"]);
+
+   # Protocol (data-specific) options 
+
+   @protocol_args = 
+      (["General Options","section"],
+       ["-shrink", "integer", 1, \$shrink_factor, 
+        "specify a smaller workspace; the"
+        ." sampling in each dimension is reduced to that of the finest"
+        ." sampling divided by factor or the current sampling which ever"
+        ." is less. (suggest 2 or 3)", "<factor>"]); 
+   
+   (\@pref_args, \@protocol_args);
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : SetHelp
+#@INPUT      : none
+#@OUTPUT     : none
+#@RETURNS    : nothing
+#@DESCRIPTION: Sets the $Help and $Usage globals, and registers them
+#              with ParseArgs so that user gets useful error and help
+#              messages.
+#@METHOD     : 
+#@GLOBALS    : $Help, $Usage
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub SetHelp
+{
+   $Version = 'xVERSIONx';
+   $LongVersion = 'xLONG_VERSIONx';
+
+   $Usage = <<USAGE;
+$ProgramName, version $Version
+
+Usage: $ProgramName [-help] [options] input_volume.mnc template.mnc
+USAGE
+
+   $Help = <<HELP;
+
+$ProgramName is a script that creates a template based on the given volume
+
+HELP
+
+   Getopt::Tabular::SetHelp ($Help, $Usage);
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : ValidateArgs
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Checks global variables for inconsistencies caused by bad
+#               combinations of arguments
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ValidateArgs
+{
+   # check whether $output_volume can be over written
+   ((-e $output_volume || -e "$output_volume.gz" ) && ! $Clobber) &&
+      (die("Clobber option not given.  Cannot overwrite file:\n"
+              ." $output_volume\n"));
+
+   # check that appropriate files and directories exist
+   (-r $input_volume) || die("Cannot read input file: $input_volume\n");
+   (defined $user_mask_volume && !(-r $user_mask_volume)) &&
+      die("Cannot read mask volume file: $user_mask_volume\n");
+   
+   ($shrink_factor < 1) &&
+      die("Shrink factor must be greater than or equal to one.\n");
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : Initialize
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Sets global variables, parses command line.  Dies on
+#              any error.
+#@METHOD     : 
+#@GLOBALS    : preferences: $Verbose, $Execute, $Clobber, $Debug, $KeepTmp
+#              
+#@CALLS      : &SetSpawnOptions
+#              &SetupArgTables
+#              &ParseArgs::Parse
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub Initialize
+{
+   my ($pref_tbl, $protocol_tbl, @args);
+
+   # Set defaults for the global variables.  These can be overridden by 
+   # the command line.
+   $Verbose      = 0;
+
+   SetHelp;
+ 
+   # make_template specific parameters
+   $shrink_factor = 1;
+
+   # Parse command line arguments
+   ($pref_tbl, $protocol_tbl) = SetupArgTables;
+
+   GetOptions([@$pref_tbl, @$protocol_tbl], \@ARGV, \@args) || exit 1;
+   if (@args != 2) 
+   { 
+      print STDERR $Usage;
+      die "Incorrect number of arguments\n";
+   }
+   ($input_volume, $output_volume) = @args;
+
+   # validate argument combinations and check filenames
+   ValidateArgs;
+
+   # Set global variables for calling various programs
+   MNI::Spawn::SetOptions (strict  => 2);
+
+   RegisterPrograms([qw(mincresample dd mv)]);
+} 
+
+

@@ -1,0 +1,598 @@
+#!xPERLx
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : resample_labels
+#@INPUT      : $InVolume   - a label volume in some sampling grid and space
+#@OUTPUT     : $OutVolume  - a new label volume, with a different sampling
+#                            grid and/or space from $InVolume, but hopefully
+#                            with volume and shape nearly preserved
+#@RETURNS    : 
+#@DESCRIPTION: Resamples a label volume using the following algorithm:
+#                * split multi-label volume into several binary volumes
+#                * use trilinear interpolation to create a fuzzy label 
+#                  volume from each 
+#                * apply a mask to restrict the labels so they only cover
+#                  voxels that fall within the thresholds used when painting
+#                  (the mask is determined from the MRI volume resampled
+#                  to the same target space as the label volume)
+#                * threshold it (0.5? 0.4? 0.49?)
+#                * recombine into a new multi-label volume
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : January 1996, Greg Ward
+#@MODIFIED   : Sept 1997, John Sled.  Configuration for use with N3 release.
+#@VERSION    : $Id: resample_labels.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#-----------------------------------------------------------------------------
+
+use MNI::Startup;
+use MNI::Spawn;
+use MNI::FileUtilities qw(check_output_dirs);
+use MNI::PathUtilities qw(split_path);
+use MNI::MincUtilities qw(volume_params update_history);
+use MNI::MiscUtilities qw(lcompare);
+use Getopt::Tabular;
+
+# proposed usage example:
+# 
+# resample_labels jacob_r_frontal.mnc jacob_r_frontal_rsl.mnc -mri_volume $jakob/resampled/linear/jakob_icbm_3898000_t1tal_lin.mnc -mri_thresholds 3.15e5 4.65e5 -resample "-start -1 -43 -32 -nelements 70 116 117" -labels_used 1-3,5-7,10 -label_threshold 0.49
+#                 
+
+# BEGIN main program ###########################################
+
+$Usage = <<USAGE;
+Usage: $ProgramName [options] in_volume out_volume
+       $ProgramName -help for more information
+USAGE
+
+&Initialize;
+
+if (-e $OutVolume)
+{
+   if (!$Clobber)
+   {
+      die "$OutVolume already exists -- use -clobber to overwrite it\n";
+   }
+   else
+   {
+      unlink $OutVolume;		# just to be safe
+   }
+}
+
+&check_output_dirs ($TmpDir) if $Execute;
+
+if ($MRIVolume)
+{
+   my ($mribase) = (&split_path ($MRIVolume))[1];
+
+   &ValidateSamplingGrids ($InVolume, $ResampleParams, $MRIVolume)
+      || exit 1;
+
+   $MRIMask = &MakeMRIMask ($MRIVolume, \@MRIThresholds, 
+			    $mribase, $ResampleParams);
+}
+
+if ($BinaryVolume)
+{
+   # easy case -- don't have to handle multiple input labels
+
+   my ($tempbase) = "${TmpDir}${InBase}";
+   &ResampleBinary ($InVolume, $OutVolume, $tempbase, 
+		    $Interpolation, $Orientation, $ResampleParams, 
+                    $Transformation, $InvertTransformation,
+		    $MRIMask, $LabelThreshold, 1);
+}
+else
+{
+   # tricky case -- have to process each label separately, and then
+   # combine them at the end
+
+   foreach $label (@LabelsUsed)
+   {
+      my ($tempbase) = "${TmpDir}${InBase}_L${label}";
+      my ($label_file) = "${tempbase}.mnc";
+      
+      &ExtractLabel ($InVolume, $label_file, $label, 1);
+      &ResampleBinary ($label_file, $OutVolume, $tempbase,
+		       $Interpolation, $Orientation, $ResampleParams, 
+                       $Transformation, $InvertTransformation,
+		       $MRIMask, $LabelThreshold, $label);
+
+      unlink $label_file unless $KeepTmp;
+   }
+}
+
+# Replace the last entry in the history with my own history 
+
+print "Updating history\n" if $Verbose && $Execute;
+update_history ($OutVolume, 1) if $Execute;
+
+
+# END main program ###########################################
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &parse_num_list
+#@INPUT      : $list - a string containing a "list" of numbers, something
+#                      like "1-3,4,6,9-11"
+#@OUTPUT     : 
+#@RETURNS    : a real Perl list with the string expanded as you'd expect
+#              (e.g. (1,2,3,4,6,9,10,11))
+#              OR empty list if your string is bogus (and prints a warning)
+#@DESCRIPTION: 
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : January 1996, Greg Ward
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub parse_num_list 
+{
+   my ($list) = @_;
+   my (@chunks, @list);
+
+   $list =~ s/\s//;
+   @chunks = split (/,/, $list);
+   for $chunk (@chunks)
+   {
+      if ($chunk =~ /^\d+$/)
+      {
+	 push (@list, $chunk);
+      }
+      elsif ($chunk =~ /^(\d+)\-(\d+)$/)
+      {
+	 push (@list, $1 .. $2);
+      }
+      else
+      {
+	 warn "Numeric list $list is illegal";
+	 return ();
+      }
+   }
+   @list;
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &Initialize
+#@INPUT      : none
+#@OUTPUT     : tons of globals
+#@RETURNS    : 
+#@DESCRIPTION: Sets globals to default values, parses and validates
+#              command line options (which sets still more globals).
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub Initialize
+{
+   $Execute = 1;
+   $Verbose = 1;
+   $Debug = 0;
+   $Clobber = 0;
+
+   $BinaryVolume = 1;
+   $Interpolation = "-trilinear";
+   $LabelThreshold = 0.5;
+   $InvertTransformation = 0;
+   $Orientation = "";
+
+   @ArgTable = 
+      (@DefaultArgs, 
+       ["Resampling options", "section"],
+       ["-trilinear", "copy", undef, \$Interpolation,
+	"use trilinear interpolation [default]"],
+       ["-tricubic", "copy", undef, \$Interpolation,
+	"use tricubic interpolation"],
+       ["-nearest_neighbour", "copy", undef, \$Interpolation,
+	"use nearest-neighbour interpolation"],
+       ["-label_threshold", "float", 1, \$LabelThreshold,
+	"set label threshold (must be between 0 and 1) " .
+	"[default: $LabelThreshold]"],
+       ["-mri_volume", "string", 1, \$MRIVolume,
+	"name of volume on which these labels are to be painted -- this is " .
+	"used to extract an intensity-based mask, so must be in the same " .
+	"space as the *new* labels"],
+       ["-mri_thresholds", "float", 2, \@MRIThresholds,
+	"the MRI intensity values that were used to paint the original " .
+	"labels on a volume from which -mri_volume was derived"],
+       ["-resample", "string", 1, \$ResampleParams,
+	"specify all other mincresample parameters (e.g. -like, -start, " .
+	"-step, -nelements, etc.)"],
+       ["-transverse", "copy", undef, \$Orientation,
+        "create a transverse volume [useless!]"],
+       ["-sagittal", "copy", undef, \$Orientation,
+        "create a sagittal volume [useless!]"],
+       ["-coronal", "copy", undef, \$Orientation,
+        "create a coronal volume [useless!]"],
+       ["-transformation", "string", 1, \$Transformation,
+	"specify the spatial transform to apply when resampling"],
+       ["-invert_transformation", "boolean", undef, \$InvertTransformation,
+        "invert the transformation before using it (this option is just " .
+        "passed on to mincresample) [default: -noinvert_transformation]"],
+       ["-labels_used", "string", 1, \$LabelsUsed,
+	"list the labels actually used in the input volume (eg. 1-5,6,10)"],
+       ["-binary", "boolean", 1, \$BinaryVolume,
+	"assume the input volume is binary (ie. only labels 0 and 1 used) " .
+	"[default; overridden by -labels_used]"]);
+
+   Getopt::Tabular::SetHelp ("", $Usage);
+   my @argv = @ARGV;
+   GetOptions (\@ArgTable, \@ARGV, \@argv) || exit 1;
+
+   if (@argv != 2)
+   {
+      warn $Usage;
+      die "Incorrect number of arguments\n";
+   }
+   ($InVolume, $OutVolume) = @argv;
+   $InBase = (split_path ($InVolume, 'last', qw(gz z Z)))[1];
+   
+
+   RegisterPrograms([qw(mincresample mincextract extracttag mincmath)])
+              || exit 1;
+
+   if (defined $LabelsUsed)
+   {
+      (@LabelsUsed = &parse_num_list ($LabelsUsed)) || exit 1;
+      $BinaryVolume = 0;
+   }
+
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &parse_resample_args
+#@INPUT      : $volume - 
+#                 name of file to which these resampling arguments are
+#                 to be applied
+#              $resample_args - 
+#                 arguments for mincresample (as a single string -- will 
+#                 be split into words here)
+#@OUTPUT     : @$start, @$step, @$count, @$dircos -
+#                 lists of geometric parameters that will be built
+#                 from $volume, and modified by the various options
+#                 found in $resample_args.  The first three will all
+#                 be three-element lists (x,y,z); the third will have
+#                 nine elements (three for x, three for y, three for
+#                 z).
+#@RETURNS    : 0 on failure (bad option found in $resample_args)
+#              1 otherwise
+#@DESCRIPTION: Emulates the behaviour of mincresample in constructing 
+#              a target sampling grid: starts with an input volume, and
+#              modifies the geometric parameters using the -start, -step,
+#              and -nelements options, or completely replaces them using
+#              the -like option.  
+#              
+#              Currently only the above-mentioned options are
+#              supported; I should add -xstart, -ystart, etc.  Nothing
+#              else will be added, and in particular I do NOT plan to
+#              support spatial transformation of sampling grid
+#              parameters -- so don't go putting "-transform" in
+#              $resample_args -- it's NOT a "sampling grid" option!
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : &ParseArgs::Parse
+#@CREATED    : 96/02/12, Greg Ward
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub parse_resample_args
+{
+   my ($volume, $resample_args, $start, $step, $count, $dircos) = @_;
+   my (@argtable, @args); 
+ 
+   volume_params ($volume, $start, $step, $count, $dircos);
+
+   # For simplicity, we support a rather limited subset of mincresample's
+   # available options.  (In particular, if the labels are to be
+   # transformed as well as resampled, that will be handled by a separate
+   # option to resample_labels itself -- that way the pesky user can't
+   # go slipping in business about transforming the resampling grid
+   # to confuse us.)  Oh, it would be easy to add xstart, ystart, etc. --
+   # just a bunch of tedious code...
+
+   my $like = sub		# does this use closure?!? I think so,
+   {				# but it's not anonymous! Hmmm...
+      my ($opt, $rest) = @_;
+      my ($volume);
+
+      $volume = shift @$rest;
+      volume_params ($volume, $start, $step, $count, $dircos);
+      1;
+   };
+
+   @argtable = 
+      (["-like", "call", 0, $like],
+       ["-start", "float", 3, $start],
+       ["-step", "float", 3, $step],
+       ["-nelements", "integer", 3, $count],
+       ["-dircos", "float", 9, $dircos]);
+
+   # You might think I should be using shellwords to parse
+   # $resample_args, but it *shouldn't* be necessary, as the only
+   # mincresample options I support are numeric.
+
+   @args = split (/\s+/, $resample_args);
+   GetOptions (\@argtable, \@args) ||
+      (warn "Invalid or unhandled mincresample option given with -resample\n",
+       return 0);
+   return 1;
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &ValidateSamplingGrids
+#@INPUT      : $label    - name of (input) label volume
+#              $resample - arguments for mincresample to define sampling grid
+#              $mri      - name of MRI volume (where we'll get the threshold
+#                          mask from)
+#@OUTPUT     : 
+#@RETURNS    : 0 if there's any error or incompatibility in the sampling
+#                grids (with a fairly detailed error message)
+#              1 if they're nicely compatible
+#@DESCRIPTION: Checks that two sampling grids (one defined by the input
+#              label volume and modified by a string of mincresample options,
+#              the other from a single volume) are "compatible", i.e.
+#                - steps and direction cosines are identical
+#                - starts are an integral number of steps away from each other
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : &volume_params, &parse_resample_args, &lcompare
+#@CREATED    : 96/02/12, Greg Ward
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ValidateSamplingGrids
+{
+   my ($label, $resample, $mri) = @_;
+   my (@mristart, @mristep, @mricount, @mridircos);
+   my (@rslstart, @rslstep, @rslcount, @rsldircos);
+
+   # The easy part: fetch the geometric parameters of the MRI volume
+   # and the *initial* resample parameters (from the starting
+   # label volume)
+
+   volume_params ($mri, \@mristart, \@mristep, \@mricount, \@mridircos);
+
+   # The tricky part: parse the resample parameters just like mincresample
+   # would (NOT dealing with transforming sampling grids -- too hard!!!)
+
+   &parse_resample_args ($label, $resample,
+			 \@rslstart, \@rslstep, \@rslcount, \@rsldircos);
+
+
+   # Now, the medium-hard bit: compare the two sets of geometric
+   # parameters to make sure they're "compatible", i.e.:
+   #   - steps and direction cosines are identical
+   #   - starts are an integral number of steps away from each other
+   #
+   # N.B. I might want to add something with the counts and starts
+   # to make sure that one volume is a subset of the other, but
+   # I'm not sure right now if that's really necessary... hmmm...
+      
+   unless (lcompare (sub { $_[0] == $_[1]}, \@mristep, \@rslstep) == 0)
+   {
+      warn "Step parameters of $mri don't match target space\n";
+      return 0;
+   }
+   unless (lcompare (sub { $_[0] == $_[1]}, \@mridircos, \@rsldircos) == 0)
+   {
+      warn "Direction cosines of $mri don't match target space\n";
+      return 0;
+   }
+
+   for $i (0..2)
+   {
+      my ($diff) = $mristart[$i] - $rslstart[$i];
+      my ($step) = $rslstep[$i];
+
+      unless ($diff/$step == int ($diff/$step))	# is this too exact perhaps?
+      {
+	 printf STDERR "%c-start parameter of $mri differs from target " .
+	    "space by a non-integral number of steps\n", (ord("x") + $i);
+	 return 0;
+      }
+   }
+
+   return 1;
+}
+
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &MakeMRIMask
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Given an MRI volume and the thresholds used to paint it,
+#              creates a mask that only allows voxels between the two
+#              thresholds through.  If the $resample parameter is supplied,
+#              the mask is resampled according to the mincresample 
+#              argument list in $resample.  This is useful if the output
+#              label volume is in a compatible-but-smaller space than
+#              the corresponding MRI (as is the case with Display's
+#              "auto crop" feature on saving label volumes).
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : January 1996, Greg Ward 
+#@MODIFIED   : 
+#@COMMENTS   : If the MRI volume's sampling is identical to the target
+#              label sampling, the MRI mask is resampled unnecessarily.
+#              I need a "sampling_grids_identical" function to test for
+#              this condition (would be much like the test for compatible
+#              sampling grids, but easier).
+#-----------------------------------------------------------------------------
+sub MakeMRIMask 
+{
+   die "&MakeMRIMask: wrong number of arguments" unless @_ == 4;
+   my ($mri, $thresholds, $base, $resample) = @_;
+   my ($tmpfile, $outfile);
+
+   if ($resample)
+   {
+      $tmpfile = "${TmpDir}${base}_tmpmask.mnc";
+      $outfile = "${TmpDir}${base}_mask.mnc";
+   }
+   else
+   {
+      $tmpfile = "${TmpDir}${base}_mask.mnc";
+   }
+   
+   Spawn (['mincmath', '-segment', $mri, $tmpfile, '-const2', @$thresholds,
+           '-byte']) unless -e $tmpfile && !$clobber;
+   &Resample ($tmpfile, $outfile, "-trilinear", "-byte", "", $resample)
+      if $resample;
+   $outfile;
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &ResampleBinary
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Resamples a binary label volume (labels are either 0 or 1),
+#              applies a mask (optional), and extracts labels that exceed
+#              the threshold into an output file.  Labels may be changed
+#              to a different label value on output, so the output volume
+#              isn't necessarily binary.
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : &Resample, &ApplyMask, &SegmentAndCombine
+#@CREATED    : 96/02/19, GPW (from code in main program)
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ResampleBinary 
+{
+   die "\&ResampleBinary: wrong number of arguments" unless @_ == 11;
+   my ($infile, $outfile, $tempbase,
+       $interp, $orient, $resample, $transform, $invert_transform,
+       $mask, $label_threshold, $outvalue) = @_;
+
+   my ($rsl_file) = "${tempbase}_rsl.mnc";
+   my ($mask_file) = "${tempbase}_mask.mnc";
+   my ($seg_file) = "${tempbase}_seg.mnc";
+
+   if ($mask)
+   {
+      &Resample ($infile, $rsl_file, $interp, "-byte", $orient,
+		 "-like $mask", $transform, $invert_transform);
+      &ApplyMask ($rsl_file, $mask_file, $mask);
+   }
+   else
+   {
+      &Resample ($infile, $rsl_file, $interp, "-byte", $orient,
+		 $resample, $transform, $invert_transform);
+      $mask_file = $rsl_file;
+   }
+   &SegmentAndCombine ($mask_file, $outfile, [$label_threshold, 1.1], $outvalue);
+   unlink ($rsl_file, $mask_file) unless $KeepTmp;
+}
+
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &ExtractLabel
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Calls extract_tag to pull out all voxels matching a 
+#              particular value in a label volume.  Needed because
+#              you have to "binarize" multi-label volumes before
+#              resampling.
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : January 1996, Greg Ward 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ExtractLabel
+{
+   die "&ExtractLabel: wrong number of arguments" unless @_ == 4;
+   my ($in, $out, $inlabel, $outlabel) = @_;
+
+   return if -e $out && !$clobber;
+   Spawn (['extracttag', $in, '-volume', $out, '-threshold', 
+           $inlabel, $inlabel, '-label', $outlabel, '-maxtags', 0]);
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &Resample
+#@INPUT      : in, out    - input/output volumes
+#              interp     - "-trilinear", "-tricubic", etc.
+#              type       - "-byte", "-short", etc.
+#              orient     - "-sagittal", etc.
+#              params     - "-step x y z ..."
+#              transform  - name of transform file, *or* empty string
+#              invert     - 1 or 0 [invert transform before applying]
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Resamples a volume.  Pretty simple wrapper for mincresample.
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : January 1996, Greg Ward
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub Resample
+{
+   die "&Resample: wrong number of arguments"
+      unless @_ >= 6 && @_ <= 8;
+   my ($in, $out, $interp, $type, $orient, $params, $transform, $invert) = @_;
+
+   return if -e $out && !$clobber;
+   Spawn ("mincresample $in $out $interp $type $orient $params " .
+	   ($transform ? "-transformation $transform " : "") .
+           ($invert ? " -invert_transformation" : ""));
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &ApplyMask
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Masks a volume.  Pretty simple wrapper for mincmath,
+#              so the mask and input volume must have identical sampling 
+#              grids.
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : January 1996, Greg Ward 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ApplyMask 
+{
+   die "&ApplyMask: wrong number of arguments" unless @_ == 3;
+   my ($in, $out, $mask) = @_;
+
+   return if -e $out && !$clobber;
+   &Spawn (['mincmath', '-mult', $mask, $in, $out]);
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &SegmentAndCombine
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Basically the opposite of &ExtractLabel -- puts a binary
+#              label volume back into a multi-colour volume, merging
+#              it with whatever's already there.  
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : January 1996, Greg Ward 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub SegmentAndCombine
+{
+   die "&SegmentAndCombine: wrong number of arguments" unless @_ == 4;
+   my ($in, $out, $inthresholds, $outlabel) = @_;
+   
+   &Spawn (['extracttag', $in, '-volume', $out,
+	   '-threshold', @$inthresholds, '-label', $outlabel, '-maxtags', 0,
+	   ((-e $out) ? ('-append', '-clobber') : ())]);
+}

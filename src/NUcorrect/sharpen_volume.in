@@ -1,0 +1,166 @@
+#!xPERLx -w
+#---------------------------------------------------------------------------
+#@COPYRIGHT :
+#             Copyright 1996, John G. Sled, 
+#             McConnell Brain Imaging Centre,
+#             Montreal Neurological Institute, McGill University.
+#             Permission to use, copy, modify, and distribute this
+#             software and its documentation for any purpose and without
+#             fee is hereby granted, provided that the above copyright
+#             notice appear in all copies.  The author and McGill University
+#             make no representations about the suitability of this
+#             software for any purpose.  It is provided "as is" without
+#             express or implied warranty.
+#---------------------------------------------------------------------------- 
+#$RCSfile: sharpen_volume.in,v $
+#$Revision: 1.1 $
+#$Author: bert $
+#$Date: 2003-04-16 14:29:34 $
+#$State: Exp $
+#---------------------------------------------------------------------------
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : sharpen_volume
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: modifies intensities so as to produce a sharper histogram
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : February 28, 1996 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+use MNI::Startup qw(nocputimes);
+use MNI::Spawn;
+use MNI::FileUtilities;
+use Getopt::Tabular;
+
+&Initialize;
+
+&Spawn(['volume_hist', '-bins', $bins, '-auto_range', '-mask', $mask_volume,
+         $source_volume, "$base_name.hist", '-clobber', '-text', '-select',
+         1, '-quiet', @window_option]);
+$min_bin = 0;
+$max_bin = 1;
+open(FILE, "$base_name.hist");
+while(<FILE>) {
+   if(/domain: +([-e\d\.]+) +([-e\d\.]+)/) {
+      $min_bin = $1;
+      $max_bin = $2;
+   }
+}
+close(FILE);
+
+&Spawn(['sharpen_hist', '-clobber', @blur_option, '-fwhm', $filter_fwhm,
+       '-noise', $noise_level, '-quiet', '-range', $min_bin, $max_bin,
+        "$base_name.hist", "$base_name.sharp"]);
+&Spawn(['minclookup', '-continuous', '-range', $min_bin, $max_bin, '-clobber',
+       '-lookup_table', "$base_name.sharp", $source_volume, $output_volume]);
+
+(defined $save_histogram) && &Spawn("cp $base_name.hist $save_histogram");
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &Initialize
+#@INPUT      : none
+#@OUTPUT     : none
+#@RETURNS    : 
+#@DESCRIPTION: 
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub Initialize
+{
+   $Version = 'xVERSIONx';
+   $LongVersion = 'xLONG_VERSIONx';
+
+   $Usage = <<USAGE;
+$ProgramName, version $Version
+
+Usage: $ProgramName [-help] [options] mask.mnc input.mnc output.mnc
+USAGE
+
+   $Help = <<HELP;
+
+$ProgramName is a script that modifies the intensities in a volume such that
+   the histogram is sharper.
+
+HELP
+
+   Getopt::Tabular::SetHelp ($Help, $Usage);
+
+   $filter_fwhm = .2;
+   $noise_level = .01;
+   $bins        = 200;
+   $blur_flag    = 0;
+   $window_flag  = 0;
+   undef $save_histogram;
+
+   sub print_version
+   {
+      print "Program $ProgramName, built from:\n$LongVersion\n";
+      exit;
+   }
+  
+   @args_table = 
+      (["General Options", "section"],
+       ["-verbose|-quiet", "boolean", 0, \$Verbose, 
+	"be noisy [default; opposite is -quiet]" ],
+       ["-execute|-noexecute", "boolean", 0, \$Execute, 
+	"actually execute planned commands [default]"],
+       ["-clobber|-noclobber", "boolean", 0, \$Clobber,
+	"overwrite output files [default: -noclobber]"],
+       ["-version", "call", undef, \&print_version,
+        "print version and quit"], 
+#       ["-tmpdir", "string", 1, \$TmpDir,
+#	"temporary working directory"],
+#       ["-keeptmp|-nokeeptmp", "boolean", 0, \$KeepTmp,
+#	"don't delete temporary files [default: -nokeeptmp]"],
+       
+       ["Protocol Options","section"],
+       ["-fwhm", "float", 1, \$filter_fwhm,
+	"<value> fwhm of blur in histogram (default .2)"],
+       ["-noise", "float", 1, \$noise_level,
+	"<value> noise threshold for deconvolution"],
+       ["-bins", "integer", 1, \$bins,
+        "<number>  specify number of bins in histogram (default 200)"],
+       ["-blur|-deblur", "boolean", undef, \$blur_flag,
+	"use blurring.  -deblur: skip deblurring step."],
+       ["-parzen|-noparzen", "boolean", undef, \$window_flag,
+        "use Parzen window when estimating intensity distribution"],
+       ["-save_histogram", "string", 1, \$save_histogram,
+        "keep uncorrected histogram"]);
+
+   my (@reducedARGV);
+   GetOptions(\@args_table, \@ARGV, \@reducedARGV) || exit 1;
+   
+   if (@reducedARGV != 3) 
+   { 
+      print STDERR "Leftover args: @reducedARGV\n" if @reducedARGV;
+      print STDERR $Usage;
+      die "Incorrect number of arguments\n";
+   } 
+
+   ($mask_volume, $source_volume, $output_volume) = @reducedARGV;
+   # check whether $output_volume can be over written
+   ((-e $output_volume) && ! $Clobber) &&
+      (die("Clobber option not given.  Cannot overwrite file:"
+              ." $output_volume\n"));
+
+   ($output_volume =~ ?^([\S]+).mnc?) && ($base_name = $1) ||
+      die "sharpen_volume failed: output volume does not appear to be"
+      ." a minc volume.\n";
+
+   @blur_option = $blur_flag ? ('-blur') : ();
+   @window_option = $window_flag ? ('-window') : ();
+
+   # Set global variables for calling various programs
+   MNI::Spawn::SetOptions (strict  => 2);
+   RegisterPrograms([qw(volume_hist sharpen_hist minclookup cp)]);
+
+}
+
+

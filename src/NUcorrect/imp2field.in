@@ -1,0 +1,282 @@
+#!xPERLx -w
+#---------------------------------------------------------------------------
+#@COPYRIGHT :
+#             Copyright 1996, John G. Sled, 
+#             McConnell Brain Imaging Centre,
+#             Montreal Neurological Institute, McGill University.
+#             Permission to use, copy, modify, and distribute this
+#             software and its documentation for any purpose and without
+#             fee is hereby granted, provided that the above copyright
+#             notice appear in all copies.  The author and McGill University
+#             make no representations about the suitability of this
+#             software for any purpose.  It is provided "as is" without
+#             express or implied warranty.
+#----------------------------------------------------------------------------
+#$RCSfile: imp2field.in,v $
+#$Revision: 1.1 $
+#$Author: bert $
+#$Date: 2003-04-16 14:29:34 $
+#$State: Exp $
+#---------------------------------------------------------------------------
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : imp2field
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: 
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : August 28, 1996      J.G.Sled  
+#@MODIFIED   : 
+#  $Id: imp2field.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#-----------------------------------------------------------------------------
+
+use MNI::Startup qw(nocputimes);
+use MNI::Spawn;
+use MNI::FileUtilities qw(check_output_dirs);
+use MNI::PathUtilities qw(split_path);
+use MNI::MincUtilities qw(:history);
+use Getopt::Tabular;
+
+# Start main program ------------------------------------------------
+
+&Initialize;
+self_announce;
+
+if($shrink_factor == 1) {
+   Spawn(['evaluate_field', '-like', $like_volume, $mapping_name, 
+        $output_volume]);
+}
+else {
+   &Spawn(['make_template', '-quiet', '-shrink', $shrink_factor, $like_volume,
+          "$TmpDir/template.mnc"]);
+   &Spawn(['evaluate_field', '-like', "$TmpDir/template.mnc",
+          $mapping_name, "$TmpDir/field_volume.mnc"]);
+   &Spawn(['mincresample', '-trilinear', '-like', $like_volume,
+          "$TmpDir/field_volume.mnc", $output_volume]);
+}
+
+#  End of Main Program
+#-----------------------------------------------------------------------------
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &CreateHistory
+#@INPUT      : $_[0]  name source volume
+#              $_[1]  name of output volume to get history 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: 
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : get_history, put_history
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub CreateHistory
+{
+   my (@history);
+   @history  = &get_history($_[0]);
+   push(@history, $Invocation);
+   &put_history($_[1], @history);
+}
+
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &SetupArgTables
+#@INPUT      : none
+#@OUTPUT     : none
+#@RETURNS    : References to the two option tables:
+#                @pref_args
+#                @protocol_args
+#@DESCRIPTION: Defines the tables of command line (and config file) 
+#              options that we pass to ParseArgs.
+#@METHOD     : 
+#@GLOBALS    : makes references to many globals (almost all of 'em in fact)
+#              even though most of them won't have been defined when
+#              this is called
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub SetupArgTables
+{
+   my (@pref_args, @protocol_args);
+
+   sub print_version
+   {
+      print "Program $ProgramName, built from:\n$LongVersion\n";
+      exit;
+   }
+
+   # Preferences -- these shouldn't affect the results
+
+   @pref_args = 
+      (["General Options", "section"],
+       ["-verbose|-quiet", "boolean", 0, \$Verbose, 
+	"be noisy [default; opposite is -quiet]" ],
+       ["-execute|-noexecute", "boolean", 0, \$Execute, 
+	"actually execute planned commands [default]"],
+       ["-clobber|-noclobber", "boolean", 0, \$Clobber,
+	"overwrite output files [default: -noclobber]"],
+       ["-tmpdir", "string", 1, \$TmpDir,
+	"temporary working directory"],
+       ["-keeptmp|-nokeeptmp", "boolean", 0, \$KeepTmp,
+	"don't delete temporary files [default: -nokeeptmp]"],
+       ["-notify", "string", 1, \$Notify,
+	"set the user to notify (send email to) on failure " .
+	"[default: \$USER, i.e. you]"],
+       ["-nonotify", "const", 0, \$Notify,
+	"disable email notification"],
+       ["-version", "call", undef, \&print_version,
+        "print version and quit"]);
+
+   # Protocol (data-specific) options 
+
+   @protocol_args = 
+      (["General Options","section"],
+       ["-like", "volume", 1, \$like_volume, 
+        "specify an example volume", "<like.mnc>"],
+       ["-shrink", "integer", 1, \$shrink_factor, 
+        "specify a smaller workspace; the"
+        ." sampling in each dimension is reduced to that of the finest"
+        ." sampling divided by factor or the current sampling which ever"
+        ." is less. (suggest 2 or 3)", "<factor>"]); 
+   
+   (\@pref_args, \@protocol_args);
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &SetHelp
+#@INPUT      : none
+#@OUTPUT     : none
+#@RETURNS    : nothing
+#@DESCRIPTION: Sets the $Help and $Usage globals, and registers them
+#              with ParseArgs so that user gets useful error and help
+#              messages.
+#@METHOD     : 
+#@GLOBALS    : $Help, $Usage
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub SetHelp
+{
+   $Version = 'xVERSIONx';
+   $LongVersion = 'xLONG_VERSIONx';
+
+   $Usage = <<USAGE;
+$ProgramName, version $Version
+
+Usage: $ProgramName [-help] [options] -like volume.mnc input.imp output.mnc
+USAGE
+
+   $Help = <<HELP;
+
+$ProgramName is a script that expands a compact field representation 
+      into a MINC volume 
+
+HELP
+   
+   Getopt::Tabular::SetHelp ($Help, $Usage);       
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &ValidateArgs
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Checks global variables for inconsistencies caused by bad
+#               combinations of arguments
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ValidateArgs
+{
+   # check whether $output_volume can be over written
+   ((-e $output_volume || -e "$output_volume.gz" ) && ! $Clobber) &&
+      (die("Clobber option not given.  Cannot overwrite file:\n"
+              ." $output_volume\n"));
+
+   # check that appropriate files and directories exist
+   if (defined $like_volume) {
+      !(-r $like_volume) &&
+         die("Cannot read like volume: $like_volume\n");
+   }
+   else {
+      die("No like volume specified.\n");
+   }
+   (-r $mapping_name) || die("Cannot read input file: $mapping_name\n");
+   
+   ($shrink_factor < 1) &&
+      die("Shrink factor must be greater than or equal to one.\n");
+
+   &check_output_dirs($TmpDir,$output_directory);
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &Initialize
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Sets global variables, parses command line.  Dies on
+#              any error.
+#@METHOD     : 
+#@GLOBALS    : preferences: $Verbose, $Execute, $Clobber, $Debug, $KeepTmp
+#              
+#@CALLS      : &SetSpawnOptions
+#              &SetupArgTables
+#              &ParseArgs::Parse
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub Initialize
+{
+   my ($pref_tbl, $protocol_tbl, @reducedARGV);
+
+   # Set defaults for the global variables.  These can be overridden by 
+   # the command line.
+   $Verbose      = 1;
+
+   &SetHelp;
+   $Invocation = "$0 @ARGV";
+ 
+   # NUevaluate specific parameters
+   undef $like_volume;
+   $shrink_factor = 3;
+
+
+   # Parse command line arguments
+   ($pref_tbl, $protocol_tbl) = &SetupArgTables;
+   &Getopt::Tabular::AddPatternType("volume", ".+(\\.mnc|\\.mnc\\.gz|"
+                       ."\\.mnc\\.Z|\\.mnc\\.z)\$", "minc volume");
+   GetOptions([@$pref_tbl, @$protocol_tbl], \@ARGV, \@reducedARGV)
+         || exit 1;
+
+   if (@reducedARGV != 2) 
+   { 
+      print STDERR "Leftover args: @reducedARGV\n" if @reducedARGV;
+      print STDERR $Usage;
+      die "Incorrect number of arguments\n";
+   }
+   ($mapping_name, $output_volume) = @reducedARGV;
+
+   # expand some arguments
+   ($output_directory) = split_path($output_volume);
+
+   # validate argument combinations and check filenames
+   ValidateArgs;
+
+    # Set global variables for calling various programs
+   MNI::Spawn::SetOptions (strict  => 2);
+   RegisterPrograms(
+          [qw(mincinfo mincmath evaluate_field make_template mincresample)]);
+
+   $verbose_option = ($Verbose) ? '-verbose' : '-quiet';
+   
+   AddDefaultArgs([qw(mincmath evaluate_field mincresample)], 
+        ['-clobber', $verbose_option]);
+}
