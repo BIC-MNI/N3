@@ -1,3 +1,12 @@
+2005-03-08  Bert Vincent   <bert@bic.mni.mcgill.ca>
+	* src/SharpenHist/sharpen_hist.cc uses finite(), which is not
+	available on many versions of Solaris.  Added a test to look for
+	isfinite() as well as finite() in configure.in
+	* src/EvaluateField/evaluateField.cc,
+	src/SplineSmooth/splineSmooth.cc, src/VolumeHist/minchist.cc
+	Get rid of redundant #define N_DIMENSIONS 3, which duplicates
+	the definition in volume_io.h and generates a warning.	
+
 2004-11-18  Bert Vincent   <bert@bic.mni.mcgill.ca>
 	* src/ExtractTag/extracttag.c - minor change to argTable[] to 
 	reflect the fact that -mintags and -maxtags take 'long' arguments

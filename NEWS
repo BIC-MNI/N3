@@ -6,6 +6,8 @@ Among other things, this sometimes caused test #14 to fail.
 
 Minor change to extracttag.c to avoid problems on 64-bit platforms.
 
+Added checks for finite/isfinite for Solaris
+
         New in Release 1.09
         -------------------
 Build fixes.  No user visible changes.
