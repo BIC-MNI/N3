@@ -5,7 +5,7 @@ AC_CONFIG_AUX_DIR(ac_config_aux)
 AM_INIT_AUTOMAKE(N3, 1.10)
 AM_CONFIG_HEADER([include/config.h])
 
-AC_REVISION($Revision: 1.8 $)
+AC_REVISION($Revision: 1.9 $)
 
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -68,6 +68,8 @@ AC_MSG_ERROR("Cannot determine model installation directory");
 fi
 
 AC_SUBST(modeldir)
+
+AC_CHECK_FUNCS(finite isfinite)
 
 AC_CONFIG_FILES([Makefile testing/Makefile include/version.h])
 AC_OUTPUT
