@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: make_template.in,v $
-#$Revision: 1.2 $
+#$Revision: 1.3 $
 #$Author: bert $
-#$Date: 2003-09-05 20:34:20 $
+#$Date: 2004-02-05 16:01:12 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : August 15, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: make_template.in,v 1.2 2003-09-05 20:34:20 bert Exp $
+#  $Id: make_template.in,v 1.3 2004-02-05 16:01:12 bert Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -87,11 +87,6 @@ sub MakeTemplate
    # generate volume
    Spawn(['mincresample', $input_volume, $output_volume, '-nearest_neighbour',
          '-step', @step, '-nelements', @length, '-clobber']);
-   
-   # cut the template down to 128k
-   Spawn([qw(dd bs=512 count=256), 
-        "if=$output_volume", "of=$output_volume.temp"]);
-   Spawn("mv $output_volume.temp $output_volume");
 
 }
 
