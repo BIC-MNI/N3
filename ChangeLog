@@ -1,3 +1,9 @@
+2004-02-05  Bert Vincent   <bert@bic.mni.mcgill.ca>
+	
+	* make_template.in - Apply edit suggested by John Sled which 
+	avoids the "excessively large header" problem by using the entire
+	output file as a template.
+	
 2004-01-29  Bert Vincent   <bert@bic.mni.mcgill.ca>
 	
 	* Makefile.am - turn on execute bits for scripts, uncomment SUBDIRS 
