@@ -1,1 +1,4 @@
-dummy
+2003-09-02  Steve M. Robbins  <steve@nyongwa.montreal.qc.ca>
+
+	* autogen.sh: Create directory ac_config_aux.
+
