@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: nu_estimate_np_and_em.in,v $
-#$Revision: 1.2 $
-#$Author: bert $
-#$Date: 2005-03-08 15:35:26 $
+#$Revision: 1.3 $
+#$Author: rotor $
+#$Date: 2005-03-15 15:12:55 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,14 +30,17 @@
 #@CALLS      : 
 #@CREATED    : January 15, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_estimate_np_and_em.in,v 1.2 2005-03-08 15:35:26 bert Exp $
+#  $Id: nu_estimate_np_and_em.in,v 1.3 2005-03-15 15:12:55 rotor Exp $
 #-----------------------------------------------------------------------------
 use MNI::Startup qw(nocputimes);
 use MNI::Spawn;
 use MNI::FileUtilities qw(check_output_dirs);
 use MNI::PathUtilities qw(split_path replace_dir);
 use MNI::MincUtilities qw(:history volume_params volume_minmax);
-use MNI::DataDir;
+
+# use MNI::DataDir;
+use FindBin;
+
 use POSIX qw(:math_h);
 use Getopt::Tabular;
 use Cwd;
@@ -1566,7 +1569,11 @@ sub Initialize
    $islands_threshold = 0;
    $shrink_workspace = 1.0;  # no change
    $sharpen_bins = 200;
-   $default_model_data = MNI::DataDir::dir('N3');  # find where model data is kept
+  
+   # change from MNI::Datadir (no-portable) to FindBin
+   # $default_model_data = MNI::DataDir::dir('N3');  # find where model data is kept
+   $default_model_data = "$FindBin::Bin/../share/N3";
+
    @default_probability_maps =
       ("$default_model_data/TPM/prob_map_rfc_csf.mnc", 
        "$default_model_data/TPM/prob_map_rfc_gry.mnc", 

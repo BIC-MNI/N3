@@ -95,6 +95,7 @@ EXTRA_DIST = \
 	WHATSNEW \
 	README.BINARIES \
 	CHANGES \
+	epm-header.in \
 	include/version.h.in \
 	src/NUcorrect/field2imp.in \
 	src/NUcorrect/imp2field.in \
@@ -106,7 +107,11 @@ EXTRA_DIST = \
 	src/NUcorrect/sharpen_volume.in \
 	$(m4_files)
 
-dist_model_DATA = model_data/N3/average_305_mask_1mm.mnc.gz
+# dist_model_DATA = model_data/N3/average_305_mask_1mm.mnc.gz
+
+pkgdatadir = $(prefix)/share/N3
+
+dist_pkgdata_DATA := model_data/N3/average_305_mask_1mm.mnc.gz
 
 CLEANFILES = $(bin_SCRIPTS)
 

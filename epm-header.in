@@ -1,0 +1,11 @@
+%product N3
+%copyright 2000-2005 John Sled
+%vendor McConnell Brain Imaging Centre
+%packager Andrew Janke <a.janke@gmail.com>
+%license COPYING
+%readme README
+%description MINC RF inhomogeneity correction package
+%version @VERSION@
+%requires netcdf
+%requires minc
+%requires ebtks

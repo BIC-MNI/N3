@@ -1,3 +1,7 @@
+2005-03-16  Andrew Janke   <a.janke@gmail.com>
+	* Changed from MNI:DataDir to FindBin for binary distribution
+	* Added epm-header.in for binary distribution
+	
 2005-03-08  Bert Vincent   <bert@bic.mni.mcgill.ca>
 	* src/SharpenHist/sharpen_hist.cc uses finite(), which is not
 	available on many versions of Solaris.  Added a test to look for

@@ -240,7 +240,7 @@ In order to make the MNI N3 utilities:
 
          binary executables:      /usr/local/bin
          scripts:                 /usr/local/bin
-         average brain mask:      /usr/local/data/N3
+         average brain mask:      /usr/local/share/N3
 
      (Binaries and scripts are distinguished in case you have a
       multi-platform environment and want to share scripts between
@@ -252,7 +252,6 @@ In order to make the MNI N3 utilities:
 
          BINDIR         directory for binary executables
          SCRIPTDIR      directory for scripts (machine-independent executables)
-         MODELDIR       average brain mask
 
       Note that if you feel like setting ALL of these (e.g., to install
       MNI_N3 to /tmp or your home directory), you're probably
@@ -261,12 +260,6 @@ In order to make the MNI N3 utilities:
       If you prefer to edit Makefile.include, just read the instructions
       there -- but be warned that any changes you make will be lost if
       you re-reun `configure'!
-
-      As an aside, the default location for installation of model data is
-      also overridden by setting the MNI_DATAPATH variable.  For example,
-      if the MNI_DATAPATH variable is set to /usr/local/mni/data
-      then the default location for installing MNI_N3 model data will be
-      /usr/local/mni/data/N3.    
 
    7) In the directory where you have unpacked both the MNI_N3 package and
       the test data, type:

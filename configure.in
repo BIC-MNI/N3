@@ -5,7 +5,7 @@ AC_CONFIG_AUX_DIR(ac_config_aux)
 AM_INIT_AUTOMAKE(N3, 1.10)
 AM_CONFIG_HEADER([include/config.h])
 
-AC_REVISION($Revision: 1.9 $)
+AC_REVISION($Revision: 1.10 $)
 
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -60,16 +60,17 @@ mni_REQUIRE_VOLUMEIO
 dnl Find the version of perl 5 in use
 AC_PATH_PROGS(PERL, perl5 perl)
 
-if test -z "$modeldir"; then
-modeldir=`$PERL -e 'use MNI::DataDir; print MNI::DataDir::install_dir("N3");'`
-fi
-if test -z "$modeldir"; then 
-AC_MSG_ERROR("Cannot determine model installation directory");
-fi
-
-AC_SUBST(modeldir)
+# if test -z "$modeldir"; then
+# modeldir=`$PERL -e 'use MNI::DataDir; print MNI::DataDir::install_dir("N3");'`
+# fi
+# if test -z "$modeldir"; then 
+# AC_MSG_ERROR("Cannot determine model installation directory");
+# fi
+#  
+# AC_SUBST(modeldir)
 
 AC_CHECK_FUNCS(finite isfinite)
 
 AC_CONFIG_FILES([Makefile testing/Makefile include/version.h])
-AC_OUTPUT
+AC_OUTPUT(epm-header
+)
