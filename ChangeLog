@@ -2,3 +2,8 @@
 
 	* autogen.sh: Create directory ac_config_aux.
 
+2003-04-16  Bert Vincent <bert@bic.mni.mcgill.ca>
+	
+	* fully autoconf'd
+	* Extracted EBTKS, math libraries
+
