@@ -1,0 +1,88 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT
+AC_CONFIG_AUX_DIR(ac_config_aux)
+AM_INIT_AUTOMAKE(N3, 1.05)
+AM_CONFIG_HEADER([include/config.h])
+
+AC_REVISION($Revision: 1.1 $)
+
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+
+AM_PROG_CC_C_O
+AC_PROG_CXX
+AC_PROG_RANLIB
+
+smr_WITH_BUILD_PATH
+
+#------------------------------------------------------------------------
+# Get the canonical-form machine-company-os (used below)
+#------------------------------------------------------------------------
+AC_CANONICAL_HOST
+
+#------------------------------------------------------------------------
+# Create version.h, containing the package version number (from VERSION),
+# and compilation user, host, date, and time.
+#------------------------------------------------------------------------
+AC_MSG_RESULT(getting info for version.h)
+version=`cat $srcdir/VERSION`
+if test $? -ne 0 ; then 
+  AC_MSG_ERROR(unable to read VERSION)
+fi
+
+# The terminology here is a little icky: what most people think of as
+# "host" (ie. the current machine name) is called "machine", because
+# "host" is coopted by autoconf's AC_CANONICAL_HOST macro.  It's 
+# used to identify the system, e.g. "mips-sgi-irix5.3" -- which *I*
+# think should be called "system", so that's what I call it in
+# version.h.  Still, kind of ugly.
+
+time=`date +%T`
+year=`date | awk '{print $NF}'`        # ugh -- SunOS "date" has no %Y
+date=`date +%m-%d`
+date="$year-$date"
+user=`logname`
+machine=`hostname`
+long_version="Package MNI N3, version $version, compiled by $user@$machine ($host) on $date at $time"
+AC_SUBST(version)
+AC_SUBST(time)
+AC_SUBST(date)
+AC_SUBST(user)
+AC_SUBST(machine)
+AC_SUBST(host)
+AC_SUBST(long_version)
+
+dnl Check for required C libraries
+mni_REQUIRE_LIB(m,[#include <math.h>],[double x = sqrt(3.);])
+
+mni_REQUIRE_LIB(F77,
+[#include <f2c.h>],
+[doublereal x = -1; double y = d_abs(x); return (y == 1.0);])
+
+mni_REQUIRE_LIB(blas,
+[#include <f2c.h>
+#include <blaswrap.h>],
+[doublereal dx[] = {1.0, 2.0, -3.0}; integer incx = 1; integer n = 3; idamax_(&n, dx, &incx); ])
+
+mni_REQUIRE_LIB(lapack,
+[#include <f2c.h>],
+[ char uplo = 'u';  integer n = 1, nrhs = 1, lda = 1, ldb = 1, ipiv = 1, info;  doublereal work;  integer lwork = 1;  doublereal a = 0.0, b = 0.0;  dsysv_(&uplo, &n, &nrhs, &a, &lda, &ipiv, &b, &ldb, &work, &lwork, &info); ])
+
+mni_REQUIRE_EBTKS
+
+dnl Find the version of perl 5 in use
+AC_PATH_PROGS(PERL, perl5 perl)
+
+if test -z "$modeldir"; then
+modeldir=`$PERL -e 'use MNI::DataDir; print MNI::DataDir::install_dir("N3");'`
+fi
+if test -z "$modeldir"; then 
+AC_MSG_ERROR("Cannot determine model installation directory");
+fi
+
+AC_SUBST(modeldir)
+
+AC_CONFIG_FILES([Makefile include/version.h])
+AC_OUTPUT

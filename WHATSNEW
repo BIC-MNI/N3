@@ -1,0 +1,23 @@
+What has changed in release 1.05 of the MNI N3 package.
+
+The functionality of release 1.05 is unchanged from that of 1.04.  
+A number of minor changes have been made to the code, Makefiles, and
+configuration script to allow it to build with gcc 2.95.  A number
+of additional changes have been made which (I hope) will allow it
+to compile on Solaris machines without complaint.
+
+------------------------------------------------------------------------
+
+What has changed in release 1.04 of the MNI N3 package.
+
+The most important change with 1.04 is that the code can now be compiled
+with the new egcs version (1.0 or later) of g++.  This means the current
+distributions of Linux, most of which come with egcs, should now be able to
+compile N3.
+
+Release 1.04 fixes a number of bugs from release 1.02.  Among these,
+a change to the way the .imp correction field is produced at the final
+stage means that the new version produces slightly different results than
+previous versions (typically by ~ 0.3%).  Also, MNI_AUTOREG is no longer
+needed to install N3.  For more information on bugs fixed in this release
+see the file CHANGES.

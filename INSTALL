@@ -1,0 +1,140 @@
+NOTES ON INSTALLING N3 (Non-parametric Non-uniformity Normalization)
+
+Author (of this document): Bert Vincent (bert@bic.mni.mcgill.ca)
+
+For a description of the purpose and function of N3, please see the
+file README in this directory.  This file solely attempts to explain
+the installation process for N3.
+
+1. PREREQUISITES
+
+This software package requires that the following tools and libraries 
+must already be installed on your system:
+
+* MINC and EBTKS:
+
+These libraries are freely available from the McConnell Brain Imaging
+Centre.  You can download the latest versions of the sources (and
+precompiled binaries for selected platforms) at the following URL:
+
+http://www.bic.mni.mcgill.ca/software/distribution/
+
+* NetCDF 
+  
+This library was developed by the University Corporation for
+Atmospheric Research's UNIDATA project. The latest source distribution
+may be downloaded from:
+
+http://www.unidata.ucar.edu/packages/netcdf/
+  
+A recent copy of the NetCDF source distribution is available also at
+the McConnell Brain Imaging Centre's software distribution site.
+
+* CLAPACK
+
+This is a generic, free, linear algebra library, translated to "C"
+from the original FORTRAN.  The 3.0 version currently tested with N3
+may be retrieved from:
+
+http://www.netlib.org/clapack/
+
+Please see the instructions included with the CLAPACK package for
+details on the compilation and test process for these libraries.
+However, be aware that lhe installation process for CLAPACK is not
+fully automated and does not follow typical UNIX library naming
+conventions.  N3 requires the the three libraries be named "libF77.a",
+"libblas.a", and "liblapack.a" and that their associated header files
+("f2c.h" and "blaswrap.h") be installed on the system. You need to
+manually copy the libraries and header files to the appropriate
+pathnames on your system.
+
+* PERL 5
+
+This package makes extensive use of PERL (Practical Extraction and
+Report Language) scripts.  PERL is now ubiquitous and comes
+preinstalled on most UNIX systems, including Apple's OS X.  In some
+cases the preinstalled version may not be recent enough to work
+properly with this package's scripts.  You can check this by typing
+the command:
+
+perl -v
+
+If the result is either the message "perl: Command not found" or a
+message telling you the version of PERL starts with any number other
+than 5, you may need download a recent release of PERL 5 from
+www.cpan.org.
+
+2. TESTED SYSTEMS
+
+This software has been built and tested only on the following systems:
+
+* SGI IRIX 6.5 using either MIPSpro C++ 7.30 or GNU G++ 3.2
+* GNU/Linux using GNU G++ 2.96
+
+We are optimistic that the system will build using the GNU compilers
+on other UNIX-based systems, but we haven't been able to test this
+theory yet.  We welcome feedback and insight from anyone who has
+attempted to install this package on other systems.
+
+3. RUNNING CONFIGURE
+
+Once you have installed all of the prerequisite softare packages, the
+next step of the installation is running the 'configure' shell script
+located in this directory.  If you are not familiar with configure, it
+is a shell script which attempts to deduce all of the necessary
+parameters for successful compilation and installation of N3 on your
+particular system.
+
+Normally you can just run configure with no options:
+
+./configure
+
+The script will print a number of messages about the types of things
+it is attempting to examine regarding your system. When finished, it
+creates several new files in the directory, such as config.h and
+Makefile.  These files reflect configure's "best guess" about your
+system.
+
+If you are building with the IRIX MIPSpro compiler, you will need to
+specify the -LANG:std flag for the C++ compiler.  The easiest way I've
+found to do this is by setting the environment variable "CXX" to "CC
+-LANG:std" before running configure.
+
+"configure" takes a number of options which are too numerous for me to
+explain here.  For a basic idea of the options, run the command:
+
+./configure --help
+
+For more detail on configure options, see the file INSTALL.GENERIC in
+this directory.
+
+4. COMPILING AND LINKING
+
+Build the programs and scripts by running the command:
+
+make
+
+in the same directory in which you ran configure.
+
+If you encounter any error messages during this phase, there may be an
+incompatibility between your system's software tools and the N3 source
+files or build process.  Please verify that you have correctly
+installed all of the prerequisite packages.  If you continue to
+experience problems, please contact the maintainer of this package
+(see the file AUTHORS) for assistance.  Be forewarned that the
+maintainer is very likely to be as mystified as you are, but he is
+sincere and helpful.
+
+5. PUTTING IT ALL IN PLACE
+
+Once you have successfully built the N3 binaries, you need to install
+them in appropriate locations on your system.  In some cases you may
+need root access to your system in order to install the programs.
+
+To install the package, type the command:
+
+make install
+
+This will attempt to put copies of the binaries, scripts, and data files
+required by N3 in all of the appropriate directories.
+

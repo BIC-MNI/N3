@@ -1,0 +1,317 @@
+        MNI Non-parametric Non-uniformity Normalization (N3) Package
+                        Version 1.05 (forth release)
+                              March 22, 2001
+
+DESCRIPTION
+-----------
+
+An artifact often seen in MRI is for the signal intensity to vary smoothly
+across an image.  Variously referred to as RF inhomogeneity, shading
+artifact, or intensity non-uniformity, it is usually attributed to such
+factors as poor radio frequency (RF) field uniformity, eddy currents driven
+by the switching of field gradients, and patient anatomy both inside and
+outside the field of view.
+
+The perl script nu_correct implements a novel approach to correcting for
+intensity non-uniformity in MR data that achieves high performance without
+requiring supervision.  By making relatively few assumptions about the
+data, the method can be applied at an early stage in an automated data
+analysis, before a tissue intensity or geometric model is available.
+Described as Non-parametric Non-uniform intensity Normalization (N3), the
+method is independent of pulse sequence and insensitive to pathological
+data that might otherwise violate model assumptions.  To eliminate the
+dependence of the field estimate on anatomy, an iterative approach is
+employed to estimate both the multiplicative bias field and the
+distribution of the true tissue intensities.  Preprocessing of MR data
+using N3 has been shown [2] to substantially improve the accuracy of
+anatomical analysis techniques such as tissue classification and cortical
+surface extraction.
+
+References:
+
+   [1] J.G. Sled, A.P. Zijdenbos and A.C. Evans, "A non-parametric method
+       for automatic correction of intensity non-uniformity in MRI data",
+       in "IEEE Transactions on Medical Imaging", vol. 17,  pp. 87--97,
+       February 1998. 
+
+   [2] J.G. Sled, "A Non-parametric Method for Automatic Correction of
+       Intensity Non-uniformity in MRI Data", Master's Thesis, McGill 
+       University, Montreal, QC, May 1997
+       (available at http://www.bic.mni.mcgill.ca/~jgsled/thesis/)
+
+   [3] J.G. Sled, A.P. Zijdenbos and A.C. Evans, "A Comparison of
+       Retrospective Intensity Non-uniformity Correction Methods for MRI",
+       Information Processing in Medical Imaging, pp. 459-464, 1997 
+
+
+GETTING MNI_N3
+-------------------
+
+You can obtain a copy of the latest version of the MNI_N3
+software using anonymous FTP from:
+
+    ftp://ftp.bic.mni.mcgill.ca/pub/mni_n3/
+
+Look for a file named mni_n3-x.yy.tar.gz (where x.yy is the release
+number) as well as a file named mni_n3_testdata-x.yy.tar.gz.  The
+later file is only required if you want to run the automated test
+suite.
+ 
+MNI_N3 requires that both the MINC and netCDF packages be built and
+installed first.  The MINC file format is a highly flexible medical
+image file format built on top of the netCDF generalized data format.
+You should be able to get them both from 
+
+    ftp://ftp.bic.mni.mcgill.ca/pub/minc
+
+You will need MINC version 0.6 (the most recent release at this writing)
+or later.  
+
+If you prefer, you can get netCDF from its home site, the Unidata Program
+Centre at the University Corporation for Atmospheric Research:
+
+    ftp://unidata.ucar.edu/pub/netcdf
+
+You will also need Perl 5, version 5.003 or later.
+You can always find the latest version of Perl at at any
+mirror of the Comprehensive Perl Archive Network (CPAN), in src/5.0/.  The
+easiest way is to go to:
+
+   http://www.perl.com/CPAN/src/5.0/
+
+which will magically connect you to a nearby CPAN site.
+
+If you prefer the old-fashioned way, here is a random selection of CPAN
+sites:
+
+   * ftp://ftp.metronet.com/pub/perl
+   * ftp://uiarchive.cso.uiuc.edu/pub/lang/perl/CPAN
+   * ftp://ftp.funet.fi/pub/languages/perl/CPAN
+   * ftp://ftp.demon.co.uk/pub/mirrors/perl/CPAN
+   * ftp://ftp.mame.mu.oz.au/pub/perl/CPAN
+   
+Lastly, you will need the perl library mni_perllib available 
+by anonymous ftp at
+
+    ftp://ftp.bic.mni.mcgill.ca/pub/perl/mni_perllib-x.yy.tar.gz
+
+SYSTEM REQUIREMENTS
+-------------------
+
+The MNI_N3 package has been tested on i686-pc-linux-gnu, mips-sgi-irix5.3,
+mips-sgi-irix6.4, and sparc-sun-sunos4.1.3 systems.  An earlier version is
+reported to be working on an HP-UX system.  It likely that the package will
+run on most flavors of UNIX system with little or no modification.  Roughly
+ten megabytes of disk space are needed to build and test the package.  The
+installed package requires roughly three megabytes.
+
+
+INSTALLATION
+------------
+
+In order to make the MNI N3 utilities:
+ 
+   0a) You will need a recent version (egcs-1.0 or later) of the GNU C++
+       compiler (g++) unless you are compiling under IRIX (see below).  
+       GNU C++ can be obtained at
+
+        http://gcc.gnu.org/
+
+      In addition, you will also need a GNU version of make (gmake on
+      some systems), available at any GNU ftp site.  
+
+        ftp://prep.ai.mit.edu/pub/gnu/
+
+   0b) SGI users do not need to obtain g++ as N3 will also compile using
+       the DCC compiler packaged with IRIX.  SGI users still, however, need
+       to obtain a version of GNU make.
+
+   1) You may have to build and install the netCDF library.
+
+   2) You may have to build and install the MINC library 
+      (check that you have version 0.6 or later).
+
+   3) You may have to build and install Perl 5.  (check using perl -V that
+      it is version 5.003 or later)
+
+   4) You may have to build and install the mni_perllib package.  If you
+      decide not to install the library in its default location
+      (/usr/local/lib/perl5/site_perl on many systems) then you will
+      need to set your PERLLIB environment variable.  For example, if you
+      were to install the libraries to /usr/local/mni/lib/perl5 then you
+      would set the PERLLIB variable with 
+
+        setenv PERLLIB /usr/local/mni/lib/perl5
+
+      (assuming you use a csh-variant) in your ~/.cshrc or the global
+       /etc/cshrc file.  (Or, if you're a Bourne-shell, ksh, zsh, or bash
+       type of person, put
+
+         PERLLIB=/usr/local/mni/lib/perl5/site_perl ; export PERLLIB
+
+      in ~/.profile or /etc/profile.)
+      
+      Also, note that during installation of the mni_perllib package you
+      will be queried for the default location where model data included
+      with the MNI_N3 package will be stored.  In the future, most MNI
+      software packages will install their model data in a subdirectory of
+      a common data directory, which by default is called /usr/local/mni/data.
+      While the default location of model data can be overridden on a
+      package by package basis, doing so will require each user to specify
+      the model data's location using the environment variable
+      MNI_DATAPATH.
+  
+   5) We have used the GNU autoconf program to create a `configure'
+      script that will automatically determine various system-
+      dependent values and generate Makefiles needed to
+      build the package.
+
+      In the directory where you unpacked the MNI_N3 tar file,
+      type
+
+         ./configure
+
+      `configure' works by poking around your system to determine all
+      the system-specific values needed to build and install
+      MNI_N3.  Once it has done that, it creates Makefile.include,
+      which is the granddaddy Makefile used by all the programs in the
+      package.  If `configure' runs successfully, skip to step 7 below.
+
+      If `configure' complains about not being able to find certain
+      things, though, you may have to give it some hints.  In
+      particular, this be necessary if you have installed netCDF, MINC,
+      Volume_IO, or Perl 5 in weird places.  The easiest way to do that
+      is with the --prefix option; for instance, at the MNI, we keep
+      home-grown software under /usr/local/mni, so here we run
+      `configure' like this:
+
+         ./configure --prefix=/usr/local/mni
+
+      and the MINC and Volume_IO files will be found in various
+      directories under /usr/local/mni.  (netCDF is *not* home-grown, so
+      we keep it under /usr/local.  Luckily, `configure' is smart enough
+      to look there if all else fails.)
+
+      If you simply can't get `configure' to find some files, you can set
+      various environment variables, e.g. NETCDF_INCLUDE to specify the
+      directory where netcdf.h lives. For instance, if you installed netCDF
+      to /tmp, its include file would be in /tmp/include, and you could
+      say:
+ 
+         env NETCDF_INCLUDE=/tmp/include ./configure
+
+      Here are all the environment variables you might want to set to
+      help configure find things:
+
+         NETCDF_INCLUDE    where to find netCDF header (netcdf.h)
+         NETCDF_LIB        where to find netCDF library (libnetcdf.a
+                           on most Unix-like systems)
+         MINC_INCLUDE      where to find MINC header (minc.h)
+         MINC_LIB          where to find MINC library (libminc.a)
+         VOLUMEIO_INCLUDE  where to find Volume_io headers (volume_io.h,
+                           volumes.h, etc.)
+         VOLUMEIO_LIB      where to find Volume_io library (libvolume_io.a)
+         PERL              where to find Perl binary (must be Perl 5.003)
+
+      Note that these are all *inputs* required to build MNI_N3.
+      There are also a number of output directories that determine where
+      various files are installed to; these are explained below.
+
+      If you have built shared-library versions of netCDF, MINC, or
+      Volume_io, configure should be able to find these.  It looks for
+      libraries first with a ".a" extension, then with ".so"; this
+      appears to be a quite common convention under various Unices, and
+      is known to work under IRIX and Linux.  If your system has a
+      different scheme for naming shared libraries, you might need to
+      set the LIBEXT variable; e.g. to only look for ".so" files, 
+
+         env LIBEXT=".so" ./configure
+
+      (LIBEXT is just a space-separated list of extensions, including
+      the dot on each one.)
+
+   6) You might also want to set various site-specific installation
+      directories when running `configure'.  MNI_N3 installs many
+      files in various directories, and expects to find other files in
+      certain directories, so it's important to know where you want
+      stuff to go.  By default, it all gets put under /usr/local, unless
+      you specify a different base directory with `--prefix').  In
+      particular:
+
+         binary executables:      /usr/local/bin
+         scripts:                 /usr/local/bin
+         average brain mask:      /usr/local/data/N3
+
+     (Binaries and scripts are distinguished in case you have a
+      multi-platform environment and want to share scripts between
+      machines, e.g. using /usr/local/share.)  All of these
+      directories can be customized, either by setting an environment
+      variable before running `configure' or by editing
+      Makefile.include after `configure' has run.  If you wish to use
+      environment variables, set them as follows:
+
+         BINDIR         directory for binary executables
+         SCRIPTDIR      directory for scripts (machine-independent executables)
+         MODELDIR       average brain mask
+
+      Note that if you feel like setting ALL of these (e.g., to install
+      MNI_N3 to /tmp or your home directory), you're probably
+      better off to use `--prefix'.    
+
+      If you prefer to edit Makefile.include, just read the instructions
+      there -- but be warned that any changes you make will be lost if
+      you re-reun `configure'!
+
+      As an aside, the default location for installation of model data is
+      also overridden by setting the MNI_DATAPATH variable.  For example,
+      if the MNI_DATAPATH variable is set to /usr/local/mni/data
+      then the default location for installing MNI_N3 model data will be
+      /usr/local/mni/data/N3.    
+
+   7) In the directory where you have unpacked both the MNI_N3 package and
+      the test data, type:
+
+        make build
+      
+        make test
+
+        make install
+
+      Note that you may need to set the environment variable TMPDIR to some
+      more appropriate place than /usr/tmp on systems where /usr/tmp has 
+      little available space.
+
+   8) Now, you're ready to test nu_correct on real data.  Start by typing
+
+        nu_correct -help
+ 
+      nu_correct makes use of a number of other binaries and scripts that 
+      are also useful on their own.  Their functionality is summarized below:
+
+      nu_correct    estimates and removes intensity non-uniformity from
+                    a volume.
+      nu_estimate   estimates the intensity non-uniformity in a volume, storing
+                    the result in a compact format referred to as an .imp file.
+      nu_evaluate   corrects the intensity non-uniformity in a volume using
+                    the given .imp file.
+      imp2field     expands an .imp file into a MINC volume representation
+                    of the correction field.
+      field2imp     converts a MINC volume representation of a correction 
+                    field into an .imp file.
+      volume_stats  prints a variety of summary statistic for a volume 
+                    or region of interest.
+      volume_hist   produces a histogram of a volume.
+      spline_smooth smoothes a volume using tensor cubic B splines or thin
+                    plate splines.
+    
+Further information
+
+For further information you may want to checkout the N3 home page at
+http://www.bic.mni.mcgill.ca/software/N3 where you can find the FAQ for
+N3.  Also, you can write to me, John Sled, at: 
+
+John Sled
+McConnell Brain Imaging Centre            Tel: (514) 398-8547
+Montreal Neurological Institute           Fax: (514) 398-8948
+3801 University Street, Room WB208        Email: jgsled@bic.mni.mcgill.ca
+Montreal, Quebec  H3A 2B4 Canada
