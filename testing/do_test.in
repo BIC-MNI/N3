@@ -10,8 +10,8 @@ use MNI::Spawn;
 use MNI::FileUtilities qw(check_output_dirs);
 use MNI::PathUtilities qw(expand_path);
 
-(@ARGV == 1) || die "Usage: do_test logfile.txt\n";
-open(LOG, ">$ARGV[0]") || die "Unable to open file \"$ARGV[0]\" for writing\n";
+$logfile = "test.log";
+open(LOG, ">$logfile") || die "Unable to open file \"$logfile\" for writing\n";
 select(LOG);
 $|=1;  # make LOG autoflushing
 select(STDOUT);
@@ -35,12 +35,9 @@ print_both($IntroMessage);
 $ENV{'PWD'} = cwd();  # just to be safe
 # create various directory names based on currect directory
 if(cwd() =~ ?(.*)/testing?) {
-   $srcbase = "$1/src";
    $data = "$1/model_data";
    $testdata = ".";
-   $testing_path = "$srcbase/NUcorrect:$srcbase/EvaluateField:"
-      ."$srcbase/ExtractTag:$srcbase/SharpenHist:$srcbase/SplineSmooth:"
-         ."$srcbase/VolumeHist:$srcbase/VolumeStats";
+   $testing_path = "$1";
 }
 else {
    die "Directory structure for N3 package is non-standard.\n"
@@ -61,21 +58,21 @@ $testing->register_programs([qw(field2imp imp2field sharpen_volume
 
 check_output_dirs($TmpDir);
 # create links to binaries in $TmpDir
-$utility->spawn("ln -s $srcbase/EvaluateField/evaluate_field"
+$utility->spawn("ln -s $testing_path/evaluate_field"
                 ."  $TmpDir/evaluate_field");
-$utility->spawn("ln -s $srcbase/ExtractTag/extracttag"
+$utility->spawn("ln -s $testing_path/extracttag"
                 ."  $TmpDir/extracttag");
-$utility->spawn("ln -s $srcbase/SharpenHist/sharpen_hist"
+$utility->spawn("ln -s $testing_path/sharpen_hist"
                 ."  $TmpDir/sharpen_hist");
-$utility->spawn("ln -s $srcbase/SplineSmooth/spline_smooth"
+$utility->spawn("ln -s $testing_path/spline_smooth"
                 ."  $TmpDir/spline_smooth");
-$utility->spawn("ln -s $srcbase/VolumeHist/volume_hist"
+$utility->spawn("ln -s $testing_path/volume_hist"
                 ."  $TmpDir/volume_hist");
-$utility->spawn("ln -s $srcbase/VolumeStats/volume_stats"
+$utility->spawn("ln -s $testing_path/volume_stats"
                 ."  $TmpDir/volume_stats");
 
 # add these directories to the environment
-$ENV{'PATH'} = "$srcbase/NUcorrect:$TmpDir:$ENV{'PATH'}";
+$ENV{'PATH'} = "$testing_path:$TmpDir:$ENV{'PATH'}";
 $ENV{'MNI_DATAPATH'} = (defined $ENV{'MNI_DATAPATH'})? 
    "$data:$ENV{'MNI_DATAPATH'}": $data; 
 
@@ -100,7 +97,7 @@ sub fatal_exit
    close(LOG);
    print "The tail of the file N3/testing/test.log is as follows.\n\n\n";
    print "--------------------------------------------------------\n";
-   $utility->spawn("tail $ARGV[0]");
+   $utility->spawn("tail $logfile");
    exit(1);
 }
 
@@ -183,11 +180,11 @@ FINALMESSAGE
 print_both($FinalMessage);
 
 my ($warn_count, $error_count, $fail_count);
-$utility->spawn("grep -ic warn $ARGV[0]", stdout => \$warn_count,
+$utility->spawn("grep -ic warn $logfile", stdout => \$warn_count,
    err_action => 'ignore');
-$utility->spawn("grep -ic error $ARGV[0]", stdout => \$error_count, 
+$utility->spawn("grep -ic error $logfile", stdout => \$error_count, 
    err_action => 'ignore');
-$utility->spawn("grep -ic fail $ARGV[0]", stdout => \$fail_count, 
+$utility->spawn("grep -ic fail $logfile", stdout => \$fail_count, 
    err_action => 'ignore');
 $warn_count = (split(' ',$warn_count))[0];
 $error_count = (split(' ',$error_count))[0];
@@ -200,7 +197,7 @@ print_both("  Number of errors: $error_count ..." .
 print_both("  Number of fails: $fail_count ..." . 
    (($fail_count > 3) ? "potential problems\n": "good\n"));
 if(($warn_count > 0) || ($error_count > 1) || ($fail_count > 3)) {
-   print_both("  Consider comparing the files $ARGV[0] and "
+   print_both("  Consider comparing the files $logfile and "
               ."testing.log_reference\n with particular note to the"
               ." key words: warn error and fail.\n");
 }
