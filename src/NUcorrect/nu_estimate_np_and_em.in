@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: nu_estimate_np_and_em.in,v $
-#$Revision: 1.1 $
+#$Revision: 1.2 $
 #$Author: bert $
-#$Date: 2003-04-16 14:29:34 $
+#$Date: 2005-03-08 15:35:26 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : January 15, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_estimate_np_and_em.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#  $Id: nu_estimate_np_and_em.in,v 1.2 2005-03-08 15:35:26 bert Exp $
 #-----------------------------------------------------------------------------
 use MNI::Startup qw(nocputimes);
 use MNI::Spawn;
@@ -336,8 +336,22 @@ sub CreateMask
    }
 
    if(defined $user_mask_volume) {  # if user supplied a mask
-      Spawn(['mincmath', '-short', '-signed', '-and', $user_mask_volume,
+      # Fix a problem we see occasionally when the user_mask_volume
+      # happens to be the same file as the mask_volume
+      #
+      if ($user_mask_volume eq $mask_volume) {
+         my($random_num) = sprintf("%05d", int(rand() * 10000));
+         my($temp_volume) = "$TmpDir${basename}_${random_num}.mnc";
+
+         Spawn(['mincmath', '-short', '-signed', '-and', $user_mask_volume,
+                $bkg_volume, $temp_volume]);
+
+         Spawn(['mv', $temp_volume, $mask_volume]);
+      }
+      else {
+         Spawn(['mincmath', '-short', '-signed', '-and', $user_mask_volume,
                 $bkg_volume, $mask_volume]);
+      }
       Spawn(['rm', $bkg_volume]);
    }
    elsif($auto_mask_flag && $talairach_flag && (-r $average_brain_mask)) {

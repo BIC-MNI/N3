@@ -1,3 +1,17 @@
+2004-11-18  Bert Vincent   <bert@bic.mni.mcgill.ca>
+	* src/ExtractTag/extracttag.c - minor change to argTable[] to 
+	reflect the fact that -mintags and -maxtags take 'long' arguments
+	rather than 'int' arguments.  This was pointed out as a potential 
+	issue on 64-bit platforms by Yasunari Tosa of MGH.
+	
+2004-11-17  Bert Vincent   <bert@bic.mni.mcgill.ca>
+	* nu_estimate_np_and_em.in - fixed CreateMask to work properly
+	if the user-provided mask file winds up having the same name
+	as the internally generated temporary mask file.  This should only
+	happen when the user-specified file is compressed, or otherwise
+	needs processing before it can be used.  This problem sometimes
+	resulted in test case #14 failing.
+	 
 2004-03-26  Bert Vincent   <bert@bic.mni.mcgill.ca>
 	* volumeStats.cc - Use the standard DBL_MAX and float.h rather
 	than the less standard MAXDOUBLE.

@@ -1,3 +1,11 @@
+        New in Release 1.10
+        -------------------
+Bug fixed in nu_estimate_np_and_em.in that occasionally caused mincmath
+to be called with the same filename for both an input and an output.
+Among other things, this sometimes caused test #14 to fail.
+
+Minor change to extracttag.c to avoid problems on 64-bit platforms.
+
         New in Release 1.09
         -------------------
 Build fixes.  No user visible changes.

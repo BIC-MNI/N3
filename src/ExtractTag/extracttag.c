@@ -9,7 +9,10 @@
 @CALLS      : 
 @CREATED    : Feb. 28, 1995 (Vasco KOLLOKIAN)
 @MODIFIED   : $Log: extracttag.c,v $
-@MODIFIED   : Revision 1.1  2003-04-16 14:27:22  bert
+@MODIFIED   : Revision 1.2  2005-03-08 15:35:26  bert
+@MODIFIED   : Two minor updates
+@MODIFIED   :
+@MODIFIED   : Revision 1.1  2003/04/16 14:27:22  bert
 @MODIFIED   : Initial checkin
 @MODIFIED   :
 @MODIFIED   : Revision 1.5  1998/01/30 19:10:00  jgsled
@@ -166,10 +169,10 @@ ArgvInfo argTable[] = {
   {"-tag", ARGV_STRING, (char *) NULL, (char *) &tag_filename,
      "Generate a tag file out of the qualifying tag points"},      
   
-  {"-mintags", ARGV_INT, (char *) NULL, (char *) &min_tags,
+  {"-mintags", ARGV_LONG, (char *) NULL, (char *) &min_tags,
      "Set the minimum number of tag points to be chosen - threshold adjusted"},
 
-  {"-maxtags", ARGV_INT, (char *) NULL, (char *) &max_tags,
+  {"-maxtags", ARGV_LONG, (char *) NULL, (char *) &max_tags,
      "Set the max number of tag points to be chosen - zero for all"},
   
   {"-threshold", ARGV_FLOAT, (char *) 2, (char *) &threshold,
