@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: splineSmoothArgs.cc,v $
-$Revision: 1.1 $
-$Author: bert $
-$Date: 2003-04-16 14:30:54 $
+$Revision: 1.2 $
+$Author: stever $
+$Date: 2003-11-17 04:30:56 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -51,6 +51,10 @@ extern "C" {
 #undef ROUND // Added to avoid conflict between Volume_io's and
              // AZgen's definition of ROUND, Alex Zijdenbos 97/12/05
 #include "splineSmoothArgs.h"
+
+
+using namespace std;
+
 
 int      args::clobber  = FALSE;
 int      args::verbose  = TRUE;

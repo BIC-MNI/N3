@@ -2,10 +2,10 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT
 AC_CONFIG_AUX_DIR(ac_config_aux)
-AM_INIT_AUTOMAKE(N3, 1.05)
+AM_INIT_AUTOMAKE(N3, 1.06)
 AM_CONFIG_HEADER([include/config.h])
 
-AC_REVISION($Revision: 1.1 $)
+AC_REVISION($Revision: 1.2 $)
 
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -57,20 +57,42 @@ AC_SUBST(long_version)
 dnl Check for required C libraries
 mni_REQUIRE_LIB(m,[#include <math.h>],[double x = sqrt(3.);])
 
-mni_REQUIRE_LIB(F77,
-[#include <f2c.h>],
-[doublereal x = -1; double y = d_abs(x); return (y == 1.0);])
 
-mni_REQUIRE_LIB(blas,
-[#include <f2c.h>
-#include <blaswrap.h>],
-[doublereal dx[] = {1.0, 2.0, -3.0}; integer incx = 1; integer n = 3; idamax_(&n, dx, &incx); ])
+## Finding BLAS & LAPACK
+#
+#  1. first probe for FORTRAN BLAS and LAPACK in several standard places
+#     (using ACX_BLAS, ACX_LAPACK macros from http://ac-archive.sourceforge.net/)
+#  2. if that fails, or if --without-lapack flag is given, probe for CLAPACK
+#     using home-grown test.
+##
+try_clapack=no
 
-mni_REQUIRE_LIB(lapack,
-[#include <f2c.h>],
-[ char uplo = 'u';  integer n = 1, nrhs = 1, lda = 1, ldb = 1, ipiv = 1, info;  doublereal work;  integer lwork = 1;  doublereal a = 0.0, b = 0.0;  dsysv_(&uplo, &n, &nrhs, &a, &lda, &ipiv, &b, &ldb, &work, &lwork, &info); ])
+ACX_BLAS([], [try_clapack=yes])
+ACX_LAPACK([], [try_clapack=yes])
+
+if test $try_clapack = yes ; then
+
+    FLIBS=
+    BLAS_LIBS=
+    LAPACK_LIBS=
+
+    mni_REQUIRE_LIB(F77,
+    [#include <f2c.h>],
+    [doublereal x = -1; double y = d_abs(x); return (y == 1.0);])
+
+    mni_REQUIRE_LIB(blas,
+    [#include <f2c.h>
+    #include <blaswrap.h>],
+    [doublereal dx[] = {1.0, 2.0, -3.0}; integer incx = 1; integer n = 3; idamax_(&n, dx, &incx); ])
+
+    mni_REQUIRE_LIB(lapack,
+    [#include <f2c.h>],
+    [ char uplo = 'u';  integer n = 1, nrhs = 1, lda = 1, ldb = 1, ipiv = 1, info;  doublereal work;  integer lwork = 1;  doublereal a = 0.0, b = 0.0;  dsysv_(&uplo, &n, &nrhs, &a, &lda, &ipiv, &b, &ldb, &work, &lwork, &info); ])
+
+fi
 
 mni_REQUIRE_EBTKS
+mni_REQUIRE_VOLUMEIO
 
 dnl Find the version of perl 5 in use
 AC_PATH_PROGS(PERL, perl5 perl)

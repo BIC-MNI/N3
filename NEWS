@@ -1,1 +1,5 @@
-1.05
+	New in Release 1.06
+	-------------------
+
+Improvements to build procedure: configure detects FORTRAN LAPACK or CLAPACK.
+

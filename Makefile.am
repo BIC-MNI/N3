@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = check-news subdir-objects
 #
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I m4 -I .
 #
 AM_CPPFLAGS = -DUSE_COMPMAT -DUSE_DBLMAT
 #
@@ -27,8 +27,9 @@ bin_PROGRAMS = \
 	volume_stats
 
 LDADD = libmincprog.a
+lapack_link_flags = $(LDADD) $(LAPACK_LIBS) $(BLAS_LIBS) $(LIBS) $(FLIBS)
 
-m4_files = \
+m4_files = acx_blas.m4 acx_lapack.m4 \
 	m4/mni_REQUIRE_LIB.m4 \
 	m4/mni_REQUIRE_MNILIBS.m4 \
 	m4/mni_REQUIRE_OPENINVENTOR.m4 \
@@ -42,6 +43,7 @@ evaluate_field_SOURCES = \
 	src/EvaluateField/evaluateField.cc \
 	src/EvaluateField/evaluateFieldArgs.cc \
 	src/SplineSmooth/fieldIO.cc
+evaluate_field_LDADD = $(lapack_link_flags)
 
 extracttag_SOURCES = \
 	src/ExtractTag/extracttag.c
@@ -54,6 +56,7 @@ spline_smooth_SOURCES = \
 	src/SplineSmooth/splineSmooth.cc \
 	src/SplineSmooth/splineSmoothArgs.cc \
 	src/SplineSmooth/fieldIO.cc
+spline_smooth_LDADD = $(lapack_link_flags)
 
 volume_hist_SOURCES = \
 	src/VolumeHist/minchist.cc \

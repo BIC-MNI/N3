@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: VolumeStatsArgs.cc,v $
-$Revision: 1.1 $
-$Author: bert $
-$Date: 2003-04-16 14:32:14 $
+$Revision: 1.2 $
+$Author: stever $
+$Date: 2003-11-17 04:30:56 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 #include "VolumeStatsArgs.h"
@@ -22,6 +22,9 @@ $State: Exp $
 #include <ctype.h>
 #include <EBTKS/Minc.h>		// (bert) - Added EBTKS subdirectory
 #include <version.h>
+
+using namespace std;
+
 
 int VolumeStatsArgs::verbose = FALSE;
 int VolumeStatsArgs::quiet = FALSE;

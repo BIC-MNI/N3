@@ -9,7 +9,10 @@
 @CALLS      : 
 @CREATED    : February 27, 1996   J.G.Sled
 @MODIFIED   : $Log: sharpen_hist.cc,v $
-@MODIFIED   : Revision 1.1  2003-04-16 14:30:17  bert
+@MODIFIED   : Revision 1.2  2003-11-17 04:30:56  stever
+@MODIFIED   : *** empty log message ***
+@MODIFIED   :
+@MODIFIED   : Revision 1.1  2003/04/16 14:30:17  bert
 @MODIFIED   : Initial checkin
 @MODIFIED   :
 @MODIFIED   : Revision 1.7  2001/03/22 19:35:10  jgsled
@@ -54,6 +57,9 @@
 #ifdef NEED_IEEEFP
 #include <ieeefp.h>
 #endif
+
+using namespace std;
+
 
 void load_histogram(char *filename, DblMat &X, 
 		    double *min_bin, double *max_bin);

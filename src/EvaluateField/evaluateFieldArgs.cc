@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: evaluateFieldArgs.cc,v $
-$Revision: 1.1 $
-$Author: bert $
-$Date: 2003-04-16 14:25:59 $
+$Revision: 1.2 $
+$Author: stever $
+$Date: 2003-11-17 04:30:55 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -43,6 +43,9 @@ extern "C" {
 #undef ROUND // Added to avoid conflict between Volume_io's and
              // AZgen's definition of ROUND, Alex Zijdenbos 97/12/05
 #include "evaluateFieldArgs.h"
+
+using namespace std;
+
 
 int evaluateArgs::clobber  = FALSE;
 int evaluateArgs::verbose  = TRUE;

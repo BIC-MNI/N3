@@ -1,3 +1,24 @@
+2003-11-16  Steve ROBBINS  <stever@bic.mni.mcgill.ca>
+
+	* INSTALL: Explain lapack and clapack options.  Minor wording
+	changes.
+
+	* configure.in: Probe for MNI volume_io library.  Probe for
+	FORTRAN BLAS and LAPACK using macro from ac-archive; probe for
+	CLAPACK if that fails.
+
+2003-11-14  Steve ROBBINS  <stever@bic.mni.mcgill.ca>
+
+	* configure.in: Set version to 1.0.6.
+
+	* src/VolumeStats/VolumeStatsArgs.cc: 
+	* src/VolumeStats/volumeStats.cc: 
+	* src/VolumeHist/args.cc: 
+	* src/SplineSmooth/splineSmoothArgs.cc: 
+	* src/SharpenHist/sharpen_hist.cc: 
+	* src/SharpenHist/args.cc: 
+	* src/EvaluateField/evaluateFieldArgs.cc: Use namespace std;
+
 2003-09-02  Steve M. Robbins  <steve@nyongwa.montreal.qc.ca>
 
 	* autogen.sh: Create directory ac_config_aux.

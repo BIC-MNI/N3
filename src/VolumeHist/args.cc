@@ -12,14 +12,17 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: args.cc,v $
-$Revision: 1.1 $
-$Author: bert $
-$Date: 2003-04-16 14:31:39 $
+$Revision: 1.2 $
+$Author: stever $
+$Date: 2003-11-17 04:30:56 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 #include <config.h>
 #include "args.h"
 #include <version.h>
+
+using namespace std;
+
 
 int   args::clobber  = FALSE;
 int   args::verbose  = TRUE;

@@ -1,0 +1,21 @@
+.deps
+Makefile Makefile.in
+ac_config_aux 
+aclocal.m4
+autom4te.cache
+configure config.log config.status
+evaluate_field
+extracttag
+field2imp
+imp2field
+make_template
+nu_correct
+nu_estimate
+nu_estimate_np_and_em
+nu_evaluate
+resample_labels
+sharpen_hist
+sharpen_volume
+spline_smooth
+volume_hist
+volume_stats

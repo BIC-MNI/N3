@@ -3,6 +3,9 @@
 #include "args.h"
 #include <version.h>
 
+using namespace std;
+
+
 int    args::clobber  = FALSE;
 int    args::verbose  = TRUE;
 double args::fwhm = 1.0;

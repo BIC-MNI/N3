@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: volumeStats.cc,v $
-$Revision: 1.1 $
-$Author: bert $
-$Date: 2003-04-16 14:32:14 $
+$Revision: 1.2 $
+$Author: stever $
+$Date: 2003-11-17 04:30:56 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -28,7 +28,10 @@ $State: Exp $
 @CALLS      : 
 @CREATED    : April 15, 1995 (Alex Zijdenbos)
 @MODIFIED   : $Log: volumeStats.cc,v $
-@MODIFIED   : Revision 1.1  2003-04-16 14:32:14  bert
+@MODIFIED   : Revision 1.2  2003-11-17 04:30:56  stever
+@MODIFIED   : *** empty log message ***
+@MODIFIED   :
+@MODIFIED   : Revision 1.1  2003/04/16 14:32:14  bert
 @MODIFIED   : Initial checkin
 @MODIFIED   :
 @MODIFIED   : Revision 1.11  1999/03/16 05:21:54  alex
@@ -73,6 +76,9 @@ $State: Exp $
 #include <EBTKS/CachedArray.h>	// (bert)
 #include <EBTKS/Histogram.h>	// (bert)
 #include "VolumeStatsArgs.h"
+
+using namespace std;
+
 
 Volume loadVolume(const Path& path, char **axisOrder = 0, int verbose = 0);
 

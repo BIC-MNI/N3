@@ -30,12 +30,14 @@ http://www.unidata.ucar.edu/packages/netcdf/
 A recent copy of the NetCDF source distribution is available also at
 the McConnell Brain Imaging Centre's software distribution site.
 
-* CLAPACK
+* BLAS and LAPACK
 
-This is a generic, free, linear algebra library, translated to "C"
-from the original FORTRAN.  The 3.0 version currently tested with N3
-may be retrieved from:
+Your system may have these libraries preinstalled.  For example, on
+a Debian system, simply run "apt-get install blas-dev lapack-dev".
+The configure script should automatically detect BLAS and LAPACK
+on many systems.
 
+There is an alternative, the C-language version called CLAPACK, available from
 http://www.netlib.org/clapack/
 
 Please see the instructions included with the CLAPACK package for
@@ -47,6 +49,10 @@ conventions.  N3 requires the the three libraries be named "libF77.a",
 ("f2c.h" and "blaswrap.h") be installed on the system. You need to
 manually copy the libraries and header files to the appropriate
 pathnames on your system.
+
+If you have CLAPACK installed, run N3's configure script with the option
+"--without-lapack".
+
 
 * PERL 5
 
@@ -68,8 +74,8 @@ www.cpan.org.
 
 This software has been built and tested only on the following systems:
 
-* SGI IRIX 6.5 using either MIPSpro C++ 7.30 or GNU G++ 3.2
-* GNU/Linux using GNU G++ 2.96
+* SGI IRIX 6.5 using either MIPSpro C++ 7.30 or GNU G++ 3.3
+* GNU/Linux using GNU G++ 2.3
 
 We are optimistic that the system will build using the GNU compilers
 on other UNIX-based systems, but we haven't been able to test this
@@ -87,7 +93,7 @@ particular system.
 
 Normally you can just run configure with no options:
 
-./configure
+    ./configure
 
 The script will print a number of messages about the types of things
 it is attempting to examine regarding your system. When finished, it
@@ -96,14 +102,15 @@ Makefile.  These files reflect configure's "best guess" about your
 system.
 
 If you are building with the IRIX MIPSpro compiler, you will need to
-specify the -LANG:std flag for the C++ compiler.  The easiest way I've
-found to do this is by setting the environment variable "CXX" to "CC
--LANG:std" before running configure.
+specify the -LANG:std flag for the C++ compiler.  The easiest way is
+as follows
+
+   ./configure CC=cc CXX='CC -LANG:std'
 
 "configure" takes a number of options which are too numerous for me to
 explain here.  For a basic idea of the options, run the command:
 
-./configure --help
+    ./configure --help
 
 For more detail on configure options, see the file INSTALL.GENERIC in
 this directory.
