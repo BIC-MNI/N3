@@ -9,7 +9,7 @@ AM_CPPFLAGS = -DUSE_COMPMAT -DUSE_DBLMAT
 #
 AM_LDFLAGS = 
 
-# SUBDIRS = testing
+SUBDIRS = testing
 
 # Libraries which must be built (but not installed)
 #
@@ -116,30 +116,39 @@ SEDFLAGS = -e 's/xVERSIONx/$(version)/g' \
 
 field2imp: src/NUcorrect/field2imp.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 imp2field: src/NUcorrect/imp2field.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 make_template: src/NUcorrect/make_template.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 nu_estimate: src/NUcorrect/nu_estimate.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 # Yes, this is just a copy of the above file with a new name.  Could
 # replace this with a hard link, I suppose.
 #
 nu_correct: src/NUcorrect/nu_estimate.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 nu_estimate_np_and_em: src/NUcorrect/nu_estimate_np_and_em.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 nu_evaluate: src/NUcorrect/nu_evaluate.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 resample_labels: src/NUcorrect/resample_labels.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
 
 sharpen_volume: src/NUcorrect/sharpen_volume.in
 	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
+	chmod +x $@
