@@ -5,7 +5,7 @@ TESTS = do_test
 
 check_SCRIPTS = do_test rms_diff
 
-EXTRA_DIST = $(check_SCRIPTS) $(data_files) test_ref.log
+EXTRA_DIST = $(check_SCRIPTS) $(data_files) test_ref.log do_test.in rms_diff.in
 
 CLEANFILES =
 
