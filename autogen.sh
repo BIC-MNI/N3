@@ -30,7 +30,7 @@ EOF
 
 test -d ac_config_aux || mkdir ac_config_aux
 
-aclocal -I m4
+aclocal -I m4 -I .
 autoheader
 automake --add-missing --copy
 autoconf
