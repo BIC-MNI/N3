@@ -6,6 +6,12 @@ For a description of the purpose and function of N3, please see the
 file README in this directory.  This file solely attempts to explain
 the installation process for N3.
 
+0. USE GMAKE
+
+You will get better results using GNU 'make' than IRIX 'make'.  If you
+have any problems creating the PERL scripts, that is almost certainly
+a 'make' issue.
+
 1. PREREQUISITES
 
 This software package requires that the following tools and libraries 
@@ -29,30 +35,6 @@ http://www.unidata.ucar.edu/packages/netcdf/
   
 A recent copy of the NetCDF source distribution is available also at
 the McConnell Brain Imaging Centre's software distribution site.
-
-* BLAS and LAPACK
-
-Your system may have these libraries preinstalled.  For example, on
-a Debian system, simply run "apt-get install blas-dev lapack-dev".
-The configure script should automatically detect BLAS and LAPACK
-on many systems.
-
-There is an alternative, the C-language version called CLAPACK, available from
-http://www.netlib.org/clapack/
-
-Please see the instructions included with the CLAPACK package for
-details on the compilation and test process for these libraries.
-However, be aware that lhe installation process for CLAPACK is not
-fully automated and does not follow typical UNIX library naming
-conventions.  N3 requires the the three libraries be named "libF77.a",
-"libblas.a", and "liblapack.a" and that their associated header files
-("f2c.h" and "blaswrap.h") be installed on the system. You need to
-manually copy the libraries and header files to the appropriate
-pathnames on your system.
-
-If you have CLAPACK installed, run N3's configure script with the option
-"--without-lapack".
-
 
 * PERL 5
 
