@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #----------------------------------------------------------------------------
 #$RCSfile: nu_evaluate.in,v $
-#$Revision: 1.1 $
+#$Revision: 1.2 $
 #$Author: bert $
-#$Date: 2003-04-16 14:29:34 $
+#$Date: 2003-05-29 17:14:24 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : August 7, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_evaluate.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#  $Id: nu_evaluate.in,v 1.2 2003-05-29 17:14:24 bert Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -69,7 +69,7 @@ if($volmin < $field_floor) {
 }
 
 # correct volume
-&Spawn(['mincmath', '-zero', '-div', $input_volume, $field_volume,
+&Spawn(['mincmath', '-copy_header', '-zero', '-div', $input_volume, $field_volume,
          $output_volume]);
 &CreateHistory($input_volume,$output_volume,$mapping_name,
              localtime(time) . ">>> $0 @ARGV");
