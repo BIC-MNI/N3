@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: evaluateField.cc,v $
-$Revision: 1.1 $
+$Revision: 1.2 $
 $Author: bert $
-$Date: 2003-04-16 14:25:59 $
+$Date: 2005-03-08 15:55:34 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -32,7 +32,7 @@ $State: Exp $
 ---------------------------------------------------------------------------- */
 
 #ifndef lint
-static char rcsid[] = "$Header: /private-cvsroot/INSECT/N3/src/EvaluateField/evaluateField.cc,v 1.1 2003-04-16 14:25:59 bert Exp $";
+static char rcsid[] = "$Header: /private-cvsroot/INSECT/N3/src/EvaluateField/evaluateField.cc,v 1.2 2005-03-08 15:55:34 bert Exp $";
 #endif
 
 
@@ -52,9 +52,6 @@ extern "C" {
 using namespace std;		/* (bert) */
 
 //#define DEBUG_SPLINESMOOTH
-
-#define N_DIMENSIONS 3
-
 
 //----------------------------------------------------------------------------
 //  Implementation notes

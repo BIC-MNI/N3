@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: minchist.cc,v $
-$Revision: 1.1 $
+$Revision: 1.2 $
 $Author: bert $
-$Date: 2003-04-16 14:31:39 $
+$Date: 2005-03-08 15:55:34 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -35,7 +35,7 @@ $State: Exp $
 ---------------------------------------------------------------------------- */
 
 #ifndef lint
-static char rcsid[] = "$Header: /private-cvsroot/INSECT/N3/src/VolumeHist/minchist.cc,v 1.1 2003-04-16 14:31:39 bert Exp $";
+static char rcsid[] = "$Header: /private-cvsroot/INSECT/N3/src/VolumeHist/minchist.cc,v 1.2 2005-03-08 15:55:34 bert Exp $";
 #endif
 
 #include <config.h>
@@ -52,8 +52,6 @@ extern "C" {
 #include "DHistogram.h"
 #include "WHistogram.h"
 #include "args.h"
-
-#define N_DIMENSIONS 3
 
 void write_histogram_to_text_file(FILE *fp, int select, DHistogram *histogram);
 void bin_volume(Volume volume, Volume mask_volume, args &args, 
