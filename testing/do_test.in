@@ -1,0 +1,228 @@
+#!@PERL@ -w
+#
+#  Usage: do_test logfile.txt
+#
+#
+
+use Cwd;
+use MNI::Startup;
+use MNI::Spawn;
+use MNI::FileUtilities qw(check_output_dirs);
+use MNI::PathUtilities qw(expand_path);
+
+(@ARGV == 1) || die "Usage: do_test logfile.txt\n";
+open(LOG, ">$ARGV[0]") || die "Unable to open file \"$ARGV[0]\" for writing\n";
+select(LOG);
+$|=1;  # make LOG autoflushing
+select(STDOUT);
+
+sub print_both
+{
+   print @_;
+   print LOG @_;
+}
+
+$IntroMessage = <<INTROMESSAGE;
+
+---------------------------------------------------------------------
+ Testing MNI N3 software package
+
+---------------------------------------------------------------------
+
+INTROMESSAGE
+print_both($IntroMessage);
+
+$ENV{'PWD'} = cwd();  # just to be safe
+# create various directory names based on currect directory
+if(cwd() =~ ?(.*)/testing?) {
+   $srcbase = "$1/src";
+   $data = "$1/model_data";
+   $testdata = ".";
+   $testing_path = "$srcbase/NUcorrect:$srcbase/EvaluateField:"
+      ."$srcbase/ExtractTag:$srcbase/SharpenHist:$srcbase/SplineSmooth:"
+         ."$srcbase/VolumeHist:$srcbase/VolumeStats";
+}
+else {
+   die "Directory structure for N3 package is non-standard.\n"
+      ."Unable to run test suite\n";
+}
+
+$utility = new MNI::Spawn (verbose => 0, strict => 1);
+$testing = new MNI::Spawn (verbose => 1, strict => 2, stdout => ">&main::LOG",
+        err_action => 'fatal_exit()');
+
+$utility->register_programs([qw(ln tail grep rms_diff rm)], ".:$ENV{'PATH'}");
+
+# confirm that all programs are in the expected place
+$testing->register_programs([qw(field2imp imp2field sharpen_volume
+     nu_estimate_np_and_em nu_evaluate nu_evaluate nu_estimate nu_correct
+     evaluate_field extracttag sharpen_hist spline_smooth volume_hist
+      volume_stats)], $testing_path);
+
+check_output_dirs($TmpDir);
+# create links to binaries in $TmpDir
+$utility->spawn("ln -s $srcbase/EvaluateField/evaluate_field"
+                ."  $TmpDir/evaluate_field");
+$utility->spawn("ln -s $srcbase/ExtractTag/extracttag"
+                ."  $TmpDir/extracttag");
+$utility->spawn("ln -s $srcbase/SharpenHist/sharpen_hist"
+                ."  $TmpDir/sharpen_hist");
+$utility->spawn("ln -s $srcbase/SplineSmooth/spline_smooth"
+                ."  $TmpDir/spline_smooth");
+$utility->spawn("ln -s $srcbase/VolumeHist/volume_hist"
+                ."  $TmpDir/volume_hist");
+$utility->spawn("ln -s $srcbase/VolumeStats/volume_stats"
+                ."  $TmpDir/volume_stats");
+
+# add these directories to the environment
+$ENV{'PATH'} = "$srcbase/NUcorrect:$TmpDir:$ENV{'PATH'}";
+$ENV{'MNI_DATAPATH'} = (defined $ENV{'MNI_DATAPATH'})? 
+   "$data:$ENV{'MNI_DATAPATH'}": $data; 
+
+
+# check that test data is present
+foreach $file ('block.mnc.gz',  'brain_mask.mnc.gz', 'brain_nu_ref.mnc.gz',
+               'chunk.mnc.gz', 'chunk_mask.mnc.gz', 'test_ref.log') {
+   if(!(-r $file)) {
+      print_both("Cannot find the file N3/testing/$file.  The data for"
+         ." the test suite\ndoes not appear to be installed correctly.\n");
+      exit(1);
+   }
+}
+#  Message printed for fatal errors.
+sub fatal_exit 
+{
+   print_both("--------------------------------------------------------\n");
+   print_both("Test #$test_count suffered a fatal error.\n");
+   print_both("Consult the file N3/testing/test.log for details and compare"
+              ." with\nN3/testing/test_ref.log, a log from a sucessful run"
+              ." of the test suite.\n");
+   close(LOG);
+   print "The tail of the file N3/testing/test.log is as follows.\n\n\n";
+   print "--------------------------------------------------------\n";
+   $utility->spawn("tail $ARGV[0]");
+   exit(1);
+}
+
+#  Wrapper for tests
+$test_count = 1;
+sub run_test 
+{
+   print_both("--------------------------------------------------------\n");
+   print_both("Running test #$test_count\n");
+      print LOG "$_[0]\n";
+   $testing->spawn(@_);
+   print_both("Test #$test_count completed.\n");
+      $test_count++;
+}
+#-----------------------------------------------------------------
+#  Start test
+#
+&run_test("field2imp $testdata/block.mnc.gz $TmpDir/test.imp");
+
+&run_test("field2imp $testdata/block.mnc.gz $TmpDir/test.imp -clobber");
+
+&run_test("imp2field $TmpDir/test.imp -like $testdata/block.mnc.gz -shrink 2 $TmpDir/test.mnc");
+
+&run_test("imp2field $TmpDir/test.imp -like $testdata/block.mnc.gz $TmpDir/test.mnc -clobber");
+
+$utility->spawn("rm -f $TmpDir/test.mnc");
+
+&run_test("sharpen_volume -fwhm 0.15 -noise 0.01 -bins 150 -parzen -verbose $testdata/chunk_mask.mnc.gz $testdata/chunk.mnc.gz $TmpDir/chunk_sharp.mnc");
+
+&run_test("sharpen_volume -fwhm 0.15 -noise 0.01 -bins 150 -deblur -save_histogram $TmpDir/sharp.hist -parzen -verbose $testdata/chunk_mask.mnc.gz $testdata/chunk.mnc.gz $TmpDir/chunk_sharp.mnc -clobber");
+
+$utility->spawn("rm -f $TmpDir/chunk_sharp.mnc");
+
+&run_test("nu_estimate_np_and_em", err_action => 'ignore');
+
+&run_test("nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 -stop 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen  $testdata/brain.mnc.gz $TmpDir/brain.imp -verbose");
+
+&run_test("nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen $testdata/chunk.mnc.gz $TmpDir/chunk.imp -verbose");
+
+&run_test("nu_estimate_np_and_em -tp_spline 1 -bimodalT -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen $testdata/chunk.mnc.gz $TmpDir/chunk.imp -verbose -clobber -mask $testdata/chunk_mask.mnc.gz");
+
+#&run_test("nu_estimate_np_and_em -fwhm 100 -fir -spline_subsample 2 -background 100000 -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen $testdata/chunk.mnc.gz $TmpDir/chunk.imp -bins 100 -clobber");
+
+&run_test("nu_evaluate -help", err_action => 'ignore');
+
+&run_test("nu_evaluate $testdata/brain.mnc.gz -mapping $TmpDir/brain.imp $TmpDir/brain_nu.mnc -clobber");
+
+$utility->spawn("rm -f $TmpDir/brain_nu.mnc");
+
+&run_test("nu_estimate -help", err_action => 'ignore');
+
+#&run_test("nu_estimate $testdata/brain.mnc.gz $TmpDir/brain.imp -clobber -verbose -V0.9");
+
+#&run_test("nu_estimate $testdata/brain.mnc.gz $TmpDir/brain.imp -clobber -verbose -newest");
+
+&run_test("nu_estimate -iterations 1 -stop 0.001 $testdata/chunk.mnc.gz $TmpDir/chunk.imp -clobber -verbose -mask $testdata/chunk_mask.mnc.gz");
+
+&run_test("nu_estimate -iterations 1 -stop 0.001 $testdata/chunk.mnc.gz $TmpDir/chunk.imp -clobber -verbose -options '-deblur -log'");
+
+&run_test("nu_estimate $testdata/chunk.mnc.gz $TmpDir/chunk.imp -clobber -verbose  -stop 0.001 -iterations 1 -shrink 4  -distance 100");
+
+&run_test("nu_correct -help", err_action => 'ignore');
+
+&run_test("nu_correct -fwhm 0.2 -mapping_dir $TmpDir $testdata/chunk.mnc.gz $TmpDir/chunk_nu.mnc -mask $testdata/chunk_mask.mnc.gz -shrink 3 -verbose -stop 0.001 -iterations 1"); 
+
+&run_test("nu_estimate $testdata/brain.mnc.gz $TmpDir/brain.imp -clobber");
+
+&run_test("nu_evaluate $testdata/brain.mnc.gz -mapping $TmpDir/brain.imp $testdata/brain_nu.mnc -clobber");
+
+
+$FinalMessage = <<FINALMESSAGE;
+
+---------------------------------------------------------------------
+
+ All of the tests were completed without suffering a fatal error. 
+
+ Summarizing results ...
+
+FINALMESSAGE
+print_both($FinalMessage);
+
+my ($warn_count, $error_count, $fail_count);
+$utility->spawn("grep -ic warn $ARGV[0]", stdout => \$warn_count,
+   err_action => 'ignore');
+$utility->spawn("grep -ic error $ARGV[0]", stdout => \$error_count, 
+   err_action => 'ignore');
+$utility->spawn("grep -ic fail $ARGV[0]", stdout => \$fail_count, 
+   err_action => 'ignore');
+$warn_count = (split(' ',$warn_count))[0];
+$error_count = (split(' ',$error_count))[0];
+$fail_count = (split(' ',$fail_count))[0];
+
+print_both("  Number of warnings: $warn_count ..." . 
+   (($warn_count > 0) ? "potential problems\n": "good\n"));
+print_both("  Number of errors: $error_count ..." . 
+   (($error_count > 1) ? "potential problems\n": "good\n"));
+print_both("  Number of fails: $fail_count ..." . 
+   (($fail_count > 3) ? "potential problems\n": "good\n"));
+if(($warn_count > 0) || ($error_count > 1) || ($fail_count > 3)) {
+   print_both("  Consider comparing the files $ARGV[0] and "
+              ."testing.log_reference\n with particular note to the"
+              ." key words: warn error and fail.\n");
+}
+
+$FinalMessage = <<FINALMESSAGE;
+
+---------------------------------------------------------------------
+ Checking that numerical results match reference versions ...
+
+FINALMESSAGE
+print_both($FinalMessage);
+
+my $diff_result;
+$utility->spawn("rms_diff -quiet $testdata/brain_nu_ref.mnc.gz $testdata/brain_nu.mnc", stdout=>\$diff_result);
+
+print_both($diff_result);
+print_both("\nTesting of MNI N3 software package completed.\n");
+print_both("---------------------------------------------------------------------\n");
+ 
+
+close(LOG);
+
+# End of main program
+
+

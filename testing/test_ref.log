@@ -1,0 +1,974 @@
+
+---------------------------------------------------------------------
+ Testing MNI N3 software package
+
+---------------------------------------------------------------------
+
+--------------------------------------------------------
+Running test #1
+field2imp ./block.mnc.gz /usr/tmp/do_test_21672//test.imp
+[field2imp] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:03] /usr/tmp/do_test_21672/spline_smooth -full_support -distance 50 -b_spline -lambda 0.01 -subsample 4 -novolume ./block.mnc.gz -compact /usr/tmp/do_test_21672//test.imp -clobber
+Test #1 completed.
+--------------------------------------------------------
+Running test #2
+field2imp ./block.mnc.gz /usr/tmp/do_test_21672//test.imp -clobber
+[field2imp] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:08] /usr/tmp/do_test_21672/spline_smooth -full_support -distance 50 -b_spline -lambda 0.01 -subsample 4 -novolume ./block.mnc.gz -compact /usr/tmp/do_test_21672//test.imp -clobber
+Test #2 completed.
+--------------------------------------------------------
+Running test #3
+imp2field /usr/tmp/do_test_21672//test.imp -like ./block.mnc.gz -shrink 2 /usr/tmp/do_test_21672//test.mnc
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:34:14] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/imp2field /usr/tmp/do_test_21672//test.imp -like ./block.mnc.gz -shrink 2 /usr/tmp/do_test_21672//test.mnc
+
+[imp2field] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:14] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/make_template -quiet -shrink 2 ./block.mnc.gz /usr/tmp/imp2field_21760//template.mnc
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:34:16] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/make_template -quiet -shrink 2 ./block.mnc.gz /usr/tmp/imp2field_21760//template.mnc
+
+Transforming slices:.................................Done
+32+0 records in
+32+0 records out
+[imp2field] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:17] /usr/tmp/do_test_21672/evaluate_field -clobber -verbose -like /usr/tmp/imp2field_21760//template.mnc /usr/tmp/do_test_21672//test.imp /usr/tmp/imp2field_21760//field_volume.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[imp2field] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:20] /usr/local/mni/bin/mincresample -clobber -verbose -trilinear -like ./block.mnc.gz /usr/tmp/imp2field_21760//field_volume.mnc /usr/tmp/do_test_21672//test.mnc
+Transforming slices:................................................................Done
+Test #3 completed.
+--------------------------------------------------------
+Running test #4
+imp2field /usr/tmp/do_test_21672//test.imp -like ./block.mnc.gz /usr/tmp/do_test_21672//test.mnc -clobber
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:34:25] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/imp2field /usr/tmp/do_test_21672//test.imp -like ./block.mnc.gz /usr/tmp/do_test_21672//test.mnc -clobber
+
+[imp2field] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:25] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/make_template -quiet -shrink 3 ./block.mnc.gz /usr/tmp/imp2field_21824//template.mnc
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:34:26] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/make_template -quiet -shrink 3 ./block.mnc.gz /usr/tmp/imp2field_21824//template.mnc
+
+Transforming slices:......................Done
+32+0 records in
+32+0 records out
+[imp2field] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:28] /usr/tmp/do_test_21672/evaluate_field -clobber -verbose -like /usr/tmp/imp2field_21824//template.mnc /usr/tmp/do_test_21672//test.imp /usr/tmp/imp2field_21824//field_volume.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[imp2field] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:28] /usr/local/mni/bin/mincresample -clobber -verbose -trilinear -like ./block.mnc.gz /usr/tmp/imp2field_21824//field_volume.mnc /usr/tmp/do_test_21672//test.mnc
+Transforming slices:................................................................Done
+Test #4 completed.
+--------------------------------------------------------
+Running test #5
+sharpen_volume -fwhm 0.15 -noise 0.01 -bins 150 -parzen -verbose ./chunk_mask.mnc.gz ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk_sharp.mnc
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:33] /usr/tmp/do_test_21672/volume_hist -bins 150 -auto_range -mask ./chunk_mask.mnc.gz ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk_sharp.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:38] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 100030.417180 900273.754620 /usr/tmp/do_test_21672//chunk_sharp.hist /usr/tmp/do_test_21672//chunk_sharp.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:39] /usr/local/mni/bin/minclookup -continuous -range 100030.417180 900273.754620 -clobber -lookup_table /usr/tmp/do_test_21672//chunk_sharp.sharp ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk_sharp.mnc
+Processing:...........................................................................................Done
+Test #5 completed.
+--------------------------------------------------------
+Running test #6
+sharpen_volume -fwhm 0.15 -noise 0.01 -bins 150 -deblur -save_histogram /usr/tmp/do_test_21672//sharp.hist -parzen -verbose ./chunk_mask.mnc.gz ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk_sharp.mnc -clobber
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:42] /usr/tmp/do_test_21672/volume_hist -bins 150 -auto_range -mask ./chunk_mask.mnc.gz ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk_sharp.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:48] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 100030.417180 900273.754620 /usr/tmp/do_test_21672//chunk_sharp.hist /usr/tmp/do_test_21672//chunk_sharp.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:48] /usr/local/mni/bin/minclookup -continuous -range 100030.417180 900273.754620 -clobber -lookup_table /usr/tmp/do_test_21672//chunk_sharp.sharp ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk_sharp.mnc
+Processing:...........................................................................................Done
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:51] /sbin/cp /usr/tmp/do_test_21672//chunk_sharp.hist /usr/tmp/do_test_21672//sharp.hist
+Test #6 completed.
+--------------------------------------------------------
+Running test #7
+nu_estimate_np_and_em
+nu_estimate_np_and_em, version 0.9
+
+Usage: nu_estimate_np_and_em [-help] [options] input_volume.mnc nu_field.imp
+Incorrect number of arguments
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:34:52] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em 
+
+Test #7 completed.
+--------------------------------------------------------
+Running test #8
+nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 -stop 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen  ./brain.mnc.gz /usr/tmp/do_test_21672//brain.imp -verbose
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:34:54] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 -stop 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ./brain.mnc.gz /usr/tmp/do_test_21672//brain.imp -verbose
+
+
+Uncorrected volume (input): ./brain.mnc.gz
+Intensity mapping (output): /usr/tmp/do_test_21672//brain.imp
+
+# Start of NU estimation algorithm
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:55] /usr/local/mni/bin/mincresample -clobber -verbose -nearest_neighbour -nelements 46 55 46 -step 4 4 4 ./brain.mnc.gz /usr/tmp/nu_estimate_np_and_em_22041/brain.mnc
+Transforming slices:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:57] /usr/local/mni/bin/mincmath -clobber -verbose -clamp -const2 1 1.7e+308 /usr/tmp/nu_estimate_np_and_em_22041/brain.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:57] /usr/local/mni/bin/mincmath -clobber -verbose -zero -log /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc.temp /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:58] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:58] /usr/local/mni/bin/mincinfo -attvalue xspace:spacetype -attvalue yspace:spacetype -attvalue zspace:spacetype /usr/tmp/nu_estimate_np_and_em_22041/brain.mnc
+# input volume is in Talairach space
+# thresholding background
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:59] /usr/local/mni/bin/mincmath -clobber -verbose -zero -gt -const 1 /usr/tmp/nu_estimate_np_and_em_22041/brain.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_bkg.mnc
+Processing:..............................................Done
+# using average brain mask to remove background
+Resampling /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/model_data/N3//average_305_mask_1mm.mnc.gz like /usr/tmp/nu_estimate_np_and_em_22041/brain_bkg.mnc
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:34:59] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/resample_labels -clobber -verbose -resample '-like /usr/tmp/nu_estimate_np_and_em_22041/brain_bkg.mnc' /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/model_data/N3//average_305_mask_1mm.mnc.gz /usr/tmp/nu_estimate_np_and_em_22041/average_305_mask_1mm.mnc.temp
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:01] /usr/local/mni/bin/mincresample /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/model_data/N3//average_305_mask_1mm.mnc.gz /usr/tmp/resample_labels_22102/average_305_mask_1mm.mnc_rsl.mnc -trilinear -byte  -like /usr/tmp/nu_estimate_np_and_em_22041/brain_bkg.mnc 
+Transforming slices:..............................................Done
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:04] /usr/tmp/do_test_21672/extracttag /usr/tmp/resample_labels_22102/average_305_mask_1mm.mnc_rsl.mnc -volume /usr/tmp/nu_estimate_np_and_em_22041/average_305_mask_1mm.mnc.temp -threshold 0.5 1.1 -label 1 -maxtags 0
+Updating history
+Elapsed time in resample_labels (22102) and children:
+4.04 sec (user) + 1.2 sec (system) = 5.24 sec (total)
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:06] /usr/local/mni/bin/mincresample -clobber -verbose -like /usr/tmp/nu_estimate_np_and_em_22041/brain_bkg.mnc /usr/tmp/nu_estimate_np_and_em_22041/average_305_mask_1mm.mnc.temp /usr/tmp/nu_estimate_np_and_em_22041/average_305_mask_1mm.mnc
+Transforming slices:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:07] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22041/average_305_mask_1mm.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:08] /usr/local/mni/bin/mincmath -clobber -verbose -short -signed -and /usr/tmp/nu_estimate_np_and_em_22041/average_305_mask_1mm.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_bkg.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:08] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22041/brain_bkg.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:08] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22041/average_305_mask_1mm.mnc
+# apply mask to log volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:09] /usr/local/mni/bin/mincmath -clobber -verbose -mult -zero /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:10] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc.temp /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc
+# create flat initial field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:10] /usr/local/mni/bin/mincmath -clobber -verbose -short -mult -const 0 /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc
+Processing:..............................................Done
+
+# Starting iteration 0
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:10] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_corr.mnc
+Processing:..............................................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:11] /sbin/cp /usr/tmp/nu_estimate_np_and_em_22041/brain_corr.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:11] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.15 -noise 0.01 /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:12] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:15] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 9.442448 13.534065 /usr/tmp/nu_estimate_np_and_em_22041/brain_est.hist /usr/tmp/nu_estimate_np_and_em_22041/brain_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:15] /usr/local/mni/bin/minclookup -continuous -range 9.442448 13.534065 -clobber -lookup_table /usr/tmp/nu_estimate_np_and_em_22041/brain_est.sharp /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:16] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc.temp /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:17] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:18] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:18] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 100 -b_spline -lambda 0.015625 -subsample 2 -mask /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:25] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:26] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+CV for change in field estimate at iteration 0: 0.00961989
+
+
+# Starting iteration 1
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:27] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_corr.mnc
+Processing:..............................................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:28] /sbin/cp /usr/tmp/nu_estimate_np_and_em_22041/brain_corr.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:28] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.15 -noise 0.01 /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:29] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:32] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 9.454297 13.541569 /usr/tmp/nu_estimate_np_and_em_22041/brain_est.hist /usr/tmp/nu_estimate_np_and_em_22041/brain_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:32] /usr/local/mni/bin/minclookup -continuous -range 9.454297 13.541569 -clobber -lookup_table /usr/tmp/nu_estimate_np_and_em_22041/brain_est.sharp /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:33] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc.temp /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:34] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22041/brain_log.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:35] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:35] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 100 -b_spline -lambda 0.015625 -subsample 2 -mask /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:42] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_estimate_np_and_em_22041/brain_est.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:43] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+CV for change in field estimate at iteration 1: 0.0083248
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:44] /usr/local/mni/bin/mincmath -clobber -verbose -zero -exp /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:45] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22041/brain_residue.mnc.temp /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:45] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 100 -b_spline -lambda 0.008 -subsample 5 -novolume -mask /usr/tmp/nu_estimate_np_and_em_22041/brain_mask.mnc /usr/tmp/nu_estimate_np_and_em_22041/brain_temp.mnc -compact /usr/tmp/do_test_21672//brain.imp
+Number of iterations: 2 
+CV of field change: 0.0083248
+# NU estimation complete.
+Test #8 completed.
+--------------------------------------------------------
+Running test #9
+nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -verbose
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:35:49] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -verbose
+
+
+Uncorrected volume (input): ./chunk.mnc.gz
+Intensity mapping (output): /usr/tmp/do_test_21672//chunk.imp
+
+# Start of NU estimation algorithm
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:49] /usr/local/mni/bin/mincresample -clobber -verbose -nearest_neighbour -nelements 46 26 27 -step 4 4 6 ./chunk.mnc.gz /usr/tmp/nu_estimate_np_and_em_22370/chunk.mnc
+Transforming slices:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:50] /usr/local/mni/bin/mincmath -clobber -verbose -clamp -const2 1 1.7e+308 /usr/tmp/nu_estimate_np_and_em_22370/chunk.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:50] /usr/local/mni/bin/mincmath -clobber -verbose -zero -log /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc.temp /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:51] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:51] /usr/local/mni/bin/mincinfo -attvalue xspace:spacetype -attvalue yspace:spacetype -attvalue zspace:spacetype /usr/tmp/nu_estimate_np_and_em_22370/chunk.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:51] /usr/tmp/do_test_21672/volume_stats -quiet -biModalT /usr/tmp/nu_estimate_np_and_em_22370/chunk.mnc
+# thresholding background
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:52] /usr/local/mni/bin/mincmath -clobber -verbose -zero -gt -const 233244 /usr/tmp/nu_estimate_np_and_em_22370/chunk.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_bkg.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:52] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22370/chunk_bkg.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc
+# apply mask to log volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:52] /usr/local/mni/bin/mincmath -clobber -verbose -mult -zero /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:53] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc.temp /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc
+# create flat initial field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:53] /usr/local/mni/bin/mincmath -clobber -verbose -short -mult -const 0 /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc
+Processing:..............................................Done
+
+# Starting iteration 0
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:53] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_corr.mnc
+Processing:..............................................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:53] /sbin/cp /usr/tmp/nu_estimate_np_and_em_22370/chunk_corr.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:54] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.15 -noise 0.01 /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:55] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:56] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 12.357121 13.665247 /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.hist /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:56] /usr/local/mni/bin/minclookup -continuous -range 12.357121 13.665247 -clobber -lookup_table /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.sharp /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:56] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.mnc.temp /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:57] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22370/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:57] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:35:57] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 100 -b_spline -lambda 0.015625 -subsample 2 -mask /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:01] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_estimate_np_and_em_22370/chunk_est.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:01] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc
+CV for change in field estimate at iteration 0: 0.00560104
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:01] /usr/local/mni/bin/mincmath -clobber -verbose -zero -exp /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:02] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22370/chunk_residue.mnc.temp /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:02] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 100 -b_spline -lambda 0.008 -subsample 5 -novolume -mask /usr/tmp/nu_estimate_np_and_em_22370/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22370/chunk_temp.mnc -compact /usr/tmp/do_test_21672//chunk.imp
+Number of iterations: 1 
+CV of field change: 0.00560104
+# NU estimation complete.
+Test #9 completed.
+--------------------------------------------------------
+Running test #10
+nu_estimate_np_and_em -tp_spline 1 -bimodalT -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -verbose -clobber -mask ./chunk_mask.mnc.gz
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:36:05] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -tp_spline 1 -bimodalT -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -verbose -clobber -mask ./chunk_mask.mnc.gz
+
+
+Uncorrected volume (input): ./chunk.mnc.gz
+Intensity mapping (output): /usr/tmp/do_test_21672//chunk.imp
+
+# Start of NU estimation algorithm
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:06] /usr/local/mni/bin/mincresample -clobber -verbose -nearest_neighbour -nelements 46 26 27 -step 4 4 6 ./chunk.mnc.gz /usr/tmp/nu_estimate_np_and_em_22486/chunk.mnc
+Transforming slices:..............................................Done
+Resampling ./chunk_mask.mnc.gz like /usr/tmp/nu_estimate_np_and_em_22486/chunk.mnc
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:07] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/resample_labels -clobber -verbose -resample '-like /usr/tmp/nu_estimate_np_and_em_22486/chunk.mnc' ./chunk_mask.mnc.gz /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc.temp
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:09] /usr/local/mni/bin/mincresample ./chunk_mask.mnc.gz /usr/tmp/resample_labels_22514/chunk_mask.mnc_rsl.mnc -trilinear -byte  -like /usr/tmp/nu_estimate_np_and_em_22486/chunk.mnc 
+Transforming slices:..............................................Done
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:09] /usr/tmp/do_test_21672/extracttag /usr/tmp/resample_labels_22514/chunk_mask.mnc_rsl.mnc -volume /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc.temp -threshold 0.5 1.1 -label 1 -maxtags 0
+Updating history
+Elapsed time in resample_labels (22514) and children:
+1.71 sec (user) + 0.5 sec (system) = 2.21 sec (total)
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:10] /usr/local/mni/bin/mincresample -clobber -verbose -like /usr/tmp/nu_estimate_np_and_em_22486/chunk.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc.temp /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc
+Transforming slices:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:11] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:11] /usr/local/mni/bin/mincmath -clobber -verbose -clamp -const2 1 1.7e+308 /usr/tmp/nu_estimate_np_and_em_22486/chunk.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:11] /usr/local/mni/bin/mincmath -clobber -verbose -zero -log /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc.temp /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:12] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc.temp
+# thresholding background
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:12] /usr/local/mni/bin/mincmath -clobber -verbose -zero -gt -const 1 /usr/tmp/nu_estimate_np_and_em_22486/chunk.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_bkg.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:12] /usr/local/mni/bin/mincmath -clobber -verbose -short -signed -and /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_bkg.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:13] /sbin/rm /usr/tmp/nu_estimate_np_and_em_22486/chunk_bkg.mnc
+# apply mask to log volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:13] /usr/local/mni/bin/mincmath -clobber -verbose -mult -zero /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:13] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc.temp /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc
+# create flat initial field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:14] /usr/local/mni/bin/mincmath -clobber -verbose -short -mult -const 0 /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc
+Processing:..............................................Done
+
+# Starting iteration 0
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:14] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_corr.mnc
+Processing:..............................................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:14] /sbin/cp /usr/tmp/nu_estimate_np_and_em_22486/chunk_corr.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:14] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.15 -noise 0.01 /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:16] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:17] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 5.132171 13.638054 /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.hist /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:17] /usr/local/mni/bin/minclookup -continuous -range 5.132171 13.638054 -clobber -lookup_table /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.sharp /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:17] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.mnc.temp /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:18] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_np_and_em_22486/chunk_log.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:18] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:18] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -distance 200 -tp_spline -lambda 0.125 -subsample 1 -mask /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc
+Created 3-dimensional Spline
+Created RSpline with 8 basis functions
+D: 0
+Knot 1 failed. Trying knot 7 ...
+D: 200
+D: 40000
+D: 8e+06
+Created TPSpline with 8 basis functions
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:22] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_estimate_np_and_em_22486/chunk_est.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:22] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc
+CV for change in field estimate at iteration 0: 0.00246167
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:23] /usr/local/mni/bin/mincmath -clobber -verbose -zero -exp /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc.temp
+Processing:..............................................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:23] /sbin/mv /usr/tmp/nu_estimate_np_and_em_22486/chunk_residue.mnc.temp /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:23] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -distance 200 -tp_spline -lambda 0.008 -subsample 5 -novolume -mask /usr/tmp/nu_estimate_np_and_em_22486/chunk_mask.mnc /usr/tmp/nu_estimate_np_and_em_22486/chunk_temp.mnc -compact /usr/tmp/do_test_21672//chunk.imp
+Created 3-dimensional Spline
+Created RSpline with 8 basis functions
+D: 0
+Knot 1 failed. Trying knot 7 ...
+D: 200
+D: 40000
+D: 8e+06
+Created TPSpline with 8 basis functions
+Number of iterations: 1 
+CV of field change: 0.00246167
+# NU estimation complete.
+Test #10 completed.
+--------------------------------------------------------
+Running test #11
+nu_estimate_np_and_em -fwhm 100 -fir -spline_subsample 2 -background 100000 -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -bins 100 -clobber
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:36:25] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -fwhm 100 -fir -spline_subsample 2 -background 100000 -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -bins 100 -clobber
+
+Making byte volume...
+Processing:..............................................Done
+Making byte volume...
+Number of iterations: 1 
+CV of field change: 0.000960234
+Test #11 completed.
+--------------------------------------------------------
+Running test #12
+nu_evaluate -help
+
+nu_evaluate is a script that applies an intensity mapping to a volume. 
+
+
+Summary of options:
+
+-- General Options -------------------------------------------------------------
+   -verbose   be noisy [default; opposite is -quiet]
+   -execute   actually execute planned commands [default]
+   -clobber   overwrite output files [default: -noclobber]
+   -compress  compress output files [default: -nocompress]
+   -tmpdir    temporary working directory
+   -keeptmp   don't delete temporary files [default: -nokeeptmp]
+   -notify    set the user to notify (send email to) on failure [default: $USER,
+              i.e. you]
+   -nonotify  disable email notification
+   -version   print version and quit
+
+-- General Options -------------------------------------------------------------
+   -mapping <nu_field.imp>
+              specify an intensity mapping
+   -mask <mask.mnc>
+              specify region for processing.  (Not recommended)
+   -floor <value>
+              lower bound for field intensities to avoid numerical problems.
+              (Default 0.1)
+   -shrink <factor>
+              specify a smaller workspace; the sampling in each dimension is
+              reduced to that of the finest sampling divided by factor or the
+              current sampling which ever is less. (suggest 2 or 3)
+
+nu_evaluate, version 0.9
+
+Usage: nu_evaluate [-help] [options] input_volume.mnc output_volume.mnc
+Test #12 completed.
+--------------------------------------------------------
+Running test #13
+nu_evaluate ./brain.mnc.gz -mapping /usr/tmp/do_test_21672//brain.imp /usr/tmp/do_test_21672//brain_nu.mnc -clobber
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:36:47] /usr/tmp/do_test_21672/evaluate_field -clobber -verbose -like ./brain.mnc.gz /usr/tmp/do_test_21672//brain.imp /usr/tmp/nu_evaluate_22783//brain_nu_field.mnc
+Smoothing volume: .............................................................
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Outputting Volume: ............................................................
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:16] /usr/local/mni/bin/mincmath -clobber -verbose -zero -div ./brain.mnc.gz /usr/tmp/nu_evaluate_22783//brain_nu_field.mnc /usr/tmp/do_test_21672//brain_nu.mnc
+Processing:...........................................................................................Done
+Test #13 completed.
+--------------------------------------------------------
+Running test #14
+nu_estimate -help
+       nu_estimate is a simplified interface to the script 
+       nu_correct_np_and_em for estimating intensity non-uniformity in
+       MR volumes.  The script nu_evaluate should be used to apply the
+       resulting intensity mapping(s) to correct the source volume(s).
+
+       The N3 method [1] should work with any MR volume including raw
+       (non-stereotaxic) data.  The performance of this method can be
+       enhanced by supplying a mask for the region of interest.
+
+   References: 
+   [1] J.G. Sled, A.P. Zijdenbos and A.C. Evans, "A non-parametric method
+       for automatic correction of intensity non-uniformity in MRI data",
+       in "IEEE Transactions on Medical Imaging", 1996 (submitted) 
+
+
+Summary of options:
+
+-- General options -------------------------------------------------------------
+   -verbose     be noisy [default; opposite is -quiet]
+   -execute     actually execute planned commands [default]
+   -clobber     overwrite output files [default: -noclobber]
+   -tmpdir      temporary working directory
+   -keeptmp     don't delete temporary files [default: -nokeeptmp]
+   -version     print version and quit
+
+-- Protocol options ------------------------------------------------------------
+   -mask <mask.mnc>
+                specify region for processing
+   -distance <value>
+                characteristic distance over which field varies in mm (default
+                200)
+   -iterations <number>
+                maximum number of iterations to run
+   -options options
+                method specific options (quoted if more than one)
+
+-- N3 specific options ---------------------------------------------------------
+   -stop <threshold>
+                CV of change in field estimate below which iteration stops
+                (suggest 0.01 to 0.0001)
+   -shrink <factor>
+                specify a smaller workspace; the sampling in each dimension is
+                reduced to that of the finest sampling divided by factor or the
+                current sampling which ever is less. (suggest 2 or 3)
+   -V0.9        use default options of original (beta) release
+   -V1.0        use improved options of release 1.0.  This is equivalent to
+                -fwhm 0.15 -stop 0.001 -iterations 50 -shrink 4 -distance 200.
+                (default)
+   -fwhm <width>
+                width of deconvolution kernal used to sharpen histogram.  Larger
+                values give faster convergence while smaller values give greater
+                accuracy.  (suggest 0.05 to 0.5, default is 0.15)
+
+nu_estimate, version 0.9
+
+Usage: nu_estimate [-help] [options] input.mnc output.imp
+
+Test #14 completed.
+--------------------------------------------------------
+Running test #15
+nu_estimate -iterations 1 -stop 0.001 ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -clobber -verbose -mask ./chunk_mask.mnc.gz
+[nu_estimate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:26] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.15 0.01 -iterations 1 -stop 0.001 -shrink 4 -auto_mask -nonotify -b_spline 1 -distance 200 -mask ./chunk_mask.mnc.gz -verbose -execute -clobber -nokeeptmp -tmpdir /usr/tmp/nu_estimate_23021/ ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:37:27] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.15 0.01 -iterations 1 -stop 0.001 -shrink 4 -auto_mask -nonotify -b_spline 1 -distance 200 -mask ./chunk_mask.mnc.gz -verbose -execute -clobber -nokeeptmp -tmpdir /usr/tmp/nu_estimate_23021/ ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp
+
+
+Uncorrected volume (input): ./chunk.mnc.gz
+Intensity mapping (output): /usr/tmp/do_test_21672//chunk.imp
+
+# Start of NU estimation algorithm
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:28] /usr/local/mni/bin/mincresample -clobber -verbose -nearest_neighbour -nelements 24 14 14 -step 8 8 12 ./chunk.mnc.gz /usr/tmp/nu_estimate_23021/chunk.mnc
+Transforming slices:........................Done
+Resampling ./chunk_mask.mnc.gz like /usr/tmp/nu_estimate_23021/chunk.mnc
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:29] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/resample_labels -clobber -verbose -resample '-like /usr/tmp/nu_estimate_23021/chunk.mnc' ./chunk_mask.mnc.gz /usr/tmp/nu_estimate_23021/chunk_mask.mnc.temp
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:30] /usr/local/mni/bin/mincresample ./chunk_mask.mnc.gz /usr/tmp/resample_labels_23058/chunk_mask.mnc_rsl.mnc -trilinear -byte  -like /usr/tmp/nu_estimate_23021/chunk.mnc 
+Transforming slices:........................Done
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:31] /usr/tmp/do_test_21672/extracttag /usr/tmp/resample_labels_23058/chunk_mask.mnc_rsl.mnc -volume /usr/tmp/nu_estimate_23021/chunk_mask.mnc.temp -threshold 0.5 1.1 -label 1 -maxtags 0
+Updating history
+Elapsed time in resample_labels (23058) and children:
+1 sec (user) + 0.5 sec (system) = 1.5 sec (total)
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:31] /usr/local/mni/bin/mincresample -clobber -verbose -like /usr/tmp/nu_estimate_23021/chunk.mnc /usr/tmp/nu_estimate_23021/chunk_mask.mnc.temp /usr/tmp/nu_estimate_23021/chunk_mask.mnc
+Transforming slices:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:32] /sbin/rm /usr/tmp/nu_estimate_23021/chunk_mask.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:32] /usr/local/mni/bin/mincmath -clobber -verbose -clamp -const2 1 1.7e+308 /usr/tmp/nu_estimate_23021/chunk.mnc /usr/tmp/nu_estimate_23021/chunk_log.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:32] /usr/local/mni/bin/mincmath -clobber -verbose -zero -log /usr/tmp/nu_estimate_23021/chunk_log.mnc.temp /usr/tmp/nu_estimate_23021/chunk_log.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:32] /sbin/rm /usr/tmp/nu_estimate_23021/chunk_log.mnc.temp
+# thresholding background
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:32] /usr/local/mni/bin/mincmath -clobber -verbose -zero -gt -const 1 /usr/tmp/nu_estimate_23021/chunk.mnc /usr/tmp/nu_estimate_23021/chunk_bkg.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:33] /usr/local/mni/bin/mincmath -clobber -verbose -short -signed -and /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_bkg.mnc /usr/tmp/nu_estimate_23021/chunk_mask.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:33] /sbin/rm /usr/tmp/nu_estimate_23021/chunk_bkg.mnc
+# apply mask to log volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:33] /usr/local/mni/bin/mincmath -clobber -verbose -mult -zero /usr/tmp/nu_estimate_23021/chunk_log.mnc /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_mask.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:33] /sbin/mv /usr/tmp/nu_estimate_23021/chunk_mask.mnc.temp /usr/tmp/nu_estimate_23021/chunk_log.mnc
+# create flat initial field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:34] /usr/local/mni/bin/mincmath -clobber -verbose -short -mult -const 0 /usr/tmp/nu_estimate_23021/chunk_log.mnc /usr/tmp/nu_estimate_23021/chunk_residue.mnc
+Processing:........................Done
+
+# Starting iteration 0
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:34] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_23021/chunk_log.mnc /usr/tmp/nu_estimate_23021/chunk_residue.mnc /usr/tmp/nu_estimate_23021/chunk_corr.mnc
+Processing:........................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:34] /sbin/cp /usr/tmp/nu_estimate_23021/chunk_corr.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:35] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.15 -noise 0.01 /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc /usr/tmp/nu_estimate_23021/chunk_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:36] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc /usr/tmp/nu_estimate_23021/chunk_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:36] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 11.515470 13.636741 /usr/tmp/nu_estimate_23021/chunk_est.hist /usr/tmp/nu_estimate_23021/chunk_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:36] /usr/local/mni/bin/minclookup -continuous -range 11.515470 13.636741 -clobber -lookup_table /usr/tmp/nu_estimate_23021/chunk_est.sharp /usr/tmp/nu_estimate_23021/chunk_temp.mnc /usr/tmp/nu_estimate_23021/chunk_est.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:37] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_est.mnc.temp /usr/tmp/nu_estimate_23021/chunk_est.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:37] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_23021/chunk_log.mnc /usr/tmp/nu_estimate_23021/chunk_est.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:37] /sbin/mv /usr/tmp/nu_estimate_23021/chunk_residue.mnc /usr/tmp/nu_estimate_23021/chunk_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:37] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 200 -b_spline -lambda 0.015625 -subsample 1 -mask /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc /usr/tmp/nu_estimate_23021/chunk_residue.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:39] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_estimate_23021/chunk_est.mnc /usr/tmp/nu_estimate_23021/chunk_residue.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:39] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc
+CV for change in field estimate at iteration 0: 0.00411469
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:39] /usr/local/mni/bin/mincmath -clobber -verbose -zero -exp /usr/tmp/nu_estimate_23021/chunk_residue.mnc /usr/tmp/nu_estimate_23021/chunk_residue.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:39] /sbin/mv /usr/tmp/nu_estimate_23021/chunk_residue.mnc.temp /usr/tmp/nu_estimate_23021/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:40] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 200 -b_spline -lambda 0.008 -subsample 5 -novolume -mask /usr/tmp/nu_estimate_23021/chunk_mask.mnc /usr/tmp/nu_estimate_23021/chunk_temp.mnc -compact /usr/tmp/do_test_21672//chunk.imp
+Number of iterations: 1 
+CV of field change: 0.00411469
+# NU estimation complete.
+Test #15 completed.
+--------------------------------------------------------
+Running test #16
+nu_estimate -iterations 1 -stop 0.001 ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -clobber -verbose -options '-deblur -log'
+[nu_estimate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:42] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.15 0.01 -iterations 1 -stop 0.001 -shrink 4 -auto_mask -nonotify -b_spline 1 -distance 200 -verbose -execute -clobber -nokeeptmp -tmpdir /usr/tmp/nu_estimate_23157/ -deblur -log ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:37:44] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.15 0.01 -iterations 1 -stop 0.001 -shrink 4 -auto_mask -nonotify -b_spline 1 -distance 200 -verbose -execute -clobber -nokeeptmp -tmpdir /usr/tmp/nu_estimate_23157/ -deblur -log ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp
+
+
+Uncorrected volume (input): ./chunk.mnc.gz
+Intensity mapping (output): /usr/tmp/do_test_21672//chunk.imp
+
+# Start of NU estimation algorithm
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:45] /usr/local/mni/bin/mincresample -clobber -verbose -nearest_neighbour -nelements 24 14 14 -step 8 8 12 ./chunk.mnc.gz /usr/tmp/nu_estimate_23157/chunk.mnc
+Transforming slices:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:45] /usr/local/mni/bin/mincmath -clobber -verbose -clamp -const2 1 1.7e+308 /usr/tmp/nu_estimate_23157/chunk.mnc /usr/tmp/nu_estimate_23157/chunk_log.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:46] /usr/local/mni/bin/mincmath -clobber -verbose -zero -log /usr/tmp/nu_estimate_23157/chunk_log.mnc.temp /usr/tmp/nu_estimate_23157/chunk_log.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:46] /sbin/rm /usr/tmp/nu_estimate_23157/chunk_log.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:46] /usr/local/mni/bin/mincinfo -attvalue xspace:spacetype -attvalue yspace:spacetype -attvalue zspace:spacetype /usr/tmp/nu_estimate_23157/chunk.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:46] /usr/tmp/do_test_21672/volume_stats -quiet -biModalT /usr/tmp/nu_estimate_23157/chunk.mnc
+# thresholding background
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:46] /usr/local/mni/bin/mincmath -clobber -verbose -zero -gt -const 226076 /usr/tmp/nu_estimate_23157/chunk.mnc /usr/tmp/nu_estimate_23157/chunk_bkg.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:47] /sbin/mv /usr/tmp/nu_estimate_23157/chunk_bkg.mnc /usr/tmp/nu_estimate_23157/chunk_mask.mnc
+# apply mask to log volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:47] /usr/local/mni/bin/mincmath -clobber -verbose -mult -zero /usr/tmp/nu_estimate_23157/chunk_log.mnc /usr/tmp/nu_estimate_23157/chunk_mask.mnc /usr/tmp/nu_estimate_23157/chunk_mask.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:47] /sbin/mv /usr/tmp/nu_estimate_23157/chunk_mask.mnc.temp /usr/tmp/nu_estimate_23157/chunk_log.mnc
+# create flat initial field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:47] /usr/local/mni/bin/mincmath -clobber -verbose -short -mult -const 0 /usr/tmp/nu_estimate_23157/chunk_log.mnc /usr/tmp/nu_estimate_23157/chunk_residue.mnc
+Processing:........................Done
+
+# Starting iteration 0
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:47] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_23157/chunk_log.mnc /usr/tmp/nu_estimate_23157/chunk_residue.mnc /usr/tmp/nu_estimate_23157/chunk_corr.mnc
+Processing:........................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:47] /sbin/cp /usr/tmp/nu_estimate_23157/chunk_corr.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:48] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.15 -noise 0.01 /usr/tmp/nu_estimate_23157/chunk_mask.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc /usr/tmp/nu_estimate_23157/chunk_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:49] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_estimate_23157/chunk_mask.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc /usr/tmp/nu_estimate_23157/chunk_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:49] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 12.328013 13.636741 /usr/tmp/nu_estimate_23157/chunk_est.hist /usr/tmp/nu_estimate_23157/chunk_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:49] /usr/local/mni/bin/minclookup -continuous -range 12.328013 13.636741 -clobber -lookup_table /usr/tmp/nu_estimate_23157/chunk_est.sharp /usr/tmp/nu_estimate_23157/chunk_temp.mnc /usr/tmp/nu_estimate_23157/chunk_est.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:50] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_estimate_23157/chunk_mask.mnc /usr/tmp/nu_estimate_23157/chunk_est.mnc.temp /usr/tmp/nu_estimate_23157/chunk_est.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:50] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_23157/chunk_log.mnc /usr/tmp/nu_estimate_23157/chunk_est.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:50] /sbin/mv /usr/tmp/nu_estimate_23157/chunk_residue.mnc /usr/tmp/nu_estimate_23157/chunk_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:50] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 200 -b_spline -lambda 0.015625 -subsample 1 -mask /usr/tmp/nu_estimate_23157/chunk_mask.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc /usr/tmp/nu_estimate_23157/chunk_residue.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:52] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_estimate_23157/chunk_est.mnc /usr/tmp/nu_estimate_23157/chunk_residue.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:52] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_estimate_23157/chunk_mask.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc
+CV for change in field estimate at iteration 0: 0.00485323
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:53] /usr/local/mni/bin/mincmath -clobber -verbose -zero -exp /usr/tmp/nu_estimate_23157/chunk_residue.mnc /usr/tmp/nu_estimate_23157/chunk_residue.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:53] /sbin/mv /usr/tmp/nu_estimate_23157/chunk_residue.mnc.temp /usr/tmp/nu_estimate_23157/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:53] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 200 -b_spline -lambda 0.008 -subsample 5 -novolume -mask /usr/tmp/nu_estimate_23157/chunk_mask.mnc /usr/tmp/nu_estimate_23157/chunk_temp.mnc -compact /usr/tmp/do_test_21672//chunk.imp
+Number of iterations: 1 
+CV of field change: 0.00485323
+# NU estimation complete.
+Test #16 completed.
+--------------------------------------------------------
+Running test #17
+nu_estimate ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp -clobber -verbose  -stop 0.001 -iterations 1 -shrink 4  -distance 100
+[nu_estimate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:56] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.15 0.01 -iterations 1 -stop 0.001 -shrink 4 -auto_mask -nonotify -b_spline 1 -distance 100 -verbose -execute -clobber -nokeeptmp -tmpdir /usr/tmp/nu_estimate_23270/ ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:37:57] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.15 0.01 -iterations 1 -stop 0.001 -shrink 4 -auto_mask -nonotify -b_spline 1 -distance 100 -verbose -execute -clobber -nokeeptmp -tmpdir /usr/tmp/nu_estimate_23270/ ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk.imp
+
+
+Uncorrected volume (input): ./chunk.mnc.gz
+Intensity mapping (output): /usr/tmp/do_test_21672//chunk.imp
+
+# Start of NU estimation algorithm
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:58] /usr/local/mni/bin/mincresample -clobber -verbose -nearest_neighbour -nelements 24 14 14 -step 8 8 12 ./chunk.mnc.gz /usr/tmp/nu_estimate_23270/chunk.mnc
+Transforming slices:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:58] /usr/local/mni/bin/mincmath -clobber -verbose -clamp -const2 1 1.7e+308 /usr/tmp/nu_estimate_23270/chunk.mnc /usr/tmp/nu_estimate_23270/chunk_log.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:59] /usr/local/mni/bin/mincmath -clobber -verbose -zero -log /usr/tmp/nu_estimate_23270/chunk_log.mnc.temp /usr/tmp/nu_estimate_23270/chunk_log.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:59] /sbin/rm /usr/tmp/nu_estimate_23270/chunk_log.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:59] /usr/local/mni/bin/mincinfo -attvalue xspace:spacetype -attvalue yspace:spacetype -attvalue zspace:spacetype /usr/tmp/nu_estimate_23270/chunk.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:59] /usr/tmp/do_test_21672/volume_stats -quiet -biModalT /usr/tmp/nu_estimate_23270/chunk.mnc
+# thresholding background
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:37:59] /usr/local/mni/bin/mincmath -clobber -verbose -zero -gt -const 226076 /usr/tmp/nu_estimate_23270/chunk.mnc /usr/tmp/nu_estimate_23270/chunk_bkg.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:00] /sbin/mv /usr/tmp/nu_estimate_23270/chunk_bkg.mnc /usr/tmp/nu_estimate_23270/chunk_mask.mnc
+# apply mask to log volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:00] /usr/local/mni/bin/mincmath -clobber -verbose -mult -zero /usr/tmp/nu_estimate_23270/chunk_log.mnc /usr/tmp/nu_estimate_23270/chunk_mask.mnc /usr/tmp/nu_estimate_23270/chunk_mask.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:00] /sbin/mv /usr/tmp/nu_estimate_23270/chunk_mask.mnc.temp /usr/tmp/nu_estimate_23270/chunk_log.mnc
+# create flat initial field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:00] /usr/local/mni/bin/mincmath -clobber -verbose -short -mult -const 0 /usr/tmp/nu_estimate_23270/chunk_log.mnc /usr/tmp/nu_estimate_23270/chunk_residue.mnc
+Processing:........................Done
+
+# Starting iteration 0
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:00] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_23270/chunk_log.mnc /usr/tmp/nu_estimate_23270/chunk_residue.mnc /usr/tmp/nu_estimate_23270/chunk_corr.mnc
+Processing:........................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:01] /sbin/cp /usr/tmp/nu_estimate_23270/chunk_corr.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:01] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.15 -noise 0.01 /usr/tmp/nu_estimate_23270/chunk_mask.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc /usr/tmp/nu_estimate_23270/chunk_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:02] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_estimate_23270/chunk_mask.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc /usr/tmp/nu_estimate_23270/chunk_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:02] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.15 -noise 0.01 -quiet -range 12.328013 13.636741 /usr/tmp/nu_estimate_23270/chunk_est.hist /usr/tmp/nu_estimate_23270/chunk_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:02] /usr/local/mni/bin/minclookup -continuous -range 12.328013 13.636741 -clobber -lookup_table /usr/tmp/nu_estimate_23270/chunk_est.sharp /usr/tmp/nu_estimate_23270/chunk_temp.mnc /usr/tmp/nu_estimate_23270/chunk_est.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:03] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_estimate_23270/chunk_mask.mnc /usr/tmp/nu_estimate_23270/chunk_est.mnc.temp /usr/tmp/nu_estimate_23270/chunk_est.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:03] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_estimate_23270/chunk_log.mnc /usr/tmp/nu_estimate_23270/chunk_est.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:03] /sbin/mv /usr/tmp/nu_estimate_23270/chunk_residue.mnc /usr/tmp/nu_estimate_23270/chunk_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:03] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 100 -b_spline -lambda 0.015625 -subsample 1 -mask /usr/tmp/nu_estimate_23270/chunk_mask.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc /usr/tmp/nu_estimate_23270/chunk_residue.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:06] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_estimate_23270/chunk_est.mnc /usr/tmp/nu_estimate_23270/chunk_residue.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:06] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_estimate_23270/chunk_mask.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc
+CV for change in field estimate at iteration 0: 0.00541659
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:06] /usr/local/mni/bin/mincmath -clobber -verbose -zero -exp /usr/tmp/nu_estimate_23270/chunk_residue.mnc /usr/tmp/nu_estimate_23270/chunk_residue.mnc.temp
+Processing:........................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:06] /sbin/mv /usr/tmp/nu_estimate_23270/chunk_residue.mnc.temp /usr/tmp/nu_estimate_23270/chunk_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:06] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 100 -b_spline -lambda 0.008 -subsample 5 -novolume -mask /usr/tmp/nu_estimate_23270/chunk_mask.mnc /usr/tmp/nu_estimate_23270/chunk_temp.mnc -compact /usr/tmp/do_test_21672//chunk.imp
+Number of iterations: 1 
+CV of field change: 0.00541659
+# NU estimation complete.
+Test #17 completed.
+--------------------------------------------------------
+Running test #18
+nu_correct -help
+       nu_correct is a simplified interface to the scripts nu_estimate
+       and nu_evaluate for correcting for intensity non-uniformity in
+       MR volumes.
+
+       The N3 method [1] should work with any MR volume including raw
+       (non-stereotaxic) data.  The performance of this method can be
+       enhanced by supplying a mask for the region of interest.
+
+   References: 
+   [1] J.G. Sled, A.P. Zijdenbos and A.C. Evans, "A non-parametric method
+       for automatic correction of intensity non-uniformity in MRI data",
+       in "IEEE Transactions on Medical Imaging", 1996 (submitted) 
+
+
+Summary of options:
+
+-- General options -------------------------------------------------------------
+   -verbose      be noisy [default; opposite is -quiet]
+   -execute      actually execute planned commands [default]
+   -clobber      overwrite output files [default: -noclobber]
+   -tmpdir       temporary working directory
+   -keeptmp      don't delete temporary files [default: -nokeeptmp]
+   -version      print version and quit
+
+-- Protocol options ------------------------------------------------------------
+   -mask <mask.mnc>
+                 specify region for processing
+   -distance <value>
+                 characteristic distance over which field varies in mm (default
+                 200)
+   -iterations <number>
+                 maximum number of iterations to run
+   -options options
+                 method specific options (quoted if more than one)
+   -mapping_dir <directory>
+                 specifiy directory to put imp files in
+
+-- N3 specific options ---------------------------------------------------------
+   -stop <threshold>
+                 CV of change in field estimate below which iteration stops
+                 (suggest 0.01 to 0.0001)
+   -shrink <factor>
+                 specify a smaller workspace; the sampling in each dimension is
+                 reduced to that of the finest sampling divided by factor or the
+                 current sampling which ever is less. (suggest 2 or 3)
+   -V0.9         use default options of original (beta) release
+   -V1.0         use improved options of release 1.0.  This is equivalent to
+                 -fwhm 0.15 -stop 0.001 -iterations 50 -shrink 4 -distance 200.
+                 (default)
+   -fwhm <width> width of deconvolution kernal used to sharpen histogram.
+                 Larger values give faster convergence while smaller values give
+                 greater accuracy.  (suggest 0.05 to 0.5, default is 0.15)
+
+nu_correct, version 0.9
+
+Usage: nu_correct [-help] [options] in.mnc out.mnc
+
+Test #18 completed.
+--------------------------------------------------------
+Running test #19
+nu_correct -fwhm 0.2 -mapping_dir /usr/tmp/do_test_21672/ ./chunk.mnc.gz /usr/tmp/do_test_21672//chunk_nu.mnc -mask ./chunk_mask.mnc.gz -shrink 3 -verbose -stop 0.001 -iterations 1
+[nu_correct] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:11] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.2 0.01 -iterations 1 -stop 0.001 -shrink 3 -auto_mask -nonotify -b_spline 1 -distance 200 -mask ./chunk_mask.mnc.gz -verbose -execute -noclobber -nokeeptmp -tmpdir /usr/tmp/nu_correct_23390/ ./chunk.mnc.gz /usr/tmp/do_test_21672/chunk_nu.imp
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:38:12] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.2 0.01 -iterations 1 -stop 0.001 -shrink 3 -auto_mask -nonotify -b_spline 1 -distance 200 -mask ./chunk_mask.mnc.gz -verbose -execute -noclobber -nokeeptmp -tmpdir /usr/tmp/nu_correct_23390/ ./chunk.mnc.gz /usr/tmp/do_test_21672/chunk_nu.imp
+
+
+Uncorrected volume (input): ./chunk.mnc.gz
+Intensity mapping (output): /usr/tmp/do_test_21672/chunk_nu.imp
+
+# Start of NU estimation algorithm
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:13] /usr/local/mni/bin/mincresample -clobber -verbose -nearest_neighbour -nelements 31 18 18 -step 6 6 9 ./chunk.mnc.gz /usr/tmp/nu_correct_23390/chunk.mnc
+Transforming slices:...............................Done
+Resampling ./chunk_mask.mnc.gz like /usr/tmp/nu_correct_23390/chunk.mnc
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:14] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/resample_labels -clobber -verbose -resample '-like /usr/tmp/nu_correct_23390/chunk.mnc' ./chunk_mask.mnc.gz /usr/tmp/nu_correct_23390/chunk_mask.mnc.temp
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:15] /usr/local/mni/bin/mincresample ./chunk_mask.mnc.gz /usr/tmp/resample_labels_23422/chunk_mask.mnc_rsl.mnc -trilinear -byte  -like /usr/tmp/nu_correct_23390/chunk.mnc 
+Transforming slices:...............................Done
+[resample_labels] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:16] /usr/tmp/do_test_21672/extracttag /usr/tmp/resample_labels_23422/chunk_mask.mnc_rsl.mnc -volume /usr/tmp/nu_correct_23390/chunk_mask.mnc.temp -threshold 0.5 1.1 -label 1 -maxtags 0
+Updating history
+Elapsed time in resample_labels (23422) and children:
+1.1 sec (user) + 0.49 sec (system) = 1.59 sec (total)
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:17] /usr/local/mni/bin/mincresample -clobber -verbose -like /usr/tmp/nu_correct_23390/chunk.mnc /usr/tmp/nu_correct_23390/chunk_mask.mnc.temp /usr/tmp/nu_correct_23390/chunk_mask.mnc
+Transforming slices:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:17] /sbin/rm /usr/tmp/nu_correct_23390/chunk_mask.mnc.temp
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:17] /usr/local/mni/bin/mincmath -clobber -verbose -clamp -const2 1 1.7e+308 /usr/tmp/nu_correct_23390/chunk.mnc /usr/tmp/nu_correct_23390/chunk_nu_log.mnc.temp
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:17] /usr/local/mni/bin/mincmath -clobber -verbose -zero -log /usr/tmp/nu_correct_23390/chunk_nu_log.mnc.temp /usr/tmp/nu_correct_23390/chunk_nu_log.mnc
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:18] /sbin/rm /usr/tmp/nu_correct_23390/chunk_nu_log.mnc.temp
+# thresholding background
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:18] /usr/local/mni/bin/mincmath -clobber -verbose -zero -gt -const 1 /usr/tmp/nu_correct_23390/chunk.mnc /usr/tmp/nu_correct_23390/chunk_nu_bkg.mnc
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:18] /usr/local/mni/bin/mincmath -clobber -verbose -short -signed -and /usr/tmp/nu_correct_23390/chunk_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_bkg.mnc /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:18] /sbin/rm /usr/tmp/nu_correct_23390/chunk_nu_bkg.mnc
+# apply mask to log volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:18] /usr/local/mni/bin/mincmath -clobber -verbose -mult -zero /usr/tmp/nu_correct_23390/chunk_nu_log.mnc /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc.temp
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:19] /sbin/mv /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc.temp /usr/tmp/nu_correct_23390/chunk_nu_log.mnc
+# create flat initial field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:19] /usr/local/mni/bin/mincmath -clobber -verbose -short -mult -const 0 /usr/tmp/nu_correct_23390/chunk_nu_log.mnc /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc
+Processing:...............................Done
+
+# Starting iteration 0
+# correct volume using field estimate
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:19] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_correct_23390/chunk_nu_log.mnc /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc /usr/tmp/nu_correct_23390/chunk_nu_corr.mnc
+Processing:...............................Done
+# compute residual volume from classification of corrected volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:19] /sbin/cp /usr/tmp/nu_correct_23390/chunk_nu_corr.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:19] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/sharpen_volume -clobber -verbose -parzen -bins 200 -fwhm 0.2 -noise 0.01 /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc /usr/tmp/nu_correct_23390/chunk_nu_est.mnc.temp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:21] /usr/tmp/do_test_21672/volume_hist -bins 200 -auto_range -mask /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc /usr/tmp/nu_correct_23390/chunk_nu_est.hist -clobber -text -select 1 -quiet -window
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:21] /usr/tmp/do_test_21672/sharpen_hist -clobber -fwhm 0.2 -noise 0.01 -quiet -range 11.513249 13.638054 /usr/tmp/nu_correct_23390/chunk_nu_est.hist /usr/tmp/nu_correct_23390/chunk_nu_est.sharp
+[sharpen_volume] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:21] /usr/local/mni/bin/minclookup -continuous -range 11.513249 13.638054 -clobber -lookup_table /usr/tmp/nu_correct_23390/chunk_nu_est.sharp /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc /usr/tmp/nu_correct_23390/chunk_nu_est.mnc.temp
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:22] /usr/local/mni/bin/mincmath -clobber -verbose -mult /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_est.mnc.temp /usr/tmp/nu_correct_23390/chunk_nu_est.mnc
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:22] /usr/local/mni/bin/mincmath -clobber -verbose -sub /usr/tmp/nu_correct_23390/chunk_nu_log.mnc /usr/tmp/nu_correct_23390/chunk_nu_est.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:22] /sbin/mv /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc /usr/tmp/nu_correct_23390/chunk_nu_est.mnc
+# filter residue volume
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:22] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 200 -b_spline -lambda 0.037037037037037 -subsample 1 -mask /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:25] /usr/local/mni/bin/mincmath -clobber -verbose -sub -zero /usr/tmp/nu_correct_23390/chunk_nu_est.mnc /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:26] /usr/tmp/do_test_21672/volume_stats -quiet -stddev -mean -mask /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc
+CV for change in field estimate at iteration 0: 0.00555766
+
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:26] /usr/local/mni/bin/mincmath -clobber -verbose -zero -exp /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc.temp
+Processing:...............................Done
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:26] /sbin/mv /usr/tmp/nu_correct_23390/chunk_nu_residue.mnc.temp /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc
+[nu_estimate_np_and_em] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:26] /usr/tmp/do_test_21672/spline_smooth -clobber -verbose -full_support -distance 200 -b_spline -lambda 0.008 -subsample 5 -novolume -mask /usr/tmp/nu_correct_23390/chunk_nu_mask.mnc /usr/tmp/nu_correct_23390/chunk_nu_temp.mnc -compact /usr/tmp/do_test_21672/chunk_nu.imp
+Number of iterations: 1 
+CV of field change: 0.00555766
+# NU estimation complete.
+[nu_correct] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:27] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_evaluate -verbose -execute -noclobber -nokeeptmp -tmpdir /usr/tmp/nu_correct_23390/ -shrink 3 ./chunk.mnc.gz -mapping /usr/tmp/do_test_21672/chunk_nu.imp /usr/tmp/do_test_21672//chunk_nu.mnc
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:29] /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/make_template -quiet -shrink 3 ./chunk.mnc.gz /usr/tmp/nu_correct_23390//template.mnc
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:38:30] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/make_template -quiet -shrink 3 ./chunk.mnc.gz /usr/tmp/nu_correct_23390//template.mnc
+
+Transforming slices:...............................Done
+32+0 records in
+32+0 records out
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:31] /usr/tmp/do_test_21672/evaluate_field -clobber -verbose -like /usr/tmp/nu_correct_23390//template.mnc /usr/tmp/do_test_21672/chunk_nu.imp /usr/tmp/nu_correct_23390//field_volume.mnc
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:32] /usr/local/mni/bin/mincresample -trilinear -like ./chunk.mnc.gz /usr/tmp/nu_correct_23390//field_volume.mnc /usr/tmp/nu_correct_23390//chunk_nu_field.mnc
+Transforming slices:...........................................................................................Done
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:38:35] /usr/local/mni/bin/mincmath -clobber -verbose -zero -div ./chunk.mnc.gz /usr/tmp/nu_correct_23390//chunk_nu_field.mnc /usr/tmp/do_test_21672//chunk_nu.mnc
+Processing:...........................................................................................Done
+Test #19 completed.
+--------------------------------------------------------
+Running test #20
+nu_estimate ./brain.mnc.gz /usr/tmp/do_test_21672//brain.imp -clobber
+[jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing/] [1997-10-01 19:38:40] running:
+  /data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/src/NUcorrect/nu_estimate_np_and_em -parzen -log -sharpen 0.15 0.01 -iterations 50 -stop 0.001 -shrink 4 -auto_mask -nonotify -b_spline 1 -distance 200 -quiet -execute -clobber -nokeeptmp -tmpdir /usr/tmp/nu_estimate_23625/ ./brain.mnc.gz /usr/tmp/do_test_21672//brain.imp
+
+Transforming slices:........................Done
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Warning: range of mapping is not within domain.
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Processing:........................Done
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Number of iterations: 33 
+CV of field change: 0.000942487
+Test #20 completed.
+--------------------------------------------------------
+Running test #21
+nu_evaluate ./brain.mnc.gz -mapping /usr/tmp/do_test_21672//brain.imp ./brain_nu.mnc -clobber
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:42:15] /usr/tmp/do_test_21672/evaluate_field -clobber -verbose -like ./brain.mnc.gz /usr/tmp/do_test_21672//brain.imp /usr/tmp/nu_evaluate_25273//brain_nu_field.mnc
+Smoothing volume: .............................................................
+Not implemented yet in cache_volume_range_has_changed()
+Not implemented yet in cache_volume_range_has_changed()
+Outputting Volume: ............................................................
+[nu_evaluate] [jgsled@bottom:/data/ai/data/jgsled/N3/ANALYSIS/AI_CONFIGURATION/AI_ALQUA/testing] [1997-10-01 19:42:47] /usr/local/mni/bin/mincmath -clobber -verbose -zero -div ./brain.mnc.gz /usr/tmp/nu_evaluate_25273//brain_nu_field.mnc ./brain_nu.mnc
+Processing:...........................................................................................Done
+Test #21 completed.
+
+---------------------------------------------------------------------
+
+ All of the tests were completed without suffering a fatal error. 
+
+ Summaring results ...
+
+  Number of warnings: 1 ...good
+  Number of errors: 1 ...good
+  Number of fails: 3 ...good
+
+---------------------------------------------------------------------
+ Checking that numerical results match reference versions ...
+
+Comparison statistics:
+RMS difference:                       0.0000 (       0%)
+Maximum difference:                   0.0000 (       0%)
+
+Testing of MNI N3 software package completed.
+---------------------------------------------------------------------

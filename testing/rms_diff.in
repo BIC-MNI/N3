@@ -1,0 +1,94 @@
+#!@PERL@ -w
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : rms_diff
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: 
+#@            
+#@METHOD     : 
+#@GLOBALS    : 
+#@CALLS      : 
+#@CREATED    : Oct 1, 1997      J.G.Sled  
+#@MODIFIED   : 
+#  $Id: rms_diff.in,v 1.1 2003-04-16 14:54:00 bert Exp $
+#-----------------------------------------------------------------------------
+
+require 5.001;
+use MNI::Startup qw(nocputimes);
+use MNI::Spawn;
+use Getopt::Tabular;
+use MNI::FileUtilities qw(check_output_dirs);
+use MNI::PathUtilities qw(split_path);
+
+# Start main program ------------------------------------------------
+
+$Clobber = 0;
+$Verbose = 1;
+$KeepTmp = 0;
+
+undef $mask;
+
+$Usage = <<USAGE;
+
+$ProgramName is a script to compare two images
+
+Usage: $ProgramName [-mask mask.mnc] img1.mnc img2.mnc
+USAGE
+
+@args_table = (["-verbose|-quiet", "boolean", 0, \$Verbose, 
+		"be noisy [default; opposite is -quiet]" ],
+               ["-tmpdir", "string", 1, \$TmpDir,
+		 "temporary working directory"],
+               ["-keeptmp|-nokeeptmp", "boolean", 0, \$KeepTmp,
+		 "don't delete temporary files [default: -nokeeptmp]"],
+	       ["-mask", "string", 1, \$mask,
+		"use given volume as mask"]);
+
+Getopt::Tabular::SetHelp ('', $Usage);
+
+GetOptions(\@args_table, \@ARGV, \@args) || exit 1;
+(@args == 2) || die $Usage;
+
+($img1, $img2) = @args;
+
+$mask_flag = (defined $mask)? "-mask $mask": "";
+
+check_output_dirs($TmpDir) || exit 1;
+
+RegisterPrograms([qw(mincmath volume_stats mv)]);
+#------------------------------------------------------------------
+# begin processing
+
+&Spawn("mincmath -quiet -sub $img1 $img2 $TmpDir/diff.mnc");
+
+# compute some statistics
+&Spawn("volume_stats -quiet -mean $mask_flag $img1", stdout => \$mean);
+&Spawn("volume_stats $mask_flag $TmpDir/diff.mnc", stdout => \$final_stats);
+@final_stats = split('\n', $final_stats);
+my ($name, $value);
+foreach $stat (@final_stats) {
+    ($name, $value) = ($stat =~ /^(.+):\s+(\S+)/);
+    $stats{lc($name)} = $value unless $name eq '';
+}
+
+$rms = sqrt($stats{'sum2'}/$stats{'# voxels'});
+$rms_percent = $rms/$mean;
+$max = (abs($stats{'max'}) > abs($stats{'min'}))? 
+   abs($stats{'max'}): abs($stats{'min'});
+$max_percent = $max/$mean;
+print "Comparison statistics:\n";
+printf("RMS difference:     %24.4f (%8.3g%%)\n", $rms, $rms_percent);
+printf("Maximum difference: %24.4f (%8.3g%%)\n", $max, $max_percent);
+
+
+
+
+
+
+
+
+
+
+
+
