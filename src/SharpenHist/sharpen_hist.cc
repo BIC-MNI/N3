@@ -9,7 +9,10 @@
 @CALLS      : 
 @CREATED    : February 27, 1996   J.G.Sled
 @MODIFIED   : $Log: sharpen_hist.cc,v $
-@MODIFIED   : Revision 1.2  2003-11-17 04:30:56  stever
+@MODIFIED   : Revision 1.3  2005-03-08 15:55:11  bert
+@MODIFIED   : Add checks for finite() vs. isfinite()
+@MODIFIED   :
+@MODIFIED   : Revision 1.2  2003/11/17 04:30:56  stever
 @MODIFIED   : *** empty log message ***
 @MODIFIED   :
 @MODIFIED   : Revision 1.1  2003/04/16 14:30:17  bert
@@ -149,11 +152,21 @@ main(int argc, char *argv[])
   Y = Y_padded(offset,offset+X.getrows()-1,0,0);
 
   // remove any NANs of INFs from Y 
+#if defined(HAVE_ISFINITE)
+  for(i = 0; i < Y.getrows(); i++)
+    {
+      if(!isfinite(Y(i,0)))
+         Y(i,0) = 0.0;
+    }
+#elif defined(HAVE_FINITE)
   for(i = 0; i < Y.getrows(); i++)
     {
       if(!finite(Y(i,0)))
          Y(i,0) = 0.0;
     }
+#else
+#error "Either finite() or isfinite() must be available"
+#endif
   
   // check that range has shrunk
   //  if(Y(0,0) < min_bin || Y(Y.getrows()-1,0) > max_bin)
