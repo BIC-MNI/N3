@@ -1,3 +1,7 @@
+2004-03-26  Bert Vincent   <bert@bic.mni.mcgill.ca>
+	* volumeStats.cc - Use the standard DBL_MAX and float.h rather
+	than the less standard MAXDOUBLE.
+
 2004-03-16  Bert Vincent   <bert@bic.mni.mcgill.ca>
 	* configure.in - Update such that the tests for lapack and blas
 	can work on Debian Linux (specifically audrey.bic.mni.mcgill.ca)
