@@ -1,3 +1,15 @@
+2004-01-29  Bert Vincent   <bert@bic.mni.mcgill.ca>
+	
+	* Makefile.am - turn on execute bits for scripts, uncomment SUBDIRS 
+	so that the tests can be included.
+	
+	* testing/do_test.in - several minor fixes to deal with newer autoconf
+	directory layout.
+
+	* testing/Makefile.am - added, to enable 'make check'.
+
+	* configure.in - add testing/Makefile to the AC_CONFIG_FILES list.
+	
 2003-11-25  Steve ROBBINS  <stever@bic.mni.mcgill.ca>
 
 	* configure.in: Set version to 1.07.
