@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: volumeStats.cc,v $
-$Revision: 1.2 $
-$Author: stever $
-$Date: 2003-11-17 04:30:56 $
+$Revision: 1.3 $
+$Author: bert $
+$Date: 2004-04-06 19:06:46 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -28,7 +28,10 @@ $State: Exp $
 @CALLS      : 
 @CREATED    : April 15, 1995 (Alex Zijdenbos)
 @MODIFIED   : $Log: volumeStats.cc,v $
-@MODIFIED   : Revision 1.2  2003-11-17 04:30:56  stever
+@MODIFIED   : Revision 1.3  2004-04-06 19:06:46  bert
+@MODIFIED   : Use either float.h or values.h for DBL_MAX, according to config.h
+@MODIFIED   :
+@MODIFIED   : Revision 1.2  2003/11/17 04:30:56  stever
 @MODIFIED   : *** empty log message ***
 @MODIFIED   :
 @MODIFIED   : Revision 1.1  2003/04/16 14:32:14  bert
@@ -70,8 +73,21 @@ $State: Exp $
 @COPYRIGHT  :
 ---------------------------------------------------------------------------- */
 
+#include "config.h"
 #include <assert.h>
 #include <time.h>
+
+#if HAVE_FLOAT_H
+#include <float.h>
+#else
+#if HAVE_VALUES_H
+#include <values.h>
+#ifndef DBL_MAX
+#define DBL_MAX MAXDOUBLE
+#endif /* DBL_MAX not defined */
+#endif /* HAVE_VALUES_H */
+#endif /* HAVE_FLOAT_H */
+
 #include <EBTKS/Minc.h>		// (bert) - Added EBTKS subdirectory
 #include <EBTKS/CachedArray.h>	// (bert)
 #include <EBTKS/Histogram.h>	// (bert)
@@ -164,8 +180,8 @@ main(int argc, char *argv[])
 	    voxels->resetIterator();
 	  }
 	  
-	  double minVal = MAXDOUBLE;
-	  double maxVal = -MAXDOUBLE;
+	  double minVal = DBL_MAX;
+	  double maxVal = -DBL_MAX;
 	  double sumVal = 0; 
 	  double sum2val = 0;
 	  double d1Center = 0, d2Center = 0, d3Center = 0;
