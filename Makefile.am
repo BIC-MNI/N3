@@ -27,7 +27,7 @@ bin_PROGRAMS = \
 	volume_stats
 
 LDADD = libmincprog.a
-lapack_link_flags = $(LDADD) $(LAPACK_LIBS) $(BLAS_LIBS) $(LIBS) $(FLIBS)
+lapack_link_flags = $(LDADD) $(LIBS) $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
 
 m4_files = acx_blas.m4 acx_lapack.m4 \
 	m4/mni_REQUIRE_LIB.m4 \
@@ -93,7 +93,6 @@ noinst_HEADERS = \
 EXTRA_DIST = \
 	INSTALL.GENERIC \
 	WHATSNEW \
-	VERSION \
 	README.BINARIES \
 	CHANGES \
 	include/version.h.in \
