@@ -1,0 +1,32 @@
+/* file: version.h
+         contains version information for the MNI N3 package.
+
+*/
+
+#define MNI_VERSION "@version@"
+#define MNI_COMPILE_TIME "@time@"
+#define MNI_COMPILE_DATE "@date@"
+#define MNI_COMPILE_USER "@user@"
+#define MNI_COMPILE_HOST "@machine@"
+#define MNI_COMPILE_SYSTEM "@host@"
+#define MNI_LONG_VERSION \
+   "Package MNI N3, version " MNI_VERSION \
+   ", compiled by " MNI_COMPILE_USER \
+   "@" MNI_COMPILE_HOST \
+   " (" MNI_COMPILE_SYSTEM ")" \
+   " on " MNI_COMPILE_DATE \
+   " at " MNI_COMPILE_TIME
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus defined */
+void  print_version_info( char *version_string );
+void  set_program_name( char *name );
+#ifdef __cplusplus
+}
+#endif /* __cplusplus defined */
+
+
+
+
+
