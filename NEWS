@@ -1,3 +1,9 @@
+        New in Release 1.08
+        -------------------
+
+Fixed make_template script to avoid crash commonly seen with files
+containing lots of DICOM data in their headers.
+
 	New in Release 1.07
 	-------------------
 
