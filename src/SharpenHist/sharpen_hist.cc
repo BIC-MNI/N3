@@ -9,7 +9,10 @@
 @CALLS      : 
 @CREATED    : February 27, 1996   J.G.Sled
 @MODIFIED   : $Log: sharpen_hist.cc,v $
-@MODIFIED   : Revision 1.3  2005-03-08 15:55:11  bert
+@MODIFIED   : Revision 1.4  2005-03-10 22:09:47  bert
+@MODIFIED   : Fix sharpen_hist.cc and finite() once more
+@MODIFIED   :
+@MODIFIED   : Revision 1.3  2005/03/08 15:55:11  bert
 @MODIFIED   : Add checks for finite() vs. isfinite()
 @MODIFIED   :
 @MODIFIED   : Revision 1.2  2003/11/17 04:30:56  stever
@@ -71,6 +74,20 @@ void  save_lookup(char *filename, DblMat &Y, double zero, double one,
 DblMat gaussian(double fwhm, int size);
 CompMat weiner(CompMat &blur, double noise);
 void  non_negative(DblMat *X);
+
+#if HAVE_FINITE
+#ifndef finite
+extern "C" int finite(double);
+#endif /* finite() not defined (as macro) */
+#define N3FINITE(x) finite(x)
+#elif HAVE_ISFINITE
+#ifndef isfinite
+extern "C" int isfinite(double);
+#endif /* isfinite() not defined (as macro) */
+#define N3FINITE(x) isfinite(x)
+#else
+#error "Neither finite() nor isfinite() is defined on your system"
+#endif /* HAVE_ISFINITE */
 
 //
 // Main program
@@ -152,21 +169,11 @@ main(int argc, char *argv[])
   Y = Y_padded(offset,offset+X.getrows()-1,0,0);
 
   // remove any NANs of INFs from Y 
-#if defined(HAVE_ISFINITE)
   for(i = 0; i < Y.getrows(); i++)
     {
-      if(!isfinite(Y(i,0)))
+      if(!N3FINITE(Y(i,0)))
          Y(i,0) = 0.0;
     }
-#elif defined(HAVE_FINITE)
-  for(i = 0; i < Y.getrows(); i++)
-    {
-      if(!finite(Y(i,0)))
-         Y(i,0) = 0.0;
-    }
-#else
-#error "Either finite() or isfinite() must be available"
-#endif
   
   // check that range has shrunk
   //  if(Y(0,0) < min_bin || Y(Y.getrows()-1,0) > max_bin)
