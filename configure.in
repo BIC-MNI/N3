@@ -5,7 +5,7 @@ AC_CONFIG_AUX_DIR(ac_config_aux)
 AM_INIT_AUTOMAKE(N3, 1.08)
 AM_CONFIG_HEADER([include/config.h])
 
-AC_REVISION($Revision: 1.5 $)
+AC_REVISION($Revision: 1.6 $)
 
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -66,24 +66,28 @@ try_clapack=no
 ACX_BLAS([], [try_clapack=yes])
 ACX_LAPACK([], [try_clapack=yes])
 
+# For some reason, this variable is set and used by the above macros, but 
+# its inclusion on some Linux systems causes link errors.  It does not 
+# seem to be needed.  So I'm trying to "zero" it out here.
+
+FLIBS=
+
 if test $try_clapack = yes ; then
 
-    FLIBS=
     BLAS_LIBS=
     LAPACK_LIBS=
 
     mni_REQUIRE_LIB(F77,
-    [#include <f2c.h>],
-    [doublereal x = -1; double y = d_abs(x); return (y == 1.0);])
+    [],
+    [extern char d_abs(); char (*f)() = d_abs;])
 
     mni_REQUIRE_LIB(blas,
-    [#include <f2c.h>
-    #include <blaswrap.h>],
-    [doublereal dx[] = {1.0, 2.0, -3.0}; integer incx = 1; integer n = 3; idamax_(&n, dx, &incx); ])
+    [],
+    [extern char idamax_(); char (*f)() = idamax_;])
 
     mni_REQUIRE_LIB(lapack,
-    [#include <f2c.h>],
-    [ char uplo = 'u';  integer n = 1, nrhs = 1, lda = 1, ldb = 1, ipiv = 1, info;  doublereal work;  integer lwork = 1;  doublereal a = 0.0, b = 0.0;  dsysv_(&uplo, &n, &nrhs, &a, &lda, &ipiv, &b, &ldb, &work, &lwork, &info); ])
+    [],
+    [extern char  dsysv_(); char (*f)() = dsysv_;])
 
 fi
 
