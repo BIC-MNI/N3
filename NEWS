@@ -1,3 +1,7 @@
+        New in Release 1.10.1
+        ---------------------
+* Simply repackage the tar ball with good m4 files for minc2
+
         New in Release 1.10
         -------------------
 Bug fixed in nu_estimate_np_and_em.in that occasionally caused mincmath

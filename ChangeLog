@@ -1,3 +1,6 @@
+2006-04-27  Claude Lepage  <claude@bic.mni.mcgill.ca>
+        * repackaging for minc2 m4 files
+
 2005-03-16  Andrew Janke   <a.janke@gmail.com>
 	* Changed from MNI:DataDir to FindBin for binary distribution
 	* Added epm-header.in for binary distribution
