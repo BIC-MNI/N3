@@ -1,4 +1,4 @@
-#!xPERLx -w
+#!@PERL@ -w
 #---------------------------------------------------------------------------
 #@COPYRIGHT :
 #             Copyright 1996, John G. Sled, 
@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #----------------------------------------------------------------------------
 #$RCSfile: nu_evaluate.in,v $
-#$Revision: 1.2 $
-#$Author: bert $
-#$Date: 2003-05-29 17:14:24 $
+#$Revision: 1.3 $
+#$Author: claude $
+#$Date: 2006-05-05 02:13:44 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : August 7, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_evaluate.in,v 1.2 2003-05-29 17:14:24 bert Exp $
+#  $Id: nu_evaluate.in,v 1.3 2006-05-05 02:13:44 claude Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -207,8 +207,8 @@ sub SetupArgTables
 #-----------------------------------------------------------------------------
 sub SetHelp
 {
-   $Version = 'xVERSIONx';
-   $LongVersion = 'xLONG_VERSIONx';
+   $Version = '@version@';
+   $LongVersion = '@long_version@';
 
    $Usage = <<USAGE;
 $ProgramName, version $Version

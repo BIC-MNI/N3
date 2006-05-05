@@ -1,4 +1,4 @@
-#!xPERLx -w
+#!@PERL@ -w
 #---------------------------------------------------------------------------
 #@COPYRIGHT :
 #             Copyright 1996, John G. Sled, 
@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #----------------------------------------------------------------------------
 #$RCSfile: imp2field.in,v $
-#$Revision: 1.1 $
-#$Author: bert $
-#$Date: 2003-04-16 14:29:34 $
+#$Revision: 1.2 $
+#$Author: claude $
+#$Date: 2006-05-05 02:13:44 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -29,7 +29,7 @@
 #@CALLS      : 
 #@CREATED    : August 28, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: imp2field.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#  $Id: imp2field.in,v 1.2 2006-05-05 02:13:44 claude Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -162,8 +162,8 @@ sub SetupArgTables
 #-----------------------------------------------------------------------------
 sub SetHelp
 {
-   $Version = 'xVERSIONx';
-   $LongVersion = 'xLONG_VERSIONx';
+   $Version = '@version@';
+   $LongVersion = '@long_version@';
 
    $Usage = <<USAGE;
 $ProgramName, version $Version

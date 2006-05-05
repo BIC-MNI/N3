@@ -1,4 +1,4 @@
-#!xPERLx -w
+#!@PERL@ -w
 #---------------------------------------------------------------------------
 #@COPYRIGHT :
 #             Copyright 1996, John G. Sled, 
@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: nu_estimate.in,v $
-#$Revision: 1.1 $
-#$Author: bert $
-#$Date: 2003-04-16 14:29:34 $
+#$Revision: 1.2 $
+#$Author: claude $
+#$Date: 2006-05-05 02:13:44 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -31,7 +31,7 @@
 #@CALLS      : 
 #@CREATED    : August 7, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_estimate.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#  $Id: nu_estimate.in,v 1.2 2006-05-05 02:13:44 claude Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -226,8 +226,8 @@ sub SetHelp
 {
    my($program_type, $N3_only_flag) = @_;
 
-   $Version = 'xVERSIONx';
-   $LongVersion = 'xLONG_VERSIONx';
+   $Version = '@version@';
+   $LongVersion = '@long_version@';
 
    # common help message
    if($N3_only_flag) {

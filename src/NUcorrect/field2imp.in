@@ -1,4 +1,4 @@
-#!xPERLx -w
+#!@PERL@ -w
 #---------------------------------------------------------------------------
 #@COPYRIGHT :
 #             Copyright 1996, John G. Sled, 
@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: field2imp.in,v $
-#$Revision: 1.1 $
-#$Author: bert $
-#$Date: 2003-04-16 14:29:34 $
+#$Revision: 1.2 $
+#$Author: claude $
+#$Date: 2006-05-05 02:13:44 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -29,7 +29,7 @@
 #@CALLS      : 
 #@CREATED    : August 28, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: field2imp.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#  $Id: field2imp.in,v 1.2 2006-05-05 02:13:44 claude Exp $
 #-----------------------------------------------------------------------------
 use MNI::Startup qw(nocputimes);
 use MNI::Spawn;
@@ -69,8 +69,8 @@ Spawn(['spline_smooth', '-full_support', '-distance', $distance, '-b_spline',
 #-----------------------------------------------------------------------------
 sub SetHelp
 {
-   $Version = 'xVERSIONx';
-   $LongVersion = 'xLONG_VERSIONx';
+   $Version = '@version@';
+   $LongVersion = '@long_version@';
 
    $Usage = <<USAGE;
 $ProgramName, version $Version

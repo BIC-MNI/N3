@@ -1,4 +1,4 @@
-#!xPERLx -w
+#!@PERL@ -w
 #---------------------------------------------------------------------------
 #@COPYRIGHT :
 #             Copyright 1996, John G. Sled, 
@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: sharpen_volume.in,v $
-#$Revision: 1.1 $
-#$Author: bert $
-#$Date: 2003-04-16 14:29:34 $
+#$Revision: 1.2 $
+#$Author: claude $
+#$Date: 2006-05-05 02:13:44 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -74,8 +74,8 @@ close(FILE);
 #-----------------------------------------------------------------------------
 sub Initialize
 {
-   $Version = 'xVERSIONx';
-   $LongVersion = 'xLONG_VERSIONx';
+   $Version = '@version@';
+   $LongVersion = '@long_version@';
 
    $Usage = <<USAGE;
 $ProgramName, version $Version

@@ -1,4 +1,4 @@
-#!xPERLx
+#!@PERL@
 
 # ------------------------------ MNI Header ----------------------------------
 #@NAME       : resample_labels
@@ -22,7 +22,7 @@
 #@CALLS      : 
 #@CREATED    : January 1996, Greg Ward
 #@MODIFIED   : Sept 1997, John Sled.  Configuration for use with N3 release.
-#@VERSION    : $Id: resample_labels.in,v 1.1 2003-04-16 14:29:34 bert Exp $
+#@VERSION    : $Id: resample_labels.in,v 1.2 2006-05-05 02:13:44 claude Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup;

@@ -1,3 +1,6 @@
+2006-04-29  Claude Lepage  <claude@bic.mni.mcgill.ca>
+        * change xPERLx to @PERL@, etc. 
+
 2006-04-27  Claude Lepage  <claude@bic.mni.mcgill.ca>
         * repackaging for minc2 m4 files
 

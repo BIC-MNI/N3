@@ -5,7 +5,7 @@ AC_CONFIG_AUX_DIR(ac_config_aux)
 AM_INIT_AUTOMAKE(N3, 1.10.1)
 AM_CONFIG_HEADER([include/config.h])
 
-AC_REVISION($Revision: 1.11 $)
+AC_REVISION($Revision: 1.12 $)
 
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -58,7 +58,7 @@ mni_REQUIRE_EBTKS
 mni_REQUIRE_VOLUMEIO
 
 dnl Find the version of perl 5 in use
-AC_PATH_PROGS(PERL, perl5 perl)
+AC_PATH_PROGS(PERL, [perl])
 
 # if test -z "$modeldir"; then
 # modeldir=`$PERL -e 'use MNI::DataDir; print MNI::DataDir::install_dir("N3");'`
@@ -73,4 +73,13 @@ AC_CHECK_FUNCS(finite isfinite)
 
 AC_CONFIG_FILES([Makefile testing/Makefile include/version.h])
 AC_OUTPUT(epm-header
+src/NUcorrect/field2imp
+src/NUcorrect/make_template
+src/NUcorrect/nu_estimate_np_and_em
+src/NUcorrect/resample_labels
+src/NUcorrect/imp2field
+src/NUcorrect/nu_estimate
+src/NUcorrect/nu_evaluate
+src/NUcorrect/sharpen_volume
 )
+

@@ -69,15 +69,19 @@ volume_stats_SOURCES = \
 	src/VolumeStats/VolumeStatsArgs.cc
 
 bin_SCRIPTS = \
-	field2imp \
-	imp2field \
-	make_template \
-	nu_estimate \
-	nu_correct \
-	nu_estimate_np_and_em \
-	nu_evaluate \
-	resample_labels \
-	sharpen_volume
+	src/NUcorrect/field2imp \
+	src/NUcorrect/imp2field \
+	src/NUcorrect/make_template \
+	src/NUcorrect/nu_correct \
+	src/NUcorrect/nu_estimate \
+	src/NUcorrect/nu_estimate_np_and_em \
+	src/NUcorrect/nu_evaluate \
+	src/NUcorrect/resample_labels \
+	src/NUcorrect/sharpen_volume
+
+# Yep, this is simply a copy (for backward compatibility)
+src/NUcorrect/nu_correct: src/NUcorrect/nu_estimate
+	cp -f -p src/NUcorrect/nu_estimate src/NUcorrect/nu_correct
 
 noinst_HEADERS = \
 	./src/EvaluateField/evaluateFieldArgs.h \
@@ -115,45 +119,3 @@ dist_pkgdata_DATA := model_data/N3/average_305_mask_1mm.mnc.gz
 
 CLEANFILES = $(bin_SCRIPTS)
 
-SEDFLAGS = -e 's/xVERSIONx/$(version)/g' \
-	   -e 's/xLONG_VERSIONx/$(long_version)/g' \
-	   -e 's,xPERLx,$(PERL),g' -e 's,xINCDIRx,$(perllibdir),g'
-
-field2imp: src/NUcorrect/field2imp.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-imp2field: src/NUcorrect/imp2field.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-make_template: src/NUcorrect/make_template.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-nu_estimate: src/NUcorrect/nu_estimate.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-# Yes, this is just a copy of the above file with a new name.  Could
-# replace this with a hard link, I suppose.
-#
-nu_correct: src/NUcorrect/nu_estimate.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-nu_estimate_np_and_em: src/NUcorrect/nu_estimate_np_and_em.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-nu_evaluate: src/NUcorrect/nu_evaluate.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-resample_labels: src/NUcorrect/resample_labels.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
-
-sharpen_volume: src/NUcorrect/sharpen_volume.in
-	sed < `test -f '$<' || echo '$(srcdir)/'`$< $(SEDFLAGS) > $@ 
-	chmod +x $@
