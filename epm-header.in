@@ -6,6 +6,5 @@
 %readme README
 %description MINC RF inhomogeneity correction package
 %version @VERSION@
-%requires netcdf
 %requires minc
 %requires ebtks
