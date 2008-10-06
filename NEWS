@@ -1,35 +1,100 @@
-        New in Release 1.10.1
-        ---------------------
+New in Release 1.10.1
+---------------------
 * Simply repackage the tar ball with good m4 files for minc2
-* Change xPERLx to get good perl exec
+* Changed xPERLx to get good perl exec
 
-        New in Release 1.10
-        -------------------
-Bug fixed in nu_estimate_np_and_em.in that occasionally caused mincmath
-to be called with the same filename for both an input and an output.
-Among other things, this sometimes caused test #14 to fail.
+New in Release 1.10
+-------------------
+* Bug fixed in nu_estimate_np_and_em.in that occasionally caused mincmath
+   to be called with the same filename for both an input and an output.
+   Among other things, this sometimes caused test #14 to fail.
+* Minor change to extracttag.c to avoid problems on 64-bit platforms.
+* Added checks for finite/isfinite for Solaris
 
-Minor change to extracttag.c to avoid problems on 64-bit platforms.
+New in Release 1.09
+-------------------
+* Build fixes.  No user visible changes.
 
-Added checks for finite/isfinite for Solaris
+New in Release 1.08
+-------------------
+* Fixed make_template script to avoid crash commonly seen with files
+   containing lots of DICOM data in their headers.
+* Build of PERL scripts fails when using IRIX make.  The result is a set of
+   scripts of zero lengths.  The workaround is to build with GNU make instead
+   of the default IRIX make.
 
-        New in Release 1.09
-        -------------------
-Build fixes.  No user visible changes.
+New in Release 1.07
+-------------------
+* Build fixes.  No user-visible changes.
 
-        New in Release 1.08
-        -------------------
+New in Release 1.06
+-------------------
+* Improvements to build procedure: configure detects FORTRAN LAPACK or CLAPACK.
 
-Fixed make_template script to avoid crash commonly seen with files
-containing lots of DICOM data in their headers.
+New in Release 1.05
+-------------------
+* The functionality of release 1.05 is unchanged from that of 1.04.  
+* A number of minor changes have been made to the code, Makefiles, and
+   configuration script to allow it to build with gcc 2.95.  A number
+   of additional changes have been made which (I hope) will allow it
+   to compile on Solaris machines without complaint.
 
-	New in Release 1.07
-	-------------------
+New in Release 1.04
+-------------------
+* The most important change with 1.04 is that the code can now be compiled
+   with the new egcs version (1.0 or later) of g++.  This means the current
+   distributions of Linux, most of which come with egcs, should now be able to
+   compile N3.
+* Release 1.04 fixes a number of bugs from release 1.02.  Among these,
+   a change to the way the .imp correction field is produced at the final
+   stage means that the new version produces slightly different results than
+   previous versions (typically by ~ 0.3%).  Also, MNI_AUTOREG is no longer
+   needed to install N3.
 
-Build fixes.  No user-visible changes.
+New in Release 1.03
+-------------------
+* A new verison of the test data is needed for the quantitative tests.
+  > fixed 1.04
+* float volumes created by evaluate_field may suffer round off problems
+  > fixed in 1.04
+* mincblur is required but not really necessary most of the time
+  > fixed in 1.04
 
-	New in Release 1.06
-	-------------------
+New in Release 1.02
+-------------------
+* volume_hist crashes if image min and max are same
+   > fixed in 1.02c
+* nu_correct fails rather mysteriously if the mask volume is empty
+   > fixed in 1.04
+* The code for bining in volume_hist may not handle the last bin correctly. 
+* The imp generation stage of nu_estimate_np_and_em may fail due to under
+   sampling of smooth volume.
+   > fixed in 1.03.   Note: this fix changes the results of the algorithm
+   slightly ( less than 0.3% for test suite ).
+* The intensity scaling of the output volume can be quite different than the
+   input.
+   > While this isn't a bug, an option has been added to nu_estimate_np_and_em to
+   correct for this in version 1.03.
+   > This option has been added to the nu_estimate/nu_correct scripts as of 1.04
 
-Improvements to build procedure: configure detects FORTRAN LAPACK or CLAPACK.
+New in Release 1.1
+------------------
+* Path.c doesn't work correctly with the bash shell since it doesn't
+   have a PWD variable.
+   > fixed in release 1.04
+* On SGIs the compiler should be CC not DCC to take advantage of the
+   new formats.
 
+New in Release 1.0
+------------------
+* The make_template command assumes the MINC header will be less than 16k.
+   This may cause evaluate_field to crash if template header has been
+   truncated.  
+   > changed to 32k in release 1.02
+* mv command is not registered in nu_evaluate script.
+   > fixed in release 1.02
+* Software doesn't compile on g++ versions that don't support -O3.
+* spline_smooth doesn't check that output file is writable until after
+   computing field.
+* evaluate_field may compute a different number of basis functions than 
+   spline_smooth did as a result of round off errors.

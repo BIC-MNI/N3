@@ -1,6 +1,5 @@
         MNI Non-parametric Non-uniformity Normalization (N3) Package
-                        Version 1.05 (forth release)
-                              March 22, 2001
+
 
 DESCRIPTION
 -----------
@@ -44,66 +43,28 @@ References:
        Information Processing in Medical Imaging, pp. 459-464, 1997 
 
 
-GETTING MNI_N3
--------------------
+GETTING N3
+----------
 
 You can obtain a copy of the latest version of the MNI_N3
-software using anonymous FTP from:
+software from:
 
-    ftp://ftp.bic.mni.mcgill.ca/pub/mni_n3/
+    http://packages.bic.mni.mcgill.ca/tgz
 
-Look for a file named mni_n3-x.yy.tar.gz (where x.yy is the release
-number) as well as a file named mni_n3_testdata-x.yy.tar.gz.  The
-later file is only required if you want to run the automated test
-suite.
+Look for a file named N3-x.yy.tar.gz (where x.yy is the release
+number).
  
 MNI_N3 requires that both the MINC and netCDF packages be built and
 installed first.  The MINC file format is a highly flexible medical
 image file format built on top of the netCDF generalized data format.
-You should be able to get them both from 
-
-    ftp://ftp.bic.mni.mcgill.ca/pub/minc
-
-You will need MINC version 0.6 (the most recent release at this writing)
-or later.  
-
-If you prefer, you can get netCDF from its home site, the Unidata Program
-Centre at the University Corporation for Atmospheric Research:
-
-    ftp://unidata.ucar.edu/pub/netcdf
 
 You will also need Perl 5, version 5.003 or later.
 You can always find the latest version of Perl at at any
-mirror of the Comprehensive Perl Archive Network (CPAN), in src/5.0/.  The
-easiest way is to go to:
-
-   http://www.perl.com/CPAN/src/5.0/
-
-which will magically connect you to a nearby CPAN site.
-
-If you prefer the old-fashioned way, here is a random selection of CPAN
-sites:
-
-   * ftp://ftp.metronet.com/pub/perl
-   * ftp://uiarchive.cso.uiuc.edu/pub/lang/perl/CPAN
-   * ftp://ftp.funet.fi/pub/languages/perl/CPAN
-   * ftp://ftp.demon.co.uk/pub/mirrors/perl/CPAN
-   * ftp://ftp.mame.mu.oz.au/pub/perl/CPAN
+mirror of the Comprehensive Perl Archive Network (CPAN), in src/5.0/.  
    
-Lastly, you will need the perl library mni_perllib available 
-by anonymous ftp at
+Lastly, you will need the perl library mni_perllib available at
 
-    ftp://ftp.bic.mni.mcgill.ca/pub/perl/mni_perllib-x.yy.tar.gz
-
-SYSTEM REQUIREMENTS
--------------------
-
-The MNI_N3 package has been tested on i686-pc-linux-gnu, mips-sgi-irix5.3,
-mips-sgi-irix6.4, and sparc-sun-sunos4.1.3 systems.  An earlier version is
-reported to be working on an HP-UX system.  It likely that the package will
-run on most flavors of UNIX system with little or no modification.  Roughly
-ten megabytes of disk space are needed to build and test the package.  The
-installed package requires roughly three megabytes.
+    http://packages.bic.mni.mcgill.ca/tgz
 
 
 INSTALLATION
@@ -166,7 +127,7 @@ In order to make the MNI N3 utilities:
       dependent values and generate Makefiles needed to
       build the package.
 
-      In the directory where you unpacked the MNI_N3 tar file,
+      In the directory where you unpacked the N3 tar file,
       type
 
          ./configure
@@ -182,13 +143,13 @@ In order to make the MNI N3 utilities:
       particular, this be necessary if you have installed netCDF, MINC,
       Volume_IO, or Perl 5 in weird places.  The easiest way to do that
       is with the --prefix option; for instance, at the MNI, we keep
-      home-grown software under /usr/local/mni, so here we run
+      home-grown software under /usr/local/bic, so here we run
       `configure' like this:
 
-         ./configure --prefix=/usr/local/mni
+         ./configure --prefix=/usr/local/bic
 
       and the MINC and Volume_IO files will be found in various
-      directories under /usr/local/mni.  (netCDF is *not* home-grown, so
+      directories under /usr/local/bic.  (netCDF is *not* home-grown, so
       we keep it under /usr/local.  Luckily, `configure' is smart enough
       to look there if all else fails.)
 
@@ -213,7 +174,7 @@ In order to make the MNI N3 utilities:
          VOLUMEIO_LIB      where to find Volume_io library (libvolume_io.a)
          PERL              where to find Perl binary (must be Perl 5.003)
 
-      Note that these are all *inputs* required to build MNI_N3.
+      Note that these are all *inputs* required to build N3.
       There are also a number of output directories that determine where
       various files are installed to; these are explained below.
 

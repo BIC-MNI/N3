@@ -1,5 +1,0 @@
-Version 1.08
-
-* Build of PERL scripts fails when using IRIX make.  The result is a set of 
-scripts of zero lengths.  The workaround is to build with GNU make instead
-of the default IRIX make.
