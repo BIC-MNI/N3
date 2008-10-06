@@ -12,20 +12,14 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: fieldIO.h,v $
-$Revision: 1.1 $
-$Author: bert $
-$Date: 2003-04-16 14:30:54 $
+$Revision: 1.2 $
+$Author: rotor $
+$Date: 2008-10-06 02:10:05 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 
 #ifndef FIELDIO_H
 #define FIELDIO_H
-
-#ifndef lint
-static char rcsid_field_io_h[] = "$Header: /private-cvsroot/INSECT/N3/src/SplineSmooth/fieldIO.h,v 1.1 2003-04-16 14:30:54 bert Exp $";
-#endif
-
-
 
 Status outputCompactField(const MString filename, 
                           const DblMat &domain,  // 3 rows, 2 columns 

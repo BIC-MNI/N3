@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: splineSmooth.cc,v $
-$Revision: 1.2 $
-$Author: bert $
-$Date: 2005-03-08 15:55:34 $
+$Revision: 1.3 $
+$Author: rotor $
+$Date: 2008-10-06 02:10:05 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -37,10 +37,6 @@ $State: Exp $
  *
 @COPYRIGHT  : 1996
 ---------------------------------------------------------------------------- */
-
-#ifndef lint
-static char rcsid[] = "$Header: /private-cvsroot/INSECT/N3/src/SplineSmooth/splineSmooth.cc,v 1.2 2005-03-08 15:55:34 bert Exp $";
-#endif
 
 #include <stdio.h>
 #include <iostream>		// (bert)

@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: fieldIO.cc,v $
-$Revision: 1.1 $
-$Author: bert $
-$Date: 2003-04-16 14:30:54 $
+$Revision: 1.2 $
+$Author: rotor $
+$Date: 2008-10-06 02:10:05 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -30,10 +30,6 @@ $State: Exp $
 @MODIFIED   : 
 @COPYRIGHT  : 1996
 ---------------------------------------------------------------------------- */
-
-#ifndef lint
-static char rcsid[] = "$Header: /private-cvsroot/INSECT/N3/src/SplineSmooth/fieldIO.cc,v 1.1 2003-04-16 14:30:54 bert Exp $";
-#endif
 
 #include <EBTKS/Spline.h>	// (bert) - Added EBTKS subdirectory
 #include <EBTKS/MString.h>	// (bert)

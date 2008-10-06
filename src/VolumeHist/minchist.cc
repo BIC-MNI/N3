@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: minchist.cc,v $
-$Revision: 1.2 $
-$Author: bert $
-$Date: 2005-03-08 15:55:34 $
+$Revision: 1.3 $
+$Author: rotor $
+$Date: 2008-10-06 02:10:05 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -33,10 +33,6 @@ $State: Exp $
  *
 @COPYRIGHT  : 1996 John G. Sled   
 ---------------------------------------------------------------------------- */
-
-#ifndef lint
-static char rcsid[] = "$Header: /private-cvsroot/INSECT/N3/src/VolumeHist/minchist.cc,v 1.2 2005-03-08 15:55:34 bert Exp $";
-#endif
 
 #include <config.h>
 #include <stdio.h>

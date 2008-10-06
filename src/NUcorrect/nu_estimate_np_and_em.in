@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#! @PERL@
 #---------------------------------------------------------------------------
 #@COPYRIGHT :
 #             Copyright 1996, John G. Sled, 
@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: nu_estimate_np_and_em.in,v $
-#$Revision: 1.4 $
-#$Author: claude $
-#$Date: 2006-05-05 02:13:44 $
+#$Revision: 1.5 $
+#$Author: rotor $
+#$Date: 2008-10-06 02:10:05 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,8 +30,9 @@
 #@CALLS      : 
 #@CREATED    : January 15, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_estimate_np_and_em.in,v 1.4 2006-05-05 02:13:44 claude Exp $
+#  $Id: nu_estimate_np_and_em.in,v 1.5 2008-10-06 02:10:05 rotor Exp $
 #-----------------------------------------------------------------------------
+use warnings "all";
 use MNI::Startup qw(nocputimes);
 use MNI::Spawn;
 use MNI::FileUtilities qw(check_output_dirs);
@@ -1655,7 +1656,17 @@ sub Initialize
    if( $smoothing_type eq 'fir' || $islands_threshold > 0 ) {
      $need_mincblur = 1;
    }
-
+   
+   # check that we are using the np method as progs for em method 
+   # are not longer included in the N3 distribution - Andrew 6/10/2008
+   if(defined($mean_file) || defined($tag_file)){
+      die("The EM method is no longer supported, please desist from using -mean and -tag..\n\n");
+      }
+   # check for -sharpen for the same reason as above (sort of).
+   if(!$sharpen_flag){
+      die("Please use a '-sharpen 100 0.01' option or equivalent as the EM method is no longer supported..\n\n");
+      }
+   
    # validate argument combinations and check filenames
    &ValidateArgs;
 
@@ -1665,7 +1676,7 @@ sub Initialize
       ('spline_smooth', 'volume_stats',
        'sharpen_volume',   'mincinfo', 'mincmath',
        'mincresample',     'resample_labels') :
-      ('class_statistics', 'estimate',       'spline_smooth', 'volume_stats',
+      ('class_statistics', 'estimate', 'spline_smooth', 'volume_stats',
        'mincinfo',       'mincmath', 
        'mincresample', 'resample_labels');
    ($need_mincblur) && push(@local_programs, 'mincblur');
