@@ -96,9 +96,8 @@ noinst_HEADERS = \
 
 EXTRA_DIST = \
 	INSTALL.GENERIC \
-	WHATSNEW \
-	README.BINARIES \
-	CHANGES \
+	README \
+	NEWS \
 	epm-header.in \
 	include/version.h.in \
 	src/NUcorrect/field2imp.in \
