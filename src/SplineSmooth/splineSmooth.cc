@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: splineSmooth.cc,v $
-$Revision: 1.3 $
-$Author: rotor $
-$Date: 2008-10-06 02:10:05 $
+$Revision: 1.4 $
+$Author: claude $
+$Date: 2009-05-08 18:44:52 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -87,7 +87,7 @@ void fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
 int main( int argc,  char *argv[] )
      
 {
-  Volume volume, mask_volume, output_mask_volume;     
+  Volume volume = NULL, mask_volume = NULL, output_mask_volume = NULL;     
   nc_type output_type; /* type for output volume */
   args args(argc, argv);
   DblMat domain;   // region in world coordinates on which splines are defined
@@ -210,6 +210,11 @@ int main( int argc,  char *argv[] )
                          theSplines->getCoefficients(), args.spline,
                          args.command, volume);
     }
+
+  delete theSplines;
+  delete_volume( volume );
+  if( mask_volume ) delete_volume( mask_volume );
+  if( output_mask_volume ) delete_volume( output_mask_volume );
 
   return(0);
 } 

@@ -1,3 +1,7 @@
+2009-05-08  Claude Lepage  <claude@bic.mni.mcgill.ca>
+	* Make nu_estimate_np_and_em.in invariant to voxel steps (via
+  	  spline_smooth in EBTKS)
+	* Free memory after usage
 
 2008-06-10  Andrew L Janke <a.janke@gmail.com>
 	* updated README, merged CHANGES and WHATSNEW into NEWS

@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: fieldIO.cc,v $
-$Revision: 1.2 $
-$Author: rotor $
-$Date: 2008-10-06 02:10:05 $
+$Revision: 1.3 $
+$Author: claude $
+$Date: 2009-05-08 18:44:52 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -393,6 +393,7 @@ loadFloatVolume(const MString filename, nc_type *data_type)
   BOOLEAN signed_flag;
   *data_type = get_volume_nc_data_type(volume, &signed_flag);
   delete_volume_input( &input_info);
+  delete_volume( volume );
   
   // open this time using float type
   if (input_volume((char *)(const char *)filename, N_DIMENSIONS, 

@@ -1,3 +1,9 @@
+New in Release 1.11.0
+---------------------
+* Make nu_estimate_np_and_em.in invariant to voxel steps (via
+  spline_smooth in EBTKS)
+* Free memory after usage
+
 New in Release 1.10.1
 ---------------------
 * Simply repackage the tar ball with good m4 files for minc2
