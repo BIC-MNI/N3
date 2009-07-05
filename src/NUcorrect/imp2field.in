@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #----------------------------------------------------------------------------
 #$RCSfile: imp2field.in,v $
-#$Revision: 1.2 $
-#$Author: claude $
-#$Date: 2006-05-05 02:13:44 $
+#$Revision: 1.3 $
+#$Author: rotor $
+#$Date: 2009-07-05 15:31:19 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -29,7 +29,7 @@
 #@CALLS      : 
 #@CREATED    : August 28, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: imp2field.in,v 1.2 2006-05-05 02:13:44 claude Exp $
+#  $Id: imp2field.in,v 1.3 2009-07-05 15:31:19 rotor Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -53,7 +53,9 @@ else {
           "$TmpDir/template.mnc"]);
    &Spawn(['evaluate_field', '-like', "$TmpDir/template.mnc",
           $mapping_name, "$TmpDir/field_volume.mnc"]);
-   &Spawn(['mincresample', '-trilinear', '-like', $like_volume,
+   &Spawn(['mincresample', '-trilinear', 
+          '-fill', '-fillvalue', 1,
+          '-like', $like_volume,
           "$TmpDir/field_volume.mnc", $output_volume]);
 }
 

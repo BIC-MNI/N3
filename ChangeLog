@@ -1,3 +1,8 @@
+2009-07-06  Andrew L Janke <a.janke@gmail.com>
+	* src/NUcorrect/imp2field: added -fill and -fillvalue 1 to 
+		the mincresample call to ensure that voxels out of the
+		spline area are set to 1 (not 0)
+
 2009-05-08  Claude Lepage  <claude@bic.mni.mcgill.ca>
 	* Make nu_estimate_np_and_em.in invariant to voxel steps (via
   	  spline_smooth in EBTKS)
