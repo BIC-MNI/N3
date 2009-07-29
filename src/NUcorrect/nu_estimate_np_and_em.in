@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: nu_estimate_np_and_em.in,v $
-#$Revision: 1.6 $
+#$Revision: 1.7 $
 #$Author: claude $
-#$Date: 2009-05-08 18:44:52 $
+#$Date: 2009-07-29 15:07:44 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : January 15, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_estimate_np_and_em.in,v 1.6 2009-05-08 18:44:52 claude Exp $
+#  $Id: nu_estimate_np_and_em.in,v 1.7 2009-07-29 15:07:44 claude Exp $
 #-----------------------------------------------------------------------------
 use warnings "all";
 use MNI::Startup qw(nocputimes);
@@ -1563,7 +1563,9 @@ sub Initialize
        "$default_model_data/TPM/prob_map_rfc_gry.mnc", 
        "$default_model_data/TPM/prob_map_rfc_wht.mnc");
    $average_brain_mask = 
-      "$default_model_data/average_305_mask_1mm.mnc";
+      "$default_model_data/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc";
+      ### "$default_model_data/average_305_mask_1mm.mnc.gz";    ### old
+
    if( ! (-r $average_brain_mask) && (-r "$average_brain_mask.gz")) {
         $average_brain_mask .= ".gz";
    }

@@ -1,8 +1,14 @@
 New in Release 1.11.0
 ---------------------
 * Make nu_estimate_np_and_em.in invariant to voxel steps (via
-  spline_smooth in EBTKS)
+  spline_smooth in EBTKS - must use EBTKS 1.6.2 or above)
 * Free memory after usage
+* Remove downsampling in evaluation of field (computers are fast
+  now, so be more accurate by sampling at full resolution)
+* Correct the field in the region outside the mask to make
+  sure the mask varies smoothly away from the brain (important
+  with the previous changes)
+* New program for the far-field correction
 
 New in Release 1.10.1
 ---------------------

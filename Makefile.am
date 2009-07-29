@@ -19,6 +19,7 @@ libmincprog_a_SOURCES = \
 	src/MincProg/print_version.c
 
 bin_PROGRAMS = \
+	correct_field \
 	evaluate_field \
 	extracttag \
 	sharpen_hist \
@@ -38,6 +39,9 @@ m4_files = acx_blas.m4 acx_lapack.m4 \
 	m4/smr_OPTIONAL_LIB.m4 \
 	m4/smr_REQUIRED_LIB.m4 \
 	m4/smr_WITH_BUILD_PATH.m4
+
+correct_field_SOURCES = \
+	src/CorrectField/correctField.cc
 
 evaluate_field_SOURCES = \
 	src/EvaluateField/evaluateField.cc \
@@ -110,11 +114,10 @@ EXTRA_DIST = \
 	src/NUcorrect/sharpen_volume.in \
 	$(m4_files)
 
-# dist_model_DATA = model_data/N3/average_305_mask_1mm.mnc.gz
-
 pkgdatadir = $(prefix)/share/N3
 
-dist_pkgdata_DATA := model_data/N3/average_305_mask_1mm.mnc.gz
+dist_pkgdata_DATA := model_data/N3/average_305_mask_1mm.mnc.gz \
+                     model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc.gz
 
 CLEANFILES = $(bin_SCRIPTS)
 

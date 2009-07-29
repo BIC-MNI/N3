@@ -1,11 +1,14 @@
-2009-07-06  Andrew L Janke <a.janke@gmail.com>
-	* src/NUcorrect/imp2field: added -fill and -fillvalue 1 to 
-		the mincresample call to ensure that voxels out of the
-		spline area are set to 1 (not 0)
+2009-06-15  Claude Lepage  <claude@bic.mni.mcgill.ca>
+	* Remove downsampling in evaluation of field (computers are fast
+          now, so be more accurate by sampling at full resolution)
+	* Correct the field in the region outside the mask to make 
+          sure the mask varies smoothly away from the brain (important
+          with the previous changes)
+	* New program for the far-field correction
 
 2009-05-08  Claude Lepage  <claude@bic.mni.mcgill.ca>
 	* Make nu_estimate_np_and_em.in invariant to voxel steps (via
-  	  spline_smooth in EBTKS)
+          spline_smooth in EBTKS - must use EBTKS 1.6.2 or above)
 	* Free memory after usage
 
 2008-06-10  Andrew L Janke <a.janke@gmail.com>
