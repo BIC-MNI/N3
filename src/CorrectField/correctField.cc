@@ -59,12 +59,18 @@ void smooth( int sizes[MAX_DIMENSIONS], Real seps[MAX_DIMENSIONS],
     float fy = 1.0 / ( seps[1] *seps[1] );
     float fz = 1.0 / ( seps[2] *seps[2] );
 
-    float thresh = 1.0e-06;
-
     /* Multi-level resolution of Laplacian operator by Gauss-Seidel approach */
 
-    for( int inc = 4; inc >=1; inc /= 2 ) {
-      for( int iter = 0; iter < inc*200; iter++ ) {
+    /* We want the coarsest grid to be at least 4mm with 4*200 iterations */
+    float min_sep = MIN( MIN( ABS(seps[0]), ABS(seps[1]) ), ABS(seps[2]) );
+    int inc = 2;
+    while( inc < (int)( 4.0 / min_sep ) ) inc *= 2;
+
+    float thresh = 1.0e-10;
+    int n_iters = 4 * 200;
+
+    for( inc = inc; inc >=2; inc /= 2 ) {
+      for( int iter = 0; iter < n_iters; iter++ ) {
         count = 0;
         float res = 0.0;
         for( i = 0;  i < sizes[0]; i += inc ) {
@@ -112,7 +118,8 @@ void smooth( int sizes[MAX_DIMENSIONS], Real seps[MAX_DIMENSIONS],
         if( debug ) cout << "Iter = " << iter << " res = " << res << endl;
         if( res < thresh ) break;
       }
-      thresh *= 2.0;
+      n_iters = n_iters / 2 + 1;
+      // thresh *= 2.0;
 
       // Extension operator for next level.
       if( inc == 1 ) break;

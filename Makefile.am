@@ -46,7 +46,9 @@ correct_field_SOURCES = \
 evaluate_field_SOURCES = \
 	src/EvaluateField/evaluateField.cc \
 	src/EvaluateField/evaluateFieldArgs.cc \
-	src/SplineSmooth/fieldIO.cc
+	src/SplineSmooth/fieldIO.cc \
+	src/Splines/Spline.cc \
+	src/Splines/TBSpline.cc
 evaluate_field_LDADD = $(lapack_link_flags)
 
 extracttag_SOURCES = \
@@ -59,7 +61,9 @@ sharpen_hist_SOURCES = \
 spline_smooth_SOURCES = \
 	src/SplineSmooth/splineSmooth.cc \
 	src/SplineSmooth/splineSmoothArgs.cc \
-	src/SplineSmooth/fieldIO.cc
+	src/SplineSmooth/fieldIO.cc \
+	src/Splines/Spline.cc \
+	src/Splines/TBSpline.cc
 spline_smooth_LDADD = $(lapack_link_flags)
 
 volume_hist_SOURCES = \
@@ -93,6 +97,8 @@ noinst_HEADERS = \
 	./src/SplineSmooth/fieldIO.h \
 	./src/SplineSmooth/splineSmooth.h \
 	./src/SplineSmooth/splineSmoothArgs.h \
+	./src/Splines/Spline.h \
+	./src/Splines/TBSpline.h \
 	./src/VolumeHist/DHistogram.h \
 	./src/VolumeHist/WHistogram.h \
 	./src/VolumeHist/args.h \

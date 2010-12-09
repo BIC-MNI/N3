@@ -1,3 +1,12 @@
+2010-12-08  Claude Lepage  <claude@bic.mni.mcgill.ca>
+	* Improved convergence of field outside mask for voxel
+          sizes much small than 1 (histology slices at 10 microns)
+	* Added option to save correction field in nu_evaluate
+
+2010-06-15  Dave MacFarlane <david.macfarlane2@mcgill.ca>
+	* Moved Splines to N3 from EBTKS (must now use EBTKS 1.6.4
+          or above)
+
 2009-06-15  Claude Lepage  <claude@bic.mni.mcgill.ca>
 	* Remove downsampling in evaluation of field (computers are fast
           now, so be more accurate by sampling at full resolution)

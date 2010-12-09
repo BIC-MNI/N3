@@ -1,3 +1,11 @@
+New in Release 1.12.0
+---------------------
+* Moved Splines from EBTKS to N3 (must now use EBTKS 1.6.4 
+  or above)
+* Improved convergence of field outside mask for voxel
+  sizes much small than 1 (histology slices at 10 microns)
+* Added option to save correction field in nu_evaluate
+
 New in Release 1.11.0
 ---------------------
 * Make nu_estimate_np_and_em.in invariant to voxel steps (via

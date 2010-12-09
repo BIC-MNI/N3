@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: evaluateField.cc,v $
-$Revision: 1.3 $
-$Author: rotor $
-$Date: 2008-10-06 02:10:05 $
+$Revision: 1.4 $
+$Author: claude $
+$Date: 2010-12-09 19:35:00 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -32,8 +32,8 @@ $State: Exp $
 ---------------------------------------------------------------------------- */
 
 
-#include "EBTKS/Spline.h"	/* (bert) - Added EBTKS subdirectory */
-#include "EBTKS/TBSpline.h"	/* (bert) */
+#include "../Splines/Spline.h"
+#include "../Splines/TBSpline.h"
 #include "EBTKS/MString.h"	/* (bert) */
 #undef ROUND
 #undef SIGN

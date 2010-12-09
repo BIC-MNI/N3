@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: fieldIO.cc,v $
-$Revision: 1.3 $
+$Revision: 1.4 $
 $Author: claude $
-$Date: 2009-05-08 18:44:52 $
+$Date: 2010-12-09 19:35:01 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -561,7 +561,7 @@ smoothVolume(Spline *spline, Volume volume, Volume mask_volume,
       for(j = 0; j < sizes[1]; j++)
 	for(k = 0; k < sizes[2]; k++)
 	  {
-	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0)
+	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0.5)
 	      {
 		point[0] = i*separations[0];
 		point[1] = j*separations[1];
@@ -654,7 +654,7 @@ smoothVolumeLookup(TBSplineVolume *spline, Volume volume, Volume mask_volume,
       for(j = 0; j < sizes[1]; j++)
 	for(k = 0; k < sizes[2]; k++)
 	  {
-	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0)
+	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0.5)
 	      {
 		value = (*spline)(i,j,k); 
 		set_volume_real_value(volume, i, j, k, 0, 0, value);

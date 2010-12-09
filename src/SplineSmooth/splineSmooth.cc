@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: splineSmooth.cc,v $
-$Revision: 1.4 $
+$Revision: 1.5 $
 $Author: claude $
-$Date: 2009-05-08 18:44:52 $
+$Date: 2010-12-09 19:35:01 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -42,9 +42,9 @@ $State: Exp $
 #include <iostream>		// (bert)
 using namespace std;		// (bert)
 #include <math.h>
-#include <EBTKS/Spline.h>	// (bert) - Added EBTKS subdirectory
+#include "../Splines/Spline.h"
 #include <EBTKS/Matrix.h>	// (bert) 
-#include <EBTKS/TBSpline.h>	// (bert)
+#include "../Splines/TBSpline.h"
 #include <EBTKS/MString.h>	// (bert)
 #undef ROUND
 #undef SIGN
@@ -377,7 +377,7 @@ fitSplinesToVolume(Spline *spline, Volume volume, Volume mask_volume,
       for(j = lower[1]; j <= upper[1]; j += subsample)
 	for(k = lower[2]; k <= upper[2]; k += subsample)
 	  {
-	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0)
+	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0.5)
 	      {
 		point[0] = i*separations[0];
 		point[1] = j*separations[1];
@@ -470,7 +470,7 @@ fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
       for(j = lower[1]; j <= upper[1]; j += subsample)
 	for(k = lower[2]; k <= upper[2]; k += subsample)
 	  {
-	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0)
+	    if(get_volume_real_value(mask_volume, i, j, k, 0, 0) > 0.5)
 	      {
 		value = get_volume_real_value(volume, i, j, k, 0, 0);
 		spline->addDataPoint(i,j,k, value);

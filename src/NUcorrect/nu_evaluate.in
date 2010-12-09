@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #----------------------------------------------------------------------------
 #$RCSfile: nu_evaluate.in,v $
-#$Revision: 1.3 $
+#$Revision: 1.4 $
 #$Author: claude $
-#$Date: 2006-05-05 02:13:44 $
+#$Date: 2010-12-09 19:35:01 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : August 7, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_evaluate.in,v 1.3 2006-05-05 02:13:44 claude Exp $
+#  $Id: nu_evaluate.in,v 1.4 2010-12-09 19:35:01 claude Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -44,33 +44,40 @@ use Getopt::Tabular;
 # Start main program ------------------------------------------------
 &Initialize;
 
-# evaluate field throughout volume
-@mask_option = (defined $user_mask_volume) ?  qw(-mask $user_mask_volume) : ();
+# Obtain some crude mask if none is given.
 
-if($shrink_factor == 1) {
-   Spawn(['evaluate_field', @mask_option, '-like', $input_volume,
-          $mapping_name, $field_volume]);
+if( !( defined $user_mask_volume ) || !( -e $user_mask_volume ) ) {
+  my $threshold = 0;
+  &Spawn(['mincstats', '-quiet', '-biModalT', $input_volume],
+           err_action => 'ignore', stdout => \$threshold );
+  $user_mask_volume = "${TmpDir}/nuc_auto_mask.mnc";
+  &Spawn(['minccalc', '-quiet', '-byte', '-expression',
+          "if(A[0]>=$threshold){out=1}else{out=0}",
+          $input_volume, $user_mask_volume]);
 }
-else {
-   &Spawn(['make_template', '-quiet', '-shrink', $shrink_factor, 
-        $input_volume, "$TmpDir/template.mnc"]);
-   &Spawn(['evaluate_field', @mask_option, '-like', "$TmpDir/template.mnc",
-          $mapping_name, "$TmpDir/field_volume.mnc"]);
-   &Spawn(['mincresample', '-trilinear', '-like', $input_volume,
-          "$TmpDir/field_volume.mnc", $field_volume]);
-}
+
+# Evaluate the field from the compact splines .imp file. Using a
+# mask is not critical, but not using one will create different
+# min/max values for the minc ranges, especially if the splines
+# are "wild" outside the mask.
+
+&Spawn(['evaluate_field', '-mask', $user_mask_volume, '-like', $input_volume,
+        $mapping_name, $field_volume]);
+
+# Correct the field outside the masked region.
+
+&Spawn([ 'correct_field', $field_volume, $user_mask_volume, $field_volume ]);
 
 # put lower bound on field intensity if necessary
 ($volmin) = &volume_minmax($field_volume);
 if($volmin < $field_floor) {
    &Spawn(['mincmath', '-clamp', '-const2', $field_floor, 1.79769e+308,
-          $field_volume, "$field_volume.temp"]); 
-   &Spawn(['mv', "$field_volume.temp", $field_volume]);
+          $field_volume, "${field_volume}.temp"]); 
+   &Spawn(['mv', "${field_volume}.temp", $field_volume]);
 }
 
-# correct volume
-&Spawn(['mincmath', '-copy_header', '-zero', '-div', $input_volume, $field_volume,
-         $output_volume]);
+&Spawn(['mincmath', '-copy_header', '-zero', '-div', $input_volume, 
+        $field_volume, $output_volume]);
 &CreateHistory($input_volume,$output_volume,$mapping_name,
              localtime(time) . ">>> $0 @ARGV");
 
@@ -178,15 +185,14 @@ sub SetupArgTables
        ["-mapping", "string", 1, \$mapping_name, 
         "specify an intensity mapping", "<nu_field.imp>"],
        ["-mask", "volume", 1, \$user_mask_volume,
-	"specify region for processing.  (Not recommended)", "<mask.mnc>"],
+	"specify region for processing.", "<mask.mnc>"],
+       ["-field", "string", 1, \$output_field,
+	"save the correction field in this file", "<field.mnc>"],
        ["-floor", "float", 1, \$field_floor, 
         "lower bound for field intensities to avoid numerical problems. "
         ."(Default 0.1)","<value>"],
        ["-shrink", "integer", 1, \$shrink_factor, 
-        "specify a smaller workspace; the"
-        ." sampling in each dimension is reduced to that of the finest"
-        ." sampling divided by factor or the current sampling which ever"
-        ." is less. (suggest 2 or 3)", "<factor>"]); 
+        "OBSOLETE", "<factor>"]); 
    
    (\@pref_args, \@protocol_args);
 }
@@ -257,8 +263,9 @@ sub ValidateArgs
       die("No mapping specified.  Nothing to do.");
    }
    
-   ($shrink_factor < 1) &&
-      die("Shrink factor must be greater than or equal to one.");
+   if( defined $shrink_factor ) {
+     print "Shrink factor is now obsolete.";
+   }
 
    check_output_dirs($TmpDir,$output_directory);
 }
@@ -287,8 +294,9 @@ sub Initialize
  
    # NUevaluate specific parameters
    undef $user_mask_volume;
+   undef $output_field;
    undef $mapping_name;
-   $shrink_factor = 1;
+   $shrink_factor = undef;
    $field_floor  = 0.1;
 
    # Parse command line arguments
@@ -312,30 +320,22 @@ sub Initialize
    # expand some arguments
    ($output_directory, $basename) = split_path($output_volume, 
                                                'last', [qw(gz z Z)]);
-   $field_volume = "$TmpDir/$basename" ."_field.mnc";
+   if( defined $output_field ) {
+     $field_volume = $output_field;
+   } else {
+     $field_volume = "$TmpDir/$basename" ."_field.mnc";
+   }
 
    # Set global variables for calling various programs
    MNI::Spawn::SetOptions (strict  => 2);
-   RegisterPrograms([('mincinfo','mincmath', 'evaluate_field', 
-                'make_template', 'mincresample', 'gzip', 'mv')]); 
+   RegisterPrograms([('mincinfo','mincmath', 'mincstats', 'minccalc',
+                      'evaluate_field', 'make_template', 'mincresample', 
+                      'correct_field', 'gzip', 'mv' )]); 
 
    $verbose_option = ($Verbose) ? '-verbose' : '-quiet';
    
    AddDefaultArgs('mincmath', ['-clobber', $verbose_option]);
+   AddDefaultArgs('minccalc', ['-clobber', $verbose_option]);
    AddDefaultArgs('evaluate_field', ['-clobber', $verbose_option]);
 } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
