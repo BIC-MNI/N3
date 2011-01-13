@@ -12,9 +12,9 @@
               express or implied warranty.
 ---------------------------------------------------------------------------- 
 $RCSfile: fieldIO.cc,v $
-$Revision: 1.4 $
+$Revision: 1.5 $
 $Author: claude $
-$Date: 2010-12-09 19:35:01 $
+$Date: 2011-01-13 20:15:17 $
 $State: Exp $
 --------------------------------------------------------------------------*/
 /* ----------------------------- MNI Header -----------------------------------
@@ -31,9 +31,9 @@ $State: Exp $
 @COPYRIGHT  : 1996
 ---------------------------------------------------------------------------- */
 
-#include <EBTKS/Spline.h>	// (bert) - Added EBTKS subdirectory
+#include "../Splines/Spline.h"
 #include <EBTKS/MString.h>	// (bert)
-#include <EBTKS/TBSpline.h>	// (bert)
+#include "../Splines/TBSpline.h"
 #undef ROUND
 #undef SIGN
 extern "C" {

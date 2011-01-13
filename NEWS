@@ -5,6 +5,7 @@ New in Release 1.12.0
 * Improved convergence of field outside mask for voxel
   sizes much small than 1 (histology slices at 10 microns)
 * Added option to save correction field in nu_evaluate
+* Fixed typo with headers in fieldIO.cc
 
 New in Release 1.11.0
 ---------------------

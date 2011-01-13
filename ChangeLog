@@ -1,3 +1,6 @@
+2011-01-13  Claude Lepage  <claude@bic.mni.mcgill.ca>
+	* Fixed typo with headers in fieldIO.cc
+
 2010-12-08  Claude Lepage  <claude@bic.mni.mcgill.ca>
 	* Improved convergence of field outside mask for voxel
           sizes much small than 1 (histology slices at 10 microns)
