@@ -39,26 +39,12 @@
 /* Define to 1 if you have the <values.h> header file. */
 #cmakedefine01 HAVE_VALUES_H
 
-/* Name of package */
-#cmakedefine PACKAGE
-
-/* Define to the address where bug reports for this package should be sent. */
-#cmakedefine PACKAGE_BUGREPORT
-
-/* Define to the full name of this package. */
-#cmakedefine PACKAGE_NAME
-
-/* Define to the full name and version of this package. */
-#cmakedefine PACKAGE_STRING
-
-/* Define to the one symbol short name of this package. */
-#cmakedefine PACKAGE_TARNAME
-
-/* Define to the home page for this package. */
-#cmakedefine PACKAGE_URL
-
-/* Define to the version of this package. */
-#cmakedefine PACKAGE_VERSION
+#define PACKAGE "@PACKAGE_NAME@"
+#define PACKAGE_NAME "@PACKAGE_NAME@"
+#define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"
+#define PACKAGE_VERSION "@PACKAGE_VERSION@"
+#define PACKAGE_STRING "@PACKAGE_STRING@"
+#define VERSION PACKAGE_VERSION
 
 /* Define to 1 if you have the ANSI C header files. */
 #cmakedefine01 STDC_HEADERS
