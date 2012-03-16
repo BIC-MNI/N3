@@ -1,0 +1,154 @@
+# CMakeFiles.txt for the bicpl library
+#
+# Vladimir S. FONOV - vladimir.fonov@gmail.com
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+PROJECT(N3)
+
+#SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-modules")
+ENABLE_TESTING()
+INCLUDE(CTest)
+
+#ADD_SUBDIRECTORY( doc )
+
+# Packaging defines
+SET(CPACK_GENERATOR TGZ)
+SET(CPACK_PACKAGE_VERSION_MAJOR 1)
+SET(CPACK_PACKAGE_VERSION_MINOR 12)
+SET(CPACK_PACKAGE_VERSION_PATCH 00)
+INCLUDE(CPack)
+
+
+SET(PACKAGE "N3")
+SET(PACKAGE_BUGREPORT "a.janke@gmail.com")
+
+SET(PACKAGE_NAME "N3")
+SET(PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+SET(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
+
+FIND_PACKAGE( MINC2 REQUIRED )
+FIND_PACKAGE( EBTKS REQUIRED )
+FIND_PACKAGE( Perl REQUIRED )
+INCLUDE( ${MINC2_USE_FILE} )
+INCLUDE( ${EBTKS_USE_FILE} )
+
+ADD_DEFINITIONS(-DHAVE_CONFIG_H)
+ADD_DEFINITIONS(-DUSE_COMPMAT)
+ADD_DEFINITIONS(-DUSE_DBLMAT)
+
+# add for building relocatable library
+IF(UNIX)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+ENDIF(UNIX)
+
+# aliases
+SET(VERSION "${PACKAGE_VERSION}")
+
+
+# check for prereqs
+INCLUDE(CheckFunctionExists)
+INCLUDE(CheckIncludeFiles)
+
+CHECK_FUNCTION_EXISTS(finite   HAVE_FINITE)
+CHECK_FUNCTION_EXISTS(isfinite HAVE_ISFINITE)
+
+CHECK_INCLUDE_FILES(float.h     HAVE_FLOAT_H)
+CHECK_INCLUDE_FILES(sys/dir.h   HAVE_SYS_DIR_H)
+CHECK_INCLUDE_FILES(sys/ndir.h  HAVE_SYS_NDIR_H)
+CHECK_INCLUDE_FILES(sys/stat.h  HAVE_SYS_STAT_H)
+CHECK_INCLUDE_FILES(sys/types.h HAVE_SYS_TYPES_H)
+CHECK_INCLUDE_FILES(sys/wait.h  HAVE_SYS_WAIT_H)
+CHECK_INCLUDE_FILES(values.h    HAVE_VALUES_H)
+CHECK_INCLUDE_FILES(unistd.h    HAVE_UNISTD_H)
+CHECK_INCLUDE_FILES(dirent.h    HAVE_DIRENT_H)
+CHECK_INCLUDE_FILES(memory.h    HAVE_MEMORY_H)
+CHECK_INCLUDE_FILES(malloc.h    HAVE_MALLOC_H)
+CHECK_INCLUDE_FILES(stdlib.h    HAVE_STDLIB_H)
+CHECK_INCLUDE_FILES(fcntl.h     HAVE_FCNTL_H)
+CHECK_INCLUDE_FILES(vfork.h     HAVE_VFORK_H)
+CHECK_INCLUDE_FILES(inttypes.h  HAVE_INTTYPES_H)
+CHECK_INCLUDE_FILES(string.h    HAVE_STRING_H)
+CHECK_INCLUDE_FILES(strings.h   HAVE_STRINGS_H)
+
+# others
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/epm-header.in ${CMAKE_BINARY_DIR}/epm-header)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/include/version.h.in ${CMAKE_BINARY_DIR}/version.h)
+
+INCLUDE_DIRECTORIES( ${CMAKE_BINARY_DIR} include )
+
+ADD_LIBRARY(mincprog src/MincProg/print_version.c)
+
+LINK_LIBRARIES(mincprog ${EBTKS_LIBRARIES} ${VOLUME_IO_LIBRARIES} ${MINC2_LIBRARIES})
+
+ADD_EXECUTABLE(correct_field src/CorrectField/correctField.cc)
+
+ADD_EXECUTABLE(evaluate_field  src/EvaluateField/evaluateField.cc 
+        src/EvaluateField/evaluateFieldArgs.cc 
+        src/SplineSmooth/fieldIO.cc 
+        src/Splines/Spline.cc 
+        src/Splines/TBSpline.cc)
+        
+ADD_EXECUTABLE(extracttag  src/ExtractTag/extracttag.c)
+
+ADD_EXECUTABLE(sharpen_hist  
+        src/SharpenHist/sharpen_hist.cc 
+        src/SharpenHist/args.cc )
+
+ADD_EXECUTABLE(spline_smooth  
+        src/SplineSmooth/splineSmooth.cc 
+        src/SplineSmooth/splineSmoothArgs.cc 
+        src/SplineSmooth/fieldIO.cc 
+        src/Splines/Spline.cc 
+        src/Splines/TBSpline.cc)
+        
+ADD_EXECUTABLE(volume_hist  
+        src/VolumeHist/minchist.cc 
+        src/VolumeHist/DHistogram.cc 
+        src/VolumeHist/WHistogram.cc 
+        src/VolumeHist/args.cc)
+
+ADD_EXECUTABLE(volume_stats  
+        src/VolumeStats/volumeStats.cc 
+        src/VolumeStats/VolumeStatsArgs.cc)
+
+
+
+SET(PERL ${PERL_EXECUTABLE})
+
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/field2imp.in ${CMAKE_BINARY_DIR}/field2imp @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/imp2field.in ${CMAKE_BINARY_DIR}/imp2field @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/make_template.in  ${CMAKE_BINARY_DIR}/make_template @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/nu_estimate.in  ${CMAKE_BINARY_DIR}/nu_estimate @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/nu_estimate_np_and_em.in  ${CMAKE_BINARY_DIR}/nu_estimate_np_and_em @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/nu_evaluate.in  ${CMAKE_BINARY_DIR}/nu_evaluate @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/resample_labels.in  ${CMAKE_BINARY_DIR}/resample_labels @ONLY)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/src/NUcorrect/sharpen_volume.in ${CMAKE_BINARY_DIR}/sharpen_volume @ONLY)
+
+
+INSTALL(FILES
+  ${CMAKE_BINARY_DIR}/field2imp
+  ${CMAKE_BINARY_DIR}/imp2field
+  ${CMAKE_BINARY_DIR}/make_template
+  ${CMAKE_BINARY_DIR}/nu_estimate
+  ${CMAKE_BINARY_DIR}/nu_estimate_np_and_em
+  ${CMAKE_BINARY_DIR}/nu_evaluate
+  ${CMAKE_BINARY_DIR}/resample_labels
+  ${CMAKE_BINARY_DIR}/sharpen_volume
+  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ  WORLD_EXECUTE WORLD_READ
+   DESTINATION bin )
+
+INSTALL(FILES
+  ${CMAKE_BINARY_DIR}/nu_estimate
+  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ  WORLD_EXECUTE WORLD_READ
+   DESTINATION bin 
+  RENAME nu_correct )
+
+
+
+# testing
+IF(BUILD_TESTING)
+  #ADD_SUBDIRECTORY( testing )
+ENDIF(BUILD_TESTING)
