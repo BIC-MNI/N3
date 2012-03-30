@@ -1,4 +1,4 @@
-# CMakeFiles.txt for the bicpl library
+# CMakeFiles.txt for N3
 #
 # Vladimir S. FONOV - vladimir.fonov@gmail.com
 
