@@ -685,7 +685,9 @@ outputVolume(Volume volume, const MString filename, nc_type output_type,
 
   /* This seems like a hack. However, it fixes some round off problems. */ 
   if(output_type == NC_FLOAT || output_type == NC_DOUBLE) {
-    set_volume_voxel_range(volume, 0, 0); // set to maximum range
+    //set_volume_voxel_range(volume, 0, 0); // set to maximum range
+    //VF: no it isn't
+    set_volume_real_range(volume, real_min, real_max);
   }
   else {  // for fixed point types
     set_volume_real_range(volume, real_min, real_max);
