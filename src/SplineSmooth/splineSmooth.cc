@@ -201,7 +201,7 @@ int main( int argc,  char *argv[] )
             smoothVolume(theSplines, volume, &real_min, &real_max);
         }  
       // write smooth volume to disk in original data type 
-      printf("Output volume: real_min=%f real_max=%f\n",real_min,real_max);
+      //printf("Output volume: real_min=%f real_max=%f\n",real_min,real_max);
       outputVolume(volume, args.outputPath, output_type, TRUE, real_min, real_max, 
                    args.command);
     }
