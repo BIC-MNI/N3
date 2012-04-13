@@ -279,6 +279,6 @@ sub Initialize
 
    $verbose_option = ($Verbose) ? '-verbose' : '-quiet';
    
-   AddDefaultArgs([qw(mincmath evaluate_field mincresample)], 
+   AddDefaultArgs([qw(mincmath evaluate_field mincresample make_template)], 
         ['-clobber', $verbose_option]);
 }
