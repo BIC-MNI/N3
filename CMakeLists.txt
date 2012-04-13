@@ -131,15 +131,15 @@ ADD_EXECUTABLE(volume_stats
 SET(PERL ${PERL_EXECUTABLE})
 
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/field2imp.in       ${CMAKE_CURRENT_BINARY_DIR}/field2imp @ONLY)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/imp2field.in       ${CMAKE_CURRENT_BINARY_DIR}/imp2field @ONLY)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/make_template.in   ${CMAKE_CURRENT_BINARY_DIR}/make_template @ONLY)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/nu_estimate.in      ${CMAKE_CURRENT_BINARY_DIR}/nu_estimate @ONLY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/field2imp.in              ${CMAKE_CURRENT_BINARY_DIR}/field2imp @ONLY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/imp2field.in              ${CMAKE_CURRENT_BINARY_DIR}/imp2field @ONLY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/make_template.in          ${CMAKE_CURRENT_BINARY_DIR}/make_template @ONLY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/nu_estimate.in            ${CMAKE_CURRENT_BINARY_DIR}/nu_estimate @ONLY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/nu_estimate.in            ${CMAKE_CURRENT_BINARY_DIR}/nu_correct @ONLY)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/nu_estimate_np_and_em.in  ${CMAKE_CURRENT_BINARY_DIR}/nu_estimate_np_and_em @ONLY)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/nu_evaluate.in     ${CMAKE_CURRENT_BINARY_DIR}/nu_evaluate @ONLY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/nu_evaluate.in      ${CMAKE_CURRENT_BINARY_DIR}/nu_evaluate @ONLY)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/resample_labels.in  ${CMAKE_CURRENT_BINARY_DIR}/resample_labels @ONLY)
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/sharpen_volume.in  ${CMAKE_CURRENT_BINARY_DIR}/sharpen_volume @ONLY)
-
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/sharpen_volume.in   ${CMAKE_CURRENT_BINARY_DIR}/sharpen_volume @ONLY)
 
 INSTALL(TARGETS 
  correct_field evaluate_field extracttag sharpen_hist spline_smooth volume_hist volume_stats
@@ -150,18 +150,13 @@ INSTALL(PROGRAMS
   ${CMAKE_CURRENT_BINARY_DIR}/imp2field
   ${CMAKE_CURRENT_BINARY_DIR}/make_template
   ${CMAKE_CURRENT_BINARY_DIR}/nu_estimate
+  ${CMAKE_CURRENT_BINARY_DIR}/nu_correct
   ${CMAKE_CURRENT_BINARY_DIR}/nu_estimate_np_and_em
   ${CMAKE_CURRENT_BINARY_DIR}/nu_evaluate
   ${CMAKE_CURRENT_BINARY_DIR}/resample_labels
   ${CMAKE_CURRENT_BINARY_DIR}/sharpen_volume
   PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ  WORLD_EXECUTE WORLD_READ
    DESTINATION bin )
-
-INSTALL(PROGRAMS
-  ${CMAKE_CURRENT_BINARY_DIR}/nu_estimate
-  PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ  WORLD_EXECUTE WORLD_READ
-   DESTINATION bin 
-  RENAME nu_correct )
 
 #install masks
 INSTALL(FILES
