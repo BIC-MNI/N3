@@ -82,6 +82,13 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/epm-header.in ${CMAKE_CURRENT_BINARY_DIR}/epm-header)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
+
+# to fix a bug with diverging N3
+STRING(REGEX REPLACE "-O3" "-O2" CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
+STRING(REGEX REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
+
+
+
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/include )
 
 ADD_LIBRARY(mincprog STATIC src/MincProg/print_version.c)
@@ -156,8 +163,14 @@ INSTALL(PROGRAMS
    DESTINATION bin 
   RENAME nu_correct )
 
+#install masks
+INSTALL(FILES
+    model_data/N3/average_305_mask_1mm.mnc.gz
+    model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc.gz
+  DESTINATION 
+    share/N3 )
 
 # testing
 IF(BUILD_TESTING)
-  #ADD_SUBDIRECTORY( testing )
+  ADD_SUBDIRECTORY( testing )
 ENDIF(BUILD_TESTING)
