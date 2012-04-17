@@ -5,7 +5,6 @@
 SET(PERL "${PERL_EXECUTABLE}")
 
 MACRO(ADD_PERL_TEST name command )
-
  ADD_TEST( ${name}
     ${CMAKE_CURRENT_BINARY_DIR}/../${command} ${ARGV2} ${ARGV3} ${ARGV4} ${ARGV5} ${ARGV6} ${ARGV7} ${ARGV8} ${ARGV9} ${ARGV10} ${ARGV11}
       ${ARGV12} ${ARGV13} ${ARGV14} ${ARGV15} ${ARGV16} ${ARGV17} ${ARGV18} ${ARGV19} ${ARGV20} ${ARGV21} ${ARGV22}
@@ -15,8 +14,23 @@ MACRO(ADD_PERL_TEST name command )
  set_tests_properties( ${name} PROPERTIES ENVIRONMENT
   "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:$ENV{PERL5LIB}" 
  )
-
 ENDMACRO(ADD_PERL_TEST)
+
+
+MACRO(ADD_CUSTOM_PERL_TEST name command )
+
+ ADD_TEST( ${name}
+    ${CMAKE_CURRENT_SOURCE_DIR}/${command} ${ARGV2} ${ARGV3} ${ARGV4} ${ARGV5} ${ARGV6} ${ARGV7} ${ARGV8} ${ARGV9} ${ARGV10} ${ARGV11}
+      ${ARGV12} ${ARGV13} ${ARGV14} ${ARGV15} ${ARGV16} ${ARGV17} ${ARGV18} ${ARGV19} ${ARGV20} ${ARGV21} ${ARGV22}
+      ${ARGV23} ${ARGV24} ${ARGV25} ${ARGV26}
+ )
+ 
+ set_tests_properties( ${name} PROPERTIES ENVIRONMENT
+  "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:$ENV{PERL5LIB}" 
+ )
+ 
+ENDMACRO(ADD_CUSTOM_PERL_TEST)
+
 
 #ADD_PERL_TEST2(nu_env "/usr/bin/env")
 
@@ -51,3 +65,5 @@ ADD_PERL_TEST(nu_correct_8  nu_correct -fwhm 0.2 -mapping_dir ${CMAKE_CURRENT_BI
 
 ADD_PERL_TEST(nu_estimate_7 nu_estimate ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/brain.imp -clobber)
 ADD_PERL_TEST(nu_evaluate_8 nu_evaluate ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz -mapping ${CMAKE_CURRENT_BINARY_DIR}/brain.imp ${CMAKE_CURRENT_SOURCE_DIR}/brain_nu.mnc -clobber)
+
+ADD_CUSTOM_PERL_TEST(nu_reference_1 compare_nu_result.pl ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz ${CMAKE_CURRENT_SOURCE_DIR}/brain_nu_ref.mnc.gz 0.0001)
