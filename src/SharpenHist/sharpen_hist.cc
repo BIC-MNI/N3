@@ -117,21 +117,17 @@ main(int argc, char *argv[])
   // create filters
   double slope = (max_bin - min_bin) / double(X.getrows() - 1);
   CompMat blur = fft(gaussian( args.fwhm/slope, padded_size),0,1); 
-#ifdef HAVE_MATLAB
   if(args.debug_flag == TRUE)
-    gaussian( args.fwhm/slope, padded_size).saveMatlab("gaussian.mat", "g");
-#endif
+    gaussian( args.fwhm/slope, padded_size).saveAscii("gaussian.txt");
   CompMat filter = weiner(blur, args.noise);
 
-#ifdef HAVE_MATLAB
   if(args.debug_flag == TRUE)
     {
       DblMat kernel = real(ifft(filter,0,1));
-      kernel.saveMatlab("filter.mat", "filter");
-      real(filter).saveMatlab("filter.mat", "F_r");
-      imag(filter).saveMatlab("filter.mat", "F_i");
+      kernel.saveAscii("filter_ifftr.txt");
+      real(filter).saveAscii("filter_r.txt");
+      imag(filter).saveAscii("filter_i.txt");
     }
-#endif
 
   // zero pad X 
   DblMat X_padded(padded_size,1, 0.0);
@@ -142,10 +138,8 @@ main(int argc, char *argv[])
     {
       // compute filtered distribution f
       f = real(ifft(pmultEquals(asCompMat(X_padded).fft(0,1), filter),0,1));
-#ifdef HAVE_MATLAB      
       if(args.debug_flag == TRUE) 
-	f.saveMatlab("distribution.mat", "f");
-#endif
+        f.saveAscii("distribution.txt");
 
       // make sure that f is non-negative
       non_negative(&f);
