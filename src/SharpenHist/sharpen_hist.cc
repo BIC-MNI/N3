@@ -330,12 +330,3 @@ save_lookup(char *filename, DblMat &Y,
 
   fclose(fp);
 }
-
-
-
-
-
-
-
-
-
