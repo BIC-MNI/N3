@@ -118,7 +118,11 @@ main(int argc, char *argv[])
   double slope = (max_bin - min_bin) / double(X.getrows() - 1);
   CompMat blur = fft(gaussian( args.fwhm/slope, padded_size),0,1); 
   if(args.debug_flag == TRUE)
+  {
     gaussian( args.fwhm/slope, padded_size).saveAscii("gaussian.txt");
+    real(blur).saveAscii("blur_r.txt");
+    imag(blur).saveAscii("blur_i.txt");
+  }
   CompMat filter = weiner(blur, args.noise);
 
   if(args.debug_flag == TRUE)
@@ -127,6 +131,7 @@ main(int argc, char *argv[])
       kernel.saveAscii("filter_ifftr.txt");
       real(filter).saveAscii("filter_r.txt");
       imag(filter).saveAscii("filter_i.txt");
+      X.saveAscii("X.txt");
     }
 
   // zero pad X 
