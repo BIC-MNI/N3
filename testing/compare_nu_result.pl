@@ -48,7 +48,7 @@ my ($in,$ref,$tol)=@ARGV;
 $tol=1e-5 if !$tol;
 
 my $tmpdir = &tempdir( "$me-XXXXXXXX", TMPDIR => 1, CLEANUP => 1 );
-
+#my $tmpdir="/tmp";
 
 my @args=("nu_estimate", $in, "$tmpdir/brain.imp");
 push(@args,'-mask',$mask) if $mask;

@@ -1,7 +1,5 @@
 # TODO add tests
 
-#SET(ENV{PATH} "${CMAKE_CURRENT_BINARY_DIR}/..:$ENV{PATH}")
-
 SET(PERL "${PERL_EXECUTABLE}")
 
 MACRO(ADD_PERL_TEST name command )
@@ -47,7 +45,7 @@ ADD_PERL_TEST(nu_sharpen_volume_2 sharpen_volume -fwhm 0.15 -noise 0.01 -bins 15
 #ADD_PERL_TEST(nu_estimate_np_and_em_1 nu_estimate_np_and_em -help)
 ADD_PERL_TEST(nu_estimate_np_and_em_2 nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 -stop 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen  ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/brain.imp -verbose -clobber)
 ADD_PERL_TEST(nu_estimate_np_and_em_3 nu_estimate_np_and_em -distance 100 -b_spline 1 -spline_subsample 2 -auto_mask -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/chunk.imp -verbose -clobber)
-ADD_PERL_TEST(nu_estimate_np_and_em_4 nu_estimate_np_and_em -tp_spline 1 -bimodalT -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/chunk.imp -verbose -clobber -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz)
+ADD_PERL_TEST(nu_estimate_np_and_em_4 nu_estimate_np_and_em -tp_spline 1 -bimodalT -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/chunk.imp -verbose -clobber -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz )
 #ADD_PERL_TEST(nu_estimate_np_and_em -fwhm 100 -fir -spline_subsample 2 -background 100000 -iterations 2 3 -stop 0.01 0.001 -shrink 2 -sharpen 0.15 0.01 -parzen ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/chunk.imp -bins 100 -clobber)
 
 #ADD_PERL_TEST(nu_evaluate_1 nu_evaluate -help)
@@ -66,4 +64,4 @@ ADD_PERL_TEST(nu_correct_8  nu_correct -fwhm 0.2 -mapping_dir ${CMAKE_CURRENT_BI
 ADD_PERL_TEST(nu_estimate_7 nu_estimate ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/brain.imp -clobber)
 ADD_PERL_TEST(nu_evaluate_8 nu_evaluate ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz -mapping ${CMAKE_CURRENT_BINARY_DIR}/brain.imp ${CMAKE_CURRENT_SOURCE_DIR}/brain_nu.mnc -clobber)
 
-ADD_CUSTOM_PERL_TEST(nu_reference_1 compare_nu_result.pl ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz ${CMAKE_CURRENT_SOURCE_DIR}/brain_nu_ref.mnc.gz 0.0001)
+ADD_CUSTOM_PERL_TEST(nu_reference_1 compare_nu_result.pl ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz -mask ${CMAKE_CURRENT_SOURCE_DIR}/../model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc.gz ${CMAKE_CURRENT_SOURCE_DIR}/brain_nu_ref.mnc.gz 0.0001)

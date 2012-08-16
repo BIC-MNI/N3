@@ -449,7 +449,7 @@ TPSpline::clearDataPoints()
 {
   if (!_nKnots || (_nKnots <= _nDimensions + 1)) {
     cerr << "TPSpline::clearDataPoints: #knots (" << _nKnots 
-	 << ") must be larger than " << _nDimensions + 1 << endl;
+         << ") must be larger than " << _nDimensions + 1 << endl;
     return FALSE;
   }
 
@@ -483,12 +483,12 @@ TPSpline::clearDataPoints()
       knotToTest++;
     else {
       if (verbose)
-	cout << "Knot " << knotToTest << " failed. Trying knot " << knot << " ..." 
-	     << endl;
+        cout << "Knot " << knotToTest << " failed. Trying knot " << knot << " ..." 
+        << endl;
 
       for (d = 0; d < _nDimensions; d++) {
-	swap(_knots(knotToTest, d), _knots(knot, d));
-	Psi_inv(d + 1, knotToTest) = _knots(knotToTest, d);
+        swap(_knots(knotToTest, d), _knots(knot, d));
+        Psi_inv(d + 1, knotToTest) = _knots(knotToTest, d);
       }
 
       failure = (--knot <= _nDimensions);
@@ -605,7 +605,8 @@ void
 TPSpline::_initialize()
 {
   _nCoef = _nKnots + _nDimensions + 1;
-  clearDataPoints();
+  if(!clearDataPoints())
+    cerr<<"ERROR: Can't initialize matrix!"<<std::endl;
 
   if (verbose)
     cout << "Created TPSpline with " << _nKnots << " basis functions" << endl;

@@ -342,7 +342,7 @@ Spline *createThinPlateSpline(const DblMat &domain, double distance,
     {
       double start = 0.5*(domain(i,0) + domain(i,1) - distance*(n[i]-1));
       for(int j = 0; j < n[i]; j++)
-	knots(j,i) = start + distance*j;
+        knots(j,i) = start + distance*j;
     }
 
   // fill in arrays of knot locations corresponding to a grid
