@@ -8,10 +8,10 @@ MACRO(ADD_PERL_TEST name command )
       ${ARGV12} ${ARGV13} ${ARGV14} ${ARGV15} ${ARGV16} ${ARGV17} ${ARGV18} ${ARGV19} ${ARGV20} ${ARGV21} ${ARGV22}
       ${ARGV23} ${ARGV24} ${ARGV25} ${ARGV26}
  )
- 
- set_tests_properties( ${name} PROPERTIES ENVIRONMENT
-  "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:${CMAKE_CURRENT_BINARY_DIR}/../../mni_autoreg/mincblur:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:${CMAKE_CURRENT_BINARY_DIR}/../../perl-modules:$ENV{PERL5LIB}" 
- )
+
+ IF(MINC_TEST_ENVIRONMENT)
+  set_tests_properties( ${name} PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+ ENDIF(MINC_TEST_ENVIRONMENT)
 ENDMACRO(ADD_PERL_TEST)
 
 
@@ -23,13 +23,10 @@ MACRO(ADD_CUSTOM_PERL_TEST name command )
       ${ARGV23} ${ARGV24} ${ARGV25} ${ARGV26}
  )
  
- set_tests_properties( ${name} PROPERTIES ENVIRONMENT
-  "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:${CMAKE_CURRENT_BINARY_DIR}/../../mni_autoreg/mincblur:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:${CMAKE_CURRENT_BINARY_DIR}/../../perl-modules:$ENV{PERL5LIB}" 
- )
- 
+ IF(MINC_TEST_ENVIRONMENT)
+  set_tests_properties( ${name} PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+ ENDIF(MINC_TEST_ENVIRONMENT)
 ENDMACRO(ADD_CUSTOM_PERL_TEST)
-
-message( "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:${CMAKE_CURRENT_BINARY_DIR}/../../mni_autoreg/mincblur:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:${CMAKE_CURRENT_BINARY_DIR}/../../perl-modules:$ENV{PERL5LIB}")
 
 
 ADD_PERL_TEST(nu_field2imp_1 field2imp ${CMAKE_CURRENT_SOURCE_DIR}/block.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/test.imp -clobber)
