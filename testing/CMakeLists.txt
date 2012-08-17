@@ -10,7 +10,7 @@ MACRO(ADD_PERL_TEST name command )
  )
  
  set_tests_properties( ${name} PROPERTIES ENVIRONMENT
-  "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:$ENV{PERL5LIB}" 
+  "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:${CMAKE_SOURCE_DIR}/perl-modules/Getopt-Tabular-0.3:${CMAKE_SOURCE_DIR}/perl-modules/Text-Format-0.53:$ENV{PERL5LIB}" 
  )
 ENDMACRO(ADD_PERL_TEST)
 
@@ -24,7 +24,7 @@ MACRO(ADD_CUSTOM_PERL_TEST name command )
  )
  
  set_tests_properties( ${name} PROPERTIES ENVIRONMENT
-  "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:$ENV{PERL5LIB}" 
+  "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:${CMAKE_SOURCE_DIR}/perl-modules/Getopt-Tabular-0.3:${CMAKE_SOURCE_DIR}/perl-modules/Text-Format-0.53:$ENV{PERL5LIB}" 
  )
  
 ENDMACRO(ADD_CUSTOM_PERL_TEST)
