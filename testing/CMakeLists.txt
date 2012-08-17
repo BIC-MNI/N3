@@ -29,7 +29,7 @@ MACRO(ADD_CUSTOM_PERL_TEST name command )
  
 ENDMACRO(ADD_CUSTOM_PERL_TEST)
 
-message( "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:${CMAKE_CURRENT_BINARY_DIR}/../../perl-modules:$ENV{PERL5LIB}")
+message( "PATH=${CMAKE_CURRENT_BINARY_DIR}/..:${CMAKE_CURRENT_BINARY_DIR}/../../minc/progs:${CMAKE_CURRENT_BINARY_DIR}/../../mni_autoreg/minc_blur:$ENV{PATH};PERL5LIB=${CMAKE_SOURCE_DIR}/mni-perllib:${CMAKE_CURRENT_BINARY_DIR}/../../mni-perllib/perl:${CMAKE_CURRENT_BINARY_DIR}/../../perl-modules:$ENV{PERL5LIB}")
 
 
 ADD_PERL_TEST(nu_field2imp_1 field2imp ${CMAKE_CURRENT_SOURCE_DIR}/block.mnc.gz ${CMAKE_CURRENT_BINARY_DIR}/test.imp -clobber)
