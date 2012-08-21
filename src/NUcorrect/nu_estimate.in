@@ -113,102 +113,102 @@ sub construct_history
 #-----------------------------------------------------------------------------
 sub SetupArgTables
 {
-   my ($N3_only_flag) = @_;
-   my (@pref_args, @protocol_args);
+  my ($N3_only_flag) = @_;
+  my (@pref_args, @protocol_args);
 
-   sub print_version
-   {
+  sub print_version
+  {
       print "Program $ProgramName, built from:\n$LongVersion\n";
       exit;
-   }
+  }
 
-   # Preferences -- these shouldn't affect the results
+  # Preferences -- these shouldn't affect the results
 
-   @pref_args = 
+  @pref_args = 
       (["General options", "section"],
-       ["-verbose|-quiet", "boolean", 0, \$Verbose, 
-	"be noisy [default; opposite is -quiet]" ],
-       ["-execute|-noexecute", "boolean", 0, \$Execute, 
-	"actually execute planned commands [default]"],
-       ["-clobber|-noclobber", "boolean", 0, \$Clobber,
-	"overwrite output files [default: -noclobber]"],
+      ["-verbose|-quiet", "boolean", 0, \$Verbose, 
+       "be noisy [default; opposite is -quiet]" ],
+      ["-execute|-noexecute", "boolean", 0, \$Execute, 
+       "actually execute planned commands [default]"],
+      ["-clobber|-noclobber", "boolean", 0, \$Clobber,
+       "overwrite output files [default: -noclobber]"],
 #       ["-compress|-nocompress", "boolean", 0, \$Compress,
 #	"compress output files [default: -nocompress]"],
-       ["-tmpdir", "string", 1, \$TmpDir,
-	"temporary working directory"],
-       ["-keeptmp|-nokeeptmp", "boolean", 0, \$KeepTmp,
-	"don't delete temporary files [default: -nokeeptmp]"],
-       ["-version", "call", undef, \&print_version,
+      ["-tmpdir", "string", 1, \$TmpDir,
+       "temporary working directory"],
+      ["-keeptmp|-nokeeptmp", "boolean", 0, \$KeepTmp,
+       "don't delete temporary files [default: -nokeeptmp]"],
+      ["-version", "call", undef, \&print_version,
         "print version and quit"]);
 #       ["-notify", "string", 1, \$Notify,
 #	"set the user to notify (send email to) on failure "],
 #       ["-nonotify", "constant", 0, \$Notify,
 #	"disable email notification (default)"]);
 
-   # Protocol (data-specific) options 
+  # Protocol (data-specific) options 
 
-   @protocol_args = 
+  @protocol_args = 
       (["Protocol options","section"],
-       (
+      (
         ($N3_only_flag) ? () :
         (["-non_parametric", "const", 'np', \$estimation_type,
           "use non-parametric (N3) correction method (default)"],
-         ["-white_matter", "const", 'wm', \$estimation_type,
+        ["-white_matter", "const", 'wm', \$estimation_type,
           "use white matter based correction method"],
-         ["-expectation_maximization", "const", 'em',
+        ["-expectation_maximization", "const", 'em',
           \$estimation_type,  
           "use expectation maximization correction method"])
         ),
-       ["-mask", "volume", 1, \$user_options{'mask'},
-	"specify region for processing", "<mask.mnc>"],
-       ["-distance", "float", 1, \$user_options{'distance'}, 
+      ["-mask", "volume", 1, \$user_options{'mask'},
+       "specify region for processing", "<mask.mnc>"],
+      ["-distance", "float", 1, \$user_options{'distance'}, 
         "characteristic distance over which field varies in mm",
         "<value>"],
-       ["-lambda", "float", 1, \$user_options{'lambda'}, 
+      ["-lambda", "float", 1, \$user_options{'lambda'}, 
         "regularization coefficient for splines", "<value>"],
-       ["-iterations", "integer", 1, \$user_options{'iterations'},
-	"maximum number of iterations to run", "<number>"],
-       ["-options", "string", 1, \$estimation_options,
+      ["-iterations", "integer", 1, \$user_options{'iterations'},
+       "maximum number of iterations to run", "<number>"],
+      ["-options", "string", 1, \$estimation_options,
         "method specific options (quoted if more than one)",<'options ...'>]); 
 
-   @correct_args =  (["-mapping_dir", "string", 1, \$mapping_dir, 
+  @correct_args =  (["-mapping_dir", "string", 1, \$mapping_dir, 
                       "specifiy directory to put imp files in","<directory>"]);
-   
-   @np_em_args = ((($N3_only_flag) ? 
-                   (["N3 specific options", "section"]) : 
-                   (["N3 and EM specific options", "section"])),
+  
+  @np_em_args = ((($N3_only_flag) ? 
+                  (["N3 specific options", "section"]) : 
+                  (["N3 and EM specific options", "section"])),
                   ["-stop", "float", 1, \$user_options{'stop'},
-                   "CV of change in field estimate below which"
-                   ." iteration stops (suggest 0.01 to 0.0001)",
-                   "<threshold>" ],
+                  "CV of change in field estimate below which"
+                  ." iteration stops (suggest 0.01 to 0.0001)",
+                  "<threshold>" ],
                   ["-shrink", "float", 1, \$user_options{'shrink'},
-                   "specify a smaller workspace; the"
-                   ." sampling in each dimension is reduced to that of"
-                   ." the finest"
-                   ." sampling divided by factor or the current sampling"
-                   ." which ever"
-                   ." is less. (suggest 2 or 3)", "<factor>"],
+                  "specify a smaller workspace; the"
+                  ." sampling in each dimension is reduced to that of"
+                  ." the finest"
+                  ." sampling divided by factor or the current sampling"
+                  ." which ever"
+                  ." is less. (suggest 2 or 3)", "<factor>"],
                   ["-normalize_field", "const", 1, 
-                   \$user_options{'normalize_field'}, 
-                   "normalize final correction field to have mean 1.0"]);
+                  \$user_options{'normalize_field'}, 
+                  "normalize final correction field to have mean 1.0"]);
 
-   @np_args = ((($N3_only_flag) ? () :
+  @np_args = ((($N3_only_flag) ? () :
                 (["N3 specific options","section"])),
-               ["-V0.9", "const", '0.9', \$version_number,
+              ["-V0.9", "const", '0.9', \$version_number,
                 "use default options of original (beta) release"],
-               ["-V1.0", "const", '1.0', \$version_number,
+              ["-V1.0", "const", '1.0', \$version_number,
                 "use improved options of release 1.0.  This is equivalent to "
                 ."-fwhm 0.15 -stop 0.001 -iterations 50 -shrink "
                 ."4 -distance 200.  (default)"],
 #               ["-newest", "const", '1.0', \$version_number,
 #                "use newest version of software."],
-               ["-fwhm", "float", 1, \$user_options{'sharpen'}, 
+              ["-fwhm", "float", 1, \$user_options{'sharpen'}, 
                 "width of deconvolution kernal used to"
                 ." sharpen histogram.  Larger values give faster convergence"
                 ." while smaller values give greater accuracy. "
                 ." (suggest 0.05 to 0.5, default is 0.15)","<width>"]);
 
-   (\@pref_args, \@protocol_args, \@correct_args, \@np_em_args, \@np_args);
+  (\@pref_args, \@protocol_args, \@correct_args, \@np_em_args, \@np_args);
 }
 
 # ------------------------------ MNI Header ----------------------------------
