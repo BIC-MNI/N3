@@ -1,5 +1,4 @@
 # TODO add tests
-
 SET(PERL "${PERL_EXECUTABLE}")
 
 MACRO(ADD_PERL_TEST name command )
