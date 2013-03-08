@@ -138,7 +138,9 @@ char       **prob_volume_dim_names;
 Real       value;
 
 Real       output_tag_voxel = 0.0;
-Real       user_mask_value = 1.0;
+Real       user_mask_floor = 1.0;
+Real       user_mask_ceil = -1;
+Real       user_mask_binvalue = -1;
 long       num_points = 0;
 long       points_chosen = 0;
 long       max_tags = -1;
@@ -185,10 +187,19 @@ ArgvInfo argTable[] = {
      "Specify the voxel label of the extracted tag points"},
 
   {"-mask", ARGV_STRING, (char *) NULL, (char *) &mask_filename, 
-     "Specify a mask volume, to limit seatch space."},
+     "Specify a mask volume, to limit search space."},
 
-  {"-user_mask_value", ARGV_FLOAT, (char *) NULL, (char *) &user_mask_value,
-     "Specify the mask value, used in the mask volume to limit search"},
+  {"-user_mask_value", ARGV_FLOAT, (char *) NULL, (char *) &user_mask_floor,
+     "A synonym for -mask_floor"},
+
+  {"-mask_floor", ARGV_FLOAT, (char *) NULL, (char *) &user_mask_floor,
+     "Exclude mask voxels below this value"},
+
+  {"-mask_ceil", ARGV_FLOAT, (char *) NULL, (char *) &user_mask_ceil,
+     "Exclude mask voxels above this value"},
+
+  {"-mask_binvalue", ARGV_FLOAT, (char *) NULL, (char *) &user_mask_binvalue,
+     "Include mask voxels within 0.5 of this value"},
   
   {"-world", ARGV_CONSTANT, (char *) TRUE, (char *) &world_coordinate,
      "Specify that the mask be traversed in world coordinate space."},
@@ -348,6 +359,15 @@ void parse_arguments(int argc, char* argv[])
     
     (void) fprintf(stderr,"File `%s' doesn't exist !\n ", mask_filename);
     exit(EXIT_FAILURE);
+  }
+
+  if ( user_mask_binvalue > -1 ){
+     if ( user_mask_ceil > -1 ){
+        printf("Set only one of floor/ceil or binvalue\n");
+        exit(EXIT_FAILURE);
+     }
+     user_mask_floor = user_mask_binvalue - 0.5;
+     user_mask_ceil = user_mask_binvalue + 0.5;
   }
 
 
@@ -1103,16 +1123,21 @@ int mask_value_set(int vox1, int vox2, int vox3)
 				       0, 0);
 	  
     /* if mask is on, return TRUE */
-    if ( mask_value >= user_mask_value ) 
-      
-      return TRUE;
-    
-    else
-      
+    if ( mask_value >= user_mask_floor ){
+      if( user_mask_ceil > -1 && mask_value > user_mask_ceil ){
+         return FALSE;
+      }
+      else{
+         return TRUE;
+      }
+    }
+    else{
       return FALSE;
+	}
   }
-  else
+  else{
     return FALSE;
+  }
 
 } /* mask_value_set */
 
