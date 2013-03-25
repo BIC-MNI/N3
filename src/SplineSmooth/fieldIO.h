@@ -31,7 +31,7 @@ Status inputCompactField(STRING filename, Spline **splines,
 Spline *createThinPlateSpline(const DblMat &domain, double distance,
 			      double lambda, int verbose);
 Volume loadFloatVolume(const MString filename, nc_type *data_type);
-Volume loadEmptyFloatVolume(const MString filename, nc_type *data_type, BOOLEAN *signed_flag);
+Volume loadEmptyFloatVolume(const MString filename, nc_type *data_type, VIO_BOOL *signed_flag);
 Volume loadVolume(const MString filename);
 Boolean compareVolumes(Volume v1, Volume v2);
 void smoothVolume(Spline *spline, Volume volume, 
@@ -44,7 +44,7 @@ void smoothVolumeLookup(TBSplineVolume *spline, Volume volume,
                         Volume mask_volume,
                         double *real_min, double *real_max);
 void outputVolume(Volume volume, const MString filename, nc_type output_type,
-		  BOOLEAN signed_flag, Real real_min, Real real_max, 
+		  VIO_BOOL signed_flag, Real real_min, Real real_max, 
 		  const MString command);
 
 #endif
