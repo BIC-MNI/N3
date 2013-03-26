@@ -21,30 +21,30 @@ $State: Exp $
 #ifndef FIELDIO_H
 #define FIELDIO_H
 
-Status outputCompactField(const MString filename, 
+VIO_Status outputCompactField(const MString filename, 
                           const DblMat &domain,  // 3 rows, 2 columns 
                           double distance, const DblArray &coef, 
                           enum spline_type spline, const MString command,
-                          Volume volume);
-Status inputCompactField(STRING filename, Spline **splines,
-                         enum spline_type *type,  Volume volume);
+                          VIO_Volume volume);
+VIO_Status inputCompactField(VIO_STR filename, Spline **splines,
+                         enum spline_type *type,  VIO_Volume volume);
 Spline *createThinPlateSpline(const DblMat &domain, double distance,
 			      double lambda, int verbose);
-Volume loadFloatVolume(const MString filename, nc_type *data_type);
-Volume loadEmptyFloatVolume(const MString filename, nc_type *data_type, VIO_BOOL *signed_flag);
-Volume loadVolume(const MString filename);
-Boolean compareVolumes(Volume v1, Volume v2);
-void smoothVolume(Spline *spline, Volume volume, 
+VIO_Volume loadFloatVolume(const MString filename, nc_type *data_type);
+VIO_Volume loadEmptyFloatVolume(const MString filename, nc_type *data_type, VIO_BOOL *signed_flag);
+VIO_Volume loadVolume(const MString filename);
+Boolean compareVolumes(VIO_Volume v1, VIO_Volume v2);
+void smoothVolume(Spline *spline, VIO_Volume volume, 
 		  double *real_min, double *real_max);
-void smoothVolume(Spline *spline, Volume volume, Volume mask_volume,
+void smoothVolume(Spline *spline, VIO_Volume volume, VIO_Volume mask_volume,
 		   double *real_min, double *real_max);
-void smoothVolumeLookup(TBSplineVolume *spline, Volume volume, 
+void smoothVolumeLookup(TBSplineVolume *spline, VIO_Volume volume, 
 		  double *real_min, double *real_max);
-void smoothVolumeLookup(TBSplineVolume *spline, Volume volume,
-                        Volume mask_volume,
+void smoothVolumeLookup(TBSplineVolume *spline, VIO_Volume volume,
+                        VIO_Volume mask_volume,
                         double *real_min, double *real_max);
-void outputVolume(Volume volume, const MString filename, nc_type output_type,
-		  VIO_BOOL signed_flag, Real real_min, Real real_max, 
+void outputVolume(VIO_Volume volume, const MString filename, nc_type output_type,
+		  VIO_BOOL signed_flag, VIO_Real real_min, VIO_Real real_max,
 		  const MString command);
 
 #endif

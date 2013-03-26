@@ -46,13 +46,10 @@ using namespace std;		// (bert)
 #include <EBTKS/Matrix.h>	// (bert) 
 #include "../Splines/TBSpline.h"
 #include <EBTKS/MString.h>	// (bert)
-#undef ROUND
 #undef SIGN
 extern "C" {
 #include <volume_io.h>
 }
-#undef ROUND // Added to avoid conflict between Volume_io's and
-             // AZgen's definition of ROUND, Alex Zijdenbos 97/12/05
 
 #include "splineSmoothArgs.h"
 #include "fieldIO.h"
@@ -69,17 +66,17 @@ extern "C" {
 
 //---------------------------------------------------------------------------------
 // Declarations
-DblMat volume_domain(Volume volume);
-DblMat reduced_domain(Volume volume);
+DblMat volume_domain(VIO_Volume volume);
+DblMat reduced_domain(VIO_Volume volume);
 Spline *createThinPlateSpline(const DblMat &domain, double distance,
 			      double lambda, int verbose);
-void fitSplinesToVolume(Spline *spline, Volume volume, int subsample);
-void fitSplinesToVolume(Spline *spline, Volume volume, Volume mask_volume,
+void fitSplinesToVolume(Spline *spline, VIO_Volume volume, int subsample);
+void fitSplinesToVolume(Spline *spline, VIO_Volume volume, VIO_Volume mask_volume,
 			const DblMat &domain, int subsample);
-void fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
+void fitSplinesToVolumeLookup(TBSplineVolume *spline, VIO_Volume volume,
                               int subsample);
-void fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume, 
-                              Volume mask_volume, const DblMat &domain,
+void fitSplinesToVolumeLookup(TBSplineVolume *spline, VIO_Volume volume, 
+                              VIO_Volume mask_volume, const DblMat &domain,
                               int subsample);
 
 //--------------------------------------------------------------------------------
@@ -87,7 +84,7 @@ void fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
 int main( int argc,  char *argv[] )
      
 {
-  Volume volume = NULL, mask_volume = NULL, output_mask_volume = NULL;     
+  VIO_Volume volume = NULL, mask_volume = NULL, output_mask_volume = NULL;     
   nc_type output_type; /* type for output volume */
   args args(argc, argv);
   DblMat domain;   // region in world coordinates on which splines are defined
@@ -135,9 +132,9 @@ int main( int argc,  char *argv[] )
   
   if(args::spline == b_spline) // create B spline basis
     {
-      Real separations[N_DIMENSIONS];
-      int sizes[N_DIMENSIONS];
-      Real start[N_DIMENSIONS] = { 0.0, 0.0, 0.0 };
+      VIO_Real separations[VIO_N_DIMENSIONS];
+      int sizes[VIO_N_DIMENSIONS];
+      VIO_Real start[VIO_N_DIMENSIONS] = { 0.0, 0.0, 0.0 };
       get_volume_separations(volume, separations);
       get_volume_sizes(volume, sizes);
       theSplines = new TBSplineVolume(domain, start, separations, sizes,
@@ -171,7 +168,7 @@ int main( int argc,  char *argv[] )
   if(args.produce_volume == TRUE) 
     {
       // write smooth function to volume
-      Real real_min, real_max;
+      VIO_Real real_min, real_max;
       if(args::spline == b_spline)
       {
         if(args.use_output_mask == TRUE && args.extrapolate == FALSE) {
@@ -227,18 +224,18 @@ int main( int argc,  char *argv[] )
 
 
 // determine domain from size of volume in world coordinates
-// Returns an N_DIMENSIONS by 2 matrix
+// Returns an VIO_N_DIMENSIONS by 2 matrix
 DblMat
-volume_domain(Volume volume)
+volume_domain(VIO_Volume volume)
 {
-  int sizes[N_DIMENSIONS];
-  Real separations[N_DIMENSIONS];
-  DblMat domain(N_DIMENSIONS,2);
+  int sizes[VIO_N_DIMENSIONS];
+  VIO_Real separations[VIO_N_DIMENSIONS];
+  DblMat domain(VIO_N_DIMENSIONS,2);
 
   get_volume_separations(volume, separations);
   get_volume_sizes(volume, sizes);
   
-  for(int i = 0; i < N_DIMENSIONS; i++)
+  for(int i = 0; i < VIO_N_DIMENSIONS; i++)
     {
       if(separations[i] > 0) {
         domain(i,0) = -0.5*separations[i];
@@ -253,19 +250,19 @@ volume_domain(Volume volume)
 }
 
 // determine smallest domain that contains all non-zero values in volume
-DblMat reduced_domain(Volume volume)
+DblMat reduced_domain(VIO_Volume volume)
 {
-  int sizes[N_DIMENSIONS];
-  Real separations[N_DIMENSIONS];
-  DblMat domain(N_DIMENSIONS,2);
+  int sizes[VIO_N_DIMENSIONS];
+  VIO_Real separations[VIO_N_DIMENSIONS];
+  DblMat domain(VIO_N_DIMENSIONS,2);
   int i,j,k;
 
   get_volume_separations(volume, separations);
   get_volume_sizes(volume, sizes);
 
   // limits
-  int lower[N_DIMENSIONS], upper[N_DIMENSIONS];
-  for(i = 0; i < N_DIMENSIONS; i++)
+  int lower[VIO_N_DIMENSIONS], upper[VIO_N_DIMENSIONS];
+  for(i = 0; i < VIO_N_DIMENSIONS; i++)
     {
       lower[i] = sizes[i]-1;
       upper[i] = 0;
@@ -291,7 +288,7 @@ DblMat reduced_domain(Volume volume)
       exit(0);
     }
 
-  for(i = 0; i < N_DIMENSIONS; i++)
+  for(i = 0; i < VIO_N_DIMENSIONS; i++)
     {
       if(separations[i] > 0) {
         domain(i,0) = separations[i]*(lower[i]-0.5);
@@ -308,18 +305,18 @@ DblMat reduced_domain(Volume volume)
 
 // do fit on all data in volume
 void
-fitSplinesToVolume(Spline *spline, Volume volume, int subsample = 1)
+fitSplinesToVolume(Spline *spline, VIO_Volume volume, int subsample = 1)
 {
-  int sizes[N_DIMENSIONS];
-  Real separations[N_DIMENSIONS];
+  int sizes[VIO_N_DIMENSIONS];
+  VIO_Real separations[VIO_N_DIMENSIONS];
   int i,j,k;
-  float point[N_DIMENSIONS];
-  Real value;
+  float point[VIO_N_DIMENSIONS];
+  VIO_Real value;
 
   get_volume_separations(volume, separations);
   get_volume_sizes(volume, sizes);
 
-  progress_struct progress;
+  VIO_progress_struct progress;
   initialize_progress_report(&progress, FALSE, sizes[0], 
 			    "Fitting splines");
 
@@ -350,27 +347,27 @@ fitSplinesToVolume(Spline *spline, Volume volume, int subsample = 1)
 
 // fit splines to data points that are non-zero in the mask
 void
-fitSplinesToVolume(Spline *spline, Volume volume, Volume mask_volume, 
+fitSplinesToVolume(Spline *spline, VIO_Volume volume, VIO_Volume mask_volume, 
 		   const DblMat &domain, int subsample = 1)
 {
-  int sizes[N_DIMENSIONS];
-  Real separations[N_DIMENSIONS];
+  int sizes[VIO_N_DIMENSIONS];
+  VIO_Real separations[VIO_N_DIMENSIONS];
   int i,j,k;
-  float point[N_DIMENSIONS];
-  Real value;
+  float point[VIO_N_DIMENSIONS];
+  VIO_Real value;
 
   get_volume_separations(volume, separations);
   get_volume_sizes(volume, sizes);
 
   // only look at values within domain
-  int lower[N_DIMENSIONS], upper[N_DIMENSIONS];
-  for(i = 0; i < N_DIMENSIONS; i++)
+  int lower[VIO_N_DIMENSIONS], upper[VIO_N_DIMENSIONS];
+  for(i = 0; i < VIO_N_DIMENSIONS; i++)
     {
       lower[i] = (int) ceil(domain(i,0)/separations[i]);
       upper[i] = (int) floor(domain(i,1)/separations[i]);
     }
 
-  progress_struct progress;
+  VIO_progress_struct progress;
   initialize_progress_report(&progress, FALSE, upper[0]-lower[0]+1, 
 			    "Fitting splines");
   for(i = lower[0]; i <= upper[0]; i += subsample)
@@ -401,18 +398,18 @@ fitSplinesToVolume(Spline *spline, Volume volume, Volume mask_volume,
 
 // do fit on all data in volume
 void
-fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
+fitSplinesToVolumeLookup(TBSplineVolume *spline, VIO_Volume volume,
                          int subsample = 1)
 {
-  int sizes[N_DIMENSIONS];
-  Real separations[N_DIMENSIONS];
+  int sizes[VIO_N_DIMENSIONS];
+  VIO_Real separations[VIO_N_DIMENSIONS];
   int i,j,k;
-  Real value;
+  VIO_Real value;
 
   get_volume_separations(volume, separations);
   get_volume_sizes(volume, sizes);
 
-  progress_struct progress;
+  VIO_progress_struct progress;
   initialize_progress_report(&progress, FALSE, sizes[0], 
 			    "Fitting splines");
 
@@ -437,21 +434,21 @@ fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
 
 // fit splines to data points that are non-zero in the mask
 void
-fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
-                         Volume mask_volume, 
+fitSplinesToVolumeLookup(TBSplineVolume *spline, VIO_Volume volume,
+                         VIO_Volume mask_volume, 
                          const DblMat &domain, int subsample = 1)
 {
-  int sizes[N_DIMENSIONS];
-  Real separations[N_DIMENSIONS];
+  int sizes[VIO_N_DIMENSIONS];
+  VIO_Real separations[VIO_N_DIMENSIONS];
   int i,j,k;
-  Real value;
+  VIO_Real value;
 
   get_volume_separations(volume, separations);
   get_volume_sizes(volume, sizes);
 
   // only look at values within domain
-  int lower[N_DIMENSIONS], upper[N_DIMENSIONS];
-  for(i = 0; i < N_DIMENSIONS; i++)
+  int lower[VIO_N_DIMENSIONS], upper[VIO_N_DIMENSIONS];
+  for(i = 0; i < VIO_N_DIMENSIONS; i++)
     {
       if(separations[i] > 0) {
         lower[i] = (int) ceil(domain(i,0)/separations[i]);
@@ -463,7 +460,7 @@ fitSplinesToVolumeLookup(TBSplineVolume *spline, Volume volume,
       }
     }
 
-  progress_struct progress;
+  VIO_progress_struct progress;
   initialize_progress_report(&progress, FALSE, upper[0]-lower[0]+1, 
 			    "Fitting splines");
   for(i = lower[0]; i <= upper[0]; i += subsample)

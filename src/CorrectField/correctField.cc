@@ -22,8 +22,8 @@ static short debug = 0;
 // Laplacian with non-reflective bc.
 //
 
-void smooth( int sizes[MAX_DIMENSIONS], Real seps[MAX_DIMENSIONS],
-             Volume volume, Volume mask ) {
+void smooth( int sizes[VIO_MAX_DIMENSIONS], VIO_Real seps[VIO_MAX_DIMENSIONS],
+             VIO_Volume volume, VIO_Volume mask ) {
 
     int    i, j, k, ii;
     float  fval;
@@ -62,7 +62,7 @@ void smooth( int sizes[MAX_DIMENSIONS], Real seps[MAX_DIMENSIONS],
     /* Multi-level resolution of Laplacian operator by Gauss-Seidel approach */
 
     /* We want the coarsest grid to be at least 4mm with 4*200 iterations */
-    float min_sep = MIN( MIN( ABS(seps[0]), ABS(seps[1]) ), ABS(seps[2]) );
+    float min_sep = MIN( MIN( VIO_ABS(seps[0]), VIO_ABS(seps[1]) ), VIO_ABS(seps[2]) );
     int inc = 2;
     while( inc < (int)( 4.0 / min_sep ) ) inc *= 2;
 
@@ -109,7 +109,7 @@ void smooth( int sizes[MAX_DIMENSIONS], Real seps[MAX_DIMENSIONS],
                 float newValue = oldValue + SOR * ( tmpValue - oldValue );
                 val[(i*sizes[1]+j)*sizes[2]+k] = newValue;
                 count++;
-                res += ABS( oldValue - newValue );
+                res += VIO_ABS( oldValue - newValue );
               }
             }
           }
@@ -188,7 +188,7 @@ void smooth( int sizes[MAX_DIMENSIONS], Real seps[MAX_DIMENSIONS],
       if( val[i] < min_val ) min_val = val[i];
       if( val[i] > max_val ) max_val = val[i];
     }
-    set_volume_real_range( volume, (Real)min_val, (Real)max_val );
+    set_volume_real_range( volume, (VIO_Real)min_val, (VIO_Real)max_val );
 
     // Save back to volume.
 
@@ -196,7 +196,7 @@ void smooth( int sizes[MAX_DIMENSIONS], Real seps[MAX_DIMENSIONS],
     for( int i = 0; i < sizes[0]; i++ ) {
       for( int j = 0; j < sizes[1]; j++ ) {
         for( int k = 0; k < sizes[2]; k++ ) {
-          set_volume_real_value( volume, i, j, k, 0, 0, (Real)val[count] );
+          set_volume_real_value( volume, i, j, k, 0, 0, (VIO_Real)val[count] );
           count++;
         }
       }
@@ -220,10 +220,10 @@ int  main( int ac, char* av[] ) {
     }
 
     // Read the volume. 
-    Volume in_volume;
+    VIO_Volume in_volume;
     if ( input_volume( av[1], 3, NULL, 
                        MI_ORIGINAL_TYPE, 0, 0, 0,
-                       TRUE, &in_volume, NULL ) != OK ) {
+                       TRUE, &in_volume, NULL ) != VIO_OK ) {
       cerr << "Error: cannot read volume file " << av[1] << endl;
       return 1;
     }
@@ -235,10 +235,10 @@ int  main( int ac, char* av[] ) {
     }
 
     // Read the mask. 
-    Volume mask;
+    VIO_Volume mask;
     if ( input_volume( av[2], 3, NULL, 
                        MI_ORIGINAL_TYPE, 0, 0, 0,
-                       TRUE, &mask, NULL ) != OK ) {
+                       TRUE, &mask, NULL ) != VIO_OK ) {
       cerr << "Error: cannot read mask file " << av[2] << endl;
       return 1;
     }
@@ -249,8 +249,8 @@ int  main( int ac, char* av[] ) {
       return 1;
     }
 
-    int sizes[MAX_DIMENSIONS];
-    Real seps[MAX_DIMENSIONS];
+    int sizes[VIO_MAX_DIMENSIONS];
+    VIO_Real seps[VIO_MAX_DIMENSIONS];
     get_volume_sizes( in_volume, sizes );
     get_volume_separations( in_volume, seps );
 
@@ -266,7 +266,7 @@ int  main( int ac, char* av[] ) {
     delete_volume( in_volume );
     delete_volume( mask );
 
-    return ( rv != OK );
+    return ( rv != VIO_OK );
 
 }
 

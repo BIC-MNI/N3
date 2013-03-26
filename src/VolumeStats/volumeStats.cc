@@ -44,7 +44,7 @@ $State: Exp $
 @MODIFIED   : Added -debug options and dimension checks
 @MODIFIED   :
 @MODIFIED   : Revision 1.9  1997/09/23 21:55:23  alex
-@MODIFIED   : Fixed return value bug in getList functions and removed ROUND from CoM print
+@MODIFIED   : Fixed return value bug in getList functions and removed VIO_ROUND from CoM print
 @MODIFIED   :
 @MODIFIED   : Revision 1.8  1997/08/22 17:08:06  alex
 @MODIFIED   : Added check for a complete lack of valid voxels
@@ -96,7 +96,7 @@ $State: Exp $
 using namespace std;
 
 
-Volume loadVolume(const Path& path, char **axisOrder = 0, int verbose = 0);
+VIO_Volume loadVolume(const Path& path, char **axisOrder = 0, int verbose = 0);
 
 //
 // Main program
@@ -108,7 +108,7 @@ main(int argc, char *argv[])
   // Get argument information
   VolumeStatsArgs args(argc, argv);
 
-  Volume mask = 0;
+  VIO_Volume mask = 0;
   unsigned maskD1, maskD2, maskD3;
   IntArray sizes(3);
   // Load mask, if specified
@@ -148,11 +148,11 @@ main(int argc, char *argv[])
   for (unsigned volumeCtr = 0; volumeCtr < nVolumes; volumeCtr++) {
     Path path(args.inputPath[volumeCtr]);
 
-    Volume volume = loadVolume(path, args.axisOrder, args.verbose);
+    VIO_Volume volume = loadVolume(path, args.axisOrder, args.verbose);
     
     if (volume) {
-      Real voxelMin = get_volume_voxel_min(volume);
-      Real voxelMax = get_volume_voxel_max(volume);
+      VIO_Real voxelMin = get_volume_voxel_min(volume);
+      VIO_Real voxelMax = get_volume_voxel_max(volume);
 
       get_volume_sizes(volume, sizes.contents());
 
@@ -166,7 +166,7 @@ main(int argc, char *argv[])
       unsigned D2 = sizes[1];
       unsigned D3 = sizes[2];
 
-      Real separations[3];
+      VIO_Real separations[3];
       get_volume_separations(volume, separations);
 	
       for (unsigned extremaRunCtr = 0; extremaRunCtr < nExtremaRuns; extremaRunCtr++) {
@@ -213,16 +213,16 @@ main(int argc, char *argv[])
 		for (unsigned d3 = 0; d3 < D3; d3++) {
 		  Boolean valid = TRUE;
 		  if (mask) {
-		    Real value = 0;
+		    VIO_Real value = 0;
 		    if (convertVoxelToWorld) {
-		      Real xWorld, yWorld, zWorld;
+		      VIO_Real xWorld, yWorld, zWorld;
 		      convert_3D_voxel_to_world(volume, d1, d2, d3, &xWorld, &yWorld, &zWorld);
-		      Real voxel1, voxel2, voxel3;
+		      VIO_Real voxel1, voxel2, voxel3;
 		      convert_3D_world_to_voxel(mask, xWorld, yWorld, zWorld,
 						&voxel1, &voxel2, &voxel3);
-		      int v1 = ROUND(voxel1);
-		      int v2 = ROUND(voxel2);
-		      int v3 = ROUND(voxel3);
+		      int v1 = VIO_ROUND(voxel1);
+		      int v2 = VIO_ROUND(voxel2);
+		      int v3 = VIO_ROUND(voxel3);
 		      if ((v1 >= 0) && (v2 >= 0) && (v3 >= 0) &&
 			  (v1 < maskD1) && (v2 < maskD2) && (v3 < maskD3))
 			GET_VALUE_3D(value, mask, v1, v2, v3);
@@ -237,7 +237,7 @@ main(int argc, char *argv[])
 		  }
 		  
 		  if (valid) {
-		    Real value;
+		    VIO_Real value;
 		    GET_VOXEL_3D(value, volume, d1, d2, d3);
 		    // Eliminate NaN's
 		    if (!args.ignoreNaN || ((value >= voxelMin) && (value <= voxelMax))) { 
@@ -322,7 +322,7 @@ main(int argc, char *argv[])
 	    
 	    if (args.all || args.calcVolume || !args.quiet) {
 	      if (!args.quiet)
-		cout << "Volume (mm3): ";
+		cout << "VIO_Volume (mm3): ";
 	      cout << nVoxels*fabs(separations[0]*separations[1]*separations[2]) 
 		   << endl;
 	    }
@@ -408,7 +408,7 @@ main(int argc, char *argv[])
 	      d2Center = d2Center/sumVal;
 	      d3Center = d3Center/sumVal;
 	      
-	      STRING *dimNames = get_volume_dimension_names(volume);
+	      VIO_STR *dimNames = get_volume_dimension_names(volume);
 	      
 	      if (!args.quiet)
 		cout << "CoM_voxel:    ";
@@ -418,7 +418,7 @@ main(int argc, char *argv[])
 	      
 	      if (!args.quiet)
 		cout << "CoM_world:    ";
-	      Real xWorld, yWorld, zWorld;
+	      VIO_Real xWorld, yWorld, zWorld;
 	      convert_3D_voxel_to_world(volume, d1Center, d2Center, d3Center, 
 					&xWorld, &yWorld, &zWorld);
 	      cout << "zspace:" << zWorld << " " 
@@ -447,11 +447,11 @@ main(int argc, char *argv[])
 //
 // Load a volume
 //
-Volume loadVolume(const Path& rawPath, char **axisOrder, int verbose)
+VIO_Volume loadVolume(const Path& rawPath, char **axisOrder, int verbose)
 {
-  Real amountDone;
+  VIO_Real amountDone;
   volume_input_struct inputInfo;
-  Volume volume = 0;
+  VIO_Volume volume = 0;
 
   Path path(rawPath.expanded());
 
@@ -464,12 +464,12 @@ Volume loadVolume(const Path& rawPath, char **axisOrder, int verbose)
 
   int nDimensions = get_minc_file_n_dimensions(path);
   if (nDimensions < 3) {
-    cerr << "ERROR: Volume " << path << " has only " << nDimensions  << " dimensions."
+    cerr << "ERROR: VIO_Volume " << path << " has only " << nDimensions  << " dimensions."
 	 << endl << "  (volume_stats requires 3)" << endl;
     exit(EXIT_FAILURE);
   }    
   else if (nDimensions > 3) {
-    cerr << "WARNING: Volume " << path << " has " << nDimensions << " dimensions."
+    cerr << "WARNING: VIO_Volume " << path << " has " << nDimensions << " dimensions."
 	 << endl << " => attempting to read spatial dimensions only." << endl 
 	 << "You may want to specify -dimorder, or mincreshape the volume." << endl;
   }

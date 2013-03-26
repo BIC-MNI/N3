@@ -83,31 +83,31 @@ void parse_arguments(int argc, char* argv[]);
 void load_volume(char *);
 void load_mask_volume(char *);
 void initialize_tag_volume(void);
-long scan_input_volume(Real, Real);
-void get_tag_points(Real, Real);
+long scan_input_volume(VIO_Real, VIO_Real);
+void get_tag_points(VIO_Real, VIO_Real);
 void write_tag_file(void);
 void write_tag_volume(void);
 void load_tag_file(char *);
 void load_tag_volume(char *);
 void build_histogram(void);
 int mask_value_set(int vox1, int vox2, int vox3);
-void find_proper_threshold(Real *lo, Real *hi);
-int voxel_is_in_mask_volume( Real vox1, Real vox2, Real vox3);
-int volume_size_is_ok( Volume loaded_volume);
+void find_proper_threshold(VIO_Real *lo, VIO_Real *hi);
+int voxel_is_in_mask_volume( VIO_Real vox1, VIO_Real vox2, VIO_Real vox3);
+int volume_size_is_ok( VIO_Volume loaded_volume);
 long gen_seed(void);
 float gen_random_step(void);
 
 
 /* global variables */
 
-Status     status;                
+VIO_Status     status;                
 int        verbose = FALSE;
 int        clobber = FALSE;
 int        debug;
 int        append = FALSE;                  /* true if to append tags */
-Real       threshold[2] = { -1.0, -1.0 };   /* tag selection criterion */
-Real       top_thresh = 1.001;              /* upper threshold for mintags */
-Real       low = -1.0, high = -1.0;         /* starting thresh for mintag */ 
+VIO_Real       threshold[2] = { -1.0, -1.0 };   /* tag selection criterion */
+VIO_Real       top_thresh = 1.001;              /* upper threshold for mintags */
+VIO_Real       low = -1.0, high = -1.0;         /* starting thresh for mintag */ 
 
 char       *tag_filename = NULL;           /* name of tag file */
 char       *tag_volume_filename = NULL;    /* name of tag volume */
@@ -117,28 +117,28 @@ char       *mask_filename = NULL;          /* name of limiting size file */
 char       *comment = NULL;                /* string to denote a comment */
 char       *history = NULL;                /* string to denote a history */
 
-Volume     prob_volume, tag_volume, mask_volume;
+VIO_Volume     prob_volume, tag_volume, mask_volume;
 
-int        prob_volume_sizes[MAX_DIMENSIONS];  /* prob volume sizes */
-int        mask_volume_sizes[MAX_DIMENSIONS];  /* mask volume sizes */
-int        tag_volume_sizes[MAX_DIMENSIONS];   /* size of tag volume */
+int        prob_volume_sizes[VIO_MAX_DIMENSIONS];  /* prob volume sizes */
+int        mask_volume_sizes[VIO_MAX_DIMENSIONS];  /* mask volume sizes */
+int        tag_volume_sizes[VIO_MAX_DIMENSIONS];   /* size of tag volume */
 
-Real       **tags;              /* structure to hold tags */
+VIO_Real       **tags;              /* structure to hold tags */
 char       **labels;            /* structure to hold labels*/
 
-Real       **new_tags;              /* structure to hold tags */
+VIO_Real       **new_tags;              /* structure to hold tags */
 char       **new_labels;            /* structure to hold labels*/
 
-Real       wx, wy, wz;              /* world and voxel coordinates */
+VIO_Real       wx, wy, wz;              /* world and voxel coordinates */
 int        v1, v2, v3;           
 
 int        prob_volume_num_dims; 
 char       **prob_volume_dim_names;  
 
-Real       value;
+VIO_Real       value;
 
-Real       output_tag_voxel = 0.0;
-Real       user_mask_value = 1.0;
+VIO_Real       output_tag_voxel = 0.0;
+VIO_Real       user_mask_value = 1.0;
 long       num_points = 0;
 long       points_chosen = 0;
 long       max_tags = -1;
@@ -474,7 +474,7 @@ void load_volume(char *in_filename)
 			FALSE, 0.0, 0.0,
 			TRUE, &prob_volume, (minc_input_options *) NULL ) ;
 
-  if( status != OK )
+  if( status != VIO_OK )
     exit(EXIT_FAILURE);
 
   /* get prob map volume sizes, num dims, and dim orders */
@@ -545,11 +545,11 @@ void initialize_tag_volume(void)
 @CREATED    : Mar. 1, 1995 (Vasco KOLLOKIAN)
 @MODIFIED   : Feb. 21, 1996 (Vasco KOLLOKIAN)
 ---------------------------------------------------------------------------- */
-long scan_input_volume(Real low, Real high)
+long scan_input_volume(VIO_Real low, VIO_Real high)
 {
 
   long n_points = 0;
-  Real probability;          /* prob variable */
+  VIO_Real probability;          /* prob variable */
 
 
   for ( v1 = 0; v1 < prob_volume_sizes[0]; v1++) {
@@ -591,7 +591,7 @@ long scan_input_volume(Real low, Real high)
 @CREATED    : Mar. 1, 1995 (Vasco KOLLOKIAN)
 @MODIFIED   : Sep. 9, 1996 (Vasco KOLLOKIAN)
 ---------------------------------------------------------------------------- */
-void get_tag_points(Real lo, Real hi)
+void get_tag_points(VIO_Real lo, VIO_Real hi)
 {
 
   long point_count = 0;
@@ -633,9 +633,9 @@ void get_tag_points(Real lo, Real hi)
 
       ALLOC( new_tags[new_i], 3);
 
-      new_tags[new_i][X] = tags[k][X];
-      new_tags[new_i][Y] = tags[k][Y];
-      new_tags[new_i][Z] = tags[k][Z];
+      new_tags[new_i][VIO_X] = tags[k][VIO_X];
+      new_tags[new_i][VIO_Y] = tags[k][VIO_Y];
+      new_tags[new_i][VIO_Z] = tags[k][VIO_Z];
       
       SET_ARRAY_SIZE( new_labels, new_i, new_i+1, 1000);
       ALLOC( new_labels[new_i], strlen(labels[k])+1);
@@ -645,9 +645,9 @@ void get_tag_points(Real lo, Real hi)
       if ( debug >= 15 ) 
 	fprintf( stdout, "%d : %f, %f, %f, <-- %s\n", 
 		k, 
-		new_tags[new_i][X],
-		new_tags[new_i][Y],
-		new_tags[new_i][Z],
+		new_tags[new_i][VIO_X],
+		new_tags[new_i][VIO_Y],
+		new_tags[new_i][VIO_Z],
 		new_labels[new_i]);
 
       new_i++;
@@ -676,7 +676,7 @@ void get_tag_points(Real lo, Real hi)
 	      fprintf( stdout, "goodpoint\n");
 	    
 	    
-	    if ( ( point_count == (long) FLOOR( goodpoint)) && 
+	    if ( ( point_count == (long) VIO_FLOOR( goodpoint)) && 
 		( max_tags ? (points_chosen < max_tags): TRUE ) ) {
 	      
 	      
@@ -695,15 +695,15 @@ void get_tag_points(Real lo, Real hi)
 		goodpoint += stepsize;
 
 	      if ( tag_filename != NULL) {
-		convert_3D_voxel_to_world(prob_volume, (Real) v1, (Real) v2, 
-					  (Real) v3, &wx, &wy, &wz); 
+		convert_3D_voxel_to_world(prob_volume, (VIO_Real) v1, (VIO_Real) v2, 
+					  (VIO_Real) v3, &wx, &wy, &wz); 
 		
 		SET_ARRAY_SIZE( new_tags, new_i, new_i+1, 1000);
 		ALLOC( new_tags[new_i], 3);
 		
-		new_tags[new_i][X] = wx;
-		new_tags[new_i][Y] = wy;
-		new_tags[new_i][Z] = wz;
+		new_tags[new_i][VIO_X] = wx;
+		new_tags[new_i][VIO_Y] = wy;
+		new_tags[new_i][VIO_Z] = wz;
 		
 		SET_ARRAY_SIZE( new_labels, new_i, new_i+1, 1000);
 		  ALLOC( new_labels[new_i], strlen(prob_class)+1);
@@ -713,9 +713,9 @@ void get_tag_points(Real lo, Real hi)
 		if ( debug >= 15 ) {
 		  fprintf( stdout, "%d : %f, %f, %f, --> %s\n", 
 			  new_i, 
-			  new_tags[new_i][X],
-			  new_tags[new_i][Y],
-			  new_tags[new_i][Z],
+			  new_tags[new_i][VIO_X],
+			  new_tags[new_i][VIO_Y],
+			  new_tags[new_i][VIO_Z],
 			  new_labels[new_i]);
 		  
 		}
@@ -731,7 +731,7 @@ void get_tag_points(Real lo, Real hi)
 		set_volume_real_value(tag_volume, v1, v2, v3, 0, 0, output_tag_voxel);
 		
 	      }
-	    } /* if (point_count == (long) FLOOR ...) */
+	    } /* if (point_count == (long) VIO_FLOOR ...) */
 	  } /* if ( value >= threshold ...) */
 	} /* if ( mask_value_set(..)) */
       } /* for v3 */
@@ -772,7 +772,7 @@ void load_tag_file ( char *tag_filename )
 
   /* read the tag file */
   if ( input_tag_file(tag_filename, &num_vol, &i,
-		      &tags, NULL, NULL, NULL, NULL, &labels ) != OK ) {
+		      &tags, NULL, NULL, NULL, NULL, &labels ) != VIO_OK ) {
 
     fprintf(stderr, "Error reading the tag file.\n");
     exit(EXIT_FAILURE);
@@ -786,9 +786,9 @@ void load_tag_file ( char *tag_filename )
     for_less ( k, 0, i ) 
       fprintf( stdout, "%d : %f, %f, %f, <-- %s\n", 
 	      k, 
-	      tags[k][X],
-	      tags[k][Y],
-	      tags[k][Z],
+	      tags[k][VIO_X],
+	      tags[k][VIO_Y],
+	      tags[k][VIO_Z],
 	      labels[k]);
     
   }
@@ -819,9 +819,9 @@ void write_tag_file(void)
     for_less ( k, 0, new_i ) 
       fprintf( stdout, "%d : %f, %f, %f, = %s\n", 
 	      k, 
-	      new_tags[k][X],
-	      new_tags[k][Y],
-	      new_tags[k][Z],
+	      new_tags[k][VIO_X],
+	      new_tags[k][VIO_Y],
+	      new_tags[k][VIO_Z],
 	      new_labels[k]);
     
 
@@ -833,7 +833,7 @@ void write_tag_file(void)
       printf("Writing tag file %s...\n", tag_filename);
     
     if (output_tag_file(tag_filename, comment, 1, new_i, new_tags, 
-			NULL, NULL, NULL, NULL, new_labels) != OK)
+			NULL, NULL, NULL, NULL, new_labels) != VIO_OK)
       exit(EXIT_FAILURE);
   
   }
@@ -879,7 +879,7 @@ void load_tag_volume(char *tag_volume_filename)
 			(minc_input_options *) NULL ) ;
     
 
-  if ( status != OK )
+  if ( status != VIO_OK )
     exit(EXIT_FAILURE);
     
   /* get the volume sizes */
@@ -925,7 +925,7 @@ void load_mask_volume(char *mask_filename)
 			(minc_input_options *) NULL ) ;
     
 
-  if ( status != OK )
+  if ( status != VIO_OK )
     exit(EXIT_FAILURE);
 
   get_volume_sizes(mask_volume, mask_volume_sizes);
@@ -968,7 +968,7 @@ void write_tag_volume(void)
 			   tag_volume, history,
 			 (minc_output_options *) NULL ) ;
     
-    if ( status != OK )
+    if ( status != VIO_OK )
       exit(EXIT_FAILURE);
   }
   else {
@@ -996,8 +996,8 @@ void build_histogram(void)
 {
 
   int k;                     /* counter */
-  Real probability;          /* prob variable */
-  Real mask_value;           /* mask variable */
+  VIO_Real probability;          /* prob variable */
+  VIO_Real mask_value;           /* mask variable */
   long total_test = 0;       /* check the total voxels */
 
   /* reset the histogram */
@@ -1054,9 +1054,9 @@ void build_histogram(void)
 int mask_value_set(int vox1, int vox2, int vox3)
 {
 
-  Real mask_wx, mask_wy, mask_wz;  /* world coordinates of mask */
-  Real mask_v1, mask_v2, mask_v3;  /* voxel coordinates of mask */
-  Real mask_value;                 /* var to hold the masking state */
+  VIO_Real mask_wx, mask_wy, mask_wz;  /* world coordinates of mask */
+  VIO_Real mask_v1, mask_v2, mask_v3;  /* voxel coordinates of mask */
+  VIO_Real mask_value;                 /* var to hold the masking state */
 
   /* if no mask filename is specified, then it is always set */
   if ( !mask_filename ) 
@@ -1070,9 +1070,9 @@ int mask_value_set(int vox1, int vox2, int vox3)
   /* if world coordinate is specified, it is checked against the world
      coordinate of the mask at the very same location */
     convert_3D_voxel_to_world(prob_volume, 
-			      (Real)vox1,
-			      (Real)vox2,
-			      (Real)vox3,
+			      (VIO_Real)vox1,
+			      (VIO_Real)vox2,
+			      (VIO_Real)vox3,
 			      &mask_wx,
 			      &mask_wy,
 			      &mask_wz);
@@ -1097,9 +1097,9 @@ int mask_value_set(int vox1, int vox2, int vox3)
   if ( voxel_is_in_mask_volume( mask_v1, mask_v2, mask_v3) ) {
 
     mask_value = get_volume_real_value(mask_volume, 
-				       ROUND(mask_v1), 
-				       ROUND(mask_v2), 
-				       ROUND(mask_v3), 
+				       VIO_ROUND(mask_v1), 
+				       VIO_ROUND(mask_v2), 
+				       VIO_ROUND(mask_v3), 
 				       0, 0);
 	  
     /* if mask is on, return TRUE */
@@ -1129,7 +1129,7 @@ int mask_value_set(int vox1, int vox2, int vox3)
 @CREATED    : Feb. 21, 1996 (Vasco KOLLOKIAN)
 @MODIFIED   : 
 ---------------------------------------------------------------------------- */
-void find_proper_threshold(Real *lo, Real *hi)
+void find_proper_threshold(VIO_Real *lo, VIO_Real *hi)
 {
 
   int k;
@@ -1149,7 +1149,7 @@ void find_proper_threshold(Real *lo, Real *hi)
 
     if ( num_points >= min_tags ) {
 
-      *lo = ((Real) k)/100.0;
+      *lo = ((VIO_Real) k)/100.0;
 
       if ( verbose ) 
 	fprintf( stdout, "Met mintags criterion at %d%% theshold\n", k);
@@ -1171,23 +1171,23 @@ void find_proper_threshold(Real *lo, Real *hi)
 @INPUT      : 
 @OUTPUT     : 
 @RETURNS    : 
-@DESCRIPTION: verifies that volume sizes are OK
+@DESCRIPTION: verifies that volume sizes are VIO_OK
 @METHOD     : 
 @GLOBALS    : 
 @CALLS      : 
 @CREATED    : Feb 10, 1996 (Vasco KOLLOKIAN)
 @MODIFIED   : 
 ---------------------------------------------------------------------------- */
-int volume_size_is_ok( Volume loaded_volume) 
+int volume_size_is_ok( VIO_Volume loaded_volume) 
 {
 
 
   int    *loaded_volume_sizes;
   int    loaded_volume_num_dims;
-  STRING *loaded_volume_dim_names;
+  VIO_STR *loaded_volume_dim_names;
   
   /* allocate memory for first volume sizes */
-  ALLOC(loaded_volume_sizes, MAX_DIMENSIONS); 
+  ALLOC(loaded_volume_sizes, VIO_MAX_DIMENSIONS); 
 
   /* get dim size, nums, order */
   get_volume_sizes(loaded_volume, loaded_volume_sizes);
@@ -1218,21 +1218,21 @@ int volume_size_is_ok( Volume loaded_volume)
 
      
   /* check for volume size mismatches */
-  if (loaded_volume_sizes[X] != prob_volume_sizes[X]) {
+  if (loaded_volume_sizes[VIO_X] != prob_volume_sizes[VIO_X]) {
 
-    (void) fprintf(stderr,"Error - Volume size mismatch in X dimension ");
+    (void) fprintf(stderr,"Error - VIO_Volume size mismatch in X dimension ");
     return FALSE;
   }
 
-  if (loaded_volume_sizes[Y] != prob_volume_sizes[Y]) {
+  if (loaded_volume_sizes[VIO_Y] != prob_volume_sizes[VIO_Y]) {
 
-    (void) fprintf(stderr,"Error - Volume size mismatch in Y dimension ");
+    (void) fprintf(stderr,"Error - VIO_Volume size mismatch in Y dimension ");
     return FALSE;
   }
 
-  if (loaded_volume_sizes[Z] != prob_volume_sizes[Z]) {
+  if (loaded_volume_sizes[VIO_Z] != prob_volume_sizes[VIO_Z]) {
 
-    (void) fprintf(stderr,"Error - Volume size mismatch in Z dimension ");
+    (void) fprintf(stderr,"Error - VIO_Volume size mismatch in Z dimension ");
     return FALSE;
   }
 
@@ -1288,20 +1288,20 @@ int volume_size_is_ok( Volume loaded_volume)
 @CREATED    : Sep 22, 1995 ( Vasco KOLLOKIAN)
 @MODIFIED   : 
 ---------------------------------------------------------------------------- */
-int voxel_is_in_mask_volume( Real vox1, Real vox2, Real vox3)
+int voxel_is_in_mask_volume( VIO_Real vox1, VIO_Real vox2, VIO_Real vox3)
 {
  
-  if ( vox1 < -0.5 || vox1 >= (Real) mask_volume_sizes[0] - 0.5) {
+  if ( vox1 < -0.5 || vox1 >= (VIO_Real) mask_volume_sizes[0] - 0.5) {
 
     return FALSE;
   }
   
-  else if ( vox2 < -0.5 || vox2 >= (Real) mask_volume_sizes[1] - 0.5) {
+  else if ( vox2 < -0.5 || vox2 >= (VIO_Real) mask_volume_sizes[1] - 0.5) {
     
     return FALSE;
   }
   
-  else if ( vox3 < -0.5 || vox3 >= (Real) mask_volume_sizes[2] - 0.5) {
+  else if ( vox3 < -0.5 || vox3 >= (VIO_Real) mask_volume_sizes[2] - 0.5) {
     
     return FALSE;
   }

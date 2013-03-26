@@ -44,19 +44,19 @@ using namespace std;		/* (bert) */
 extern "C" {
 #include <volume_io.h>
 }
-#undef ROUND
+#undef VIO_ROUND
 #include "DHistogram.h"
 #include "WHistogram.h"
 #include "args.h"
 
 void write_histogram_to_text_file(FILE *fp, int select, DHistogram *histogram);
-void bin_volume(Volume volume, Volume mask_volume, args &args, 
+void bin_volume(VIO_Volume volume, VIO_Volume mask_volume, args &args, 
            DHistogram *histogram[], int n_histograms);
 
 int main( int argc,  char *argv[] )
 {
-  Volume volume, mask_volume;     
-  Real real_min, real_max;
+  VIO_Volume volume, mask_volume;     
+  VIO_Real real_min, real_max;
   args args(argc, argv);
   int i, j, k;
 
@@ -68,17 +68,17 @@ int main( int argc,  char *argv[] )
   // open mask volume
   if(args.mask_flag == TRUE)
   {
-    if (input_volume((char *)args.maskPath.string(), N_DIMENSIONS, 
+    if (input_volume((char *)args.maskPath.string(), VIO_N_DIMENSIONS, 
                      File_order_dimension_names,
                      NC_UNSPECIFIED, /* data type */ FALSE,
                      NC_UNSPECIFIED, NC_UNSPECIFIED, /* min, max */
-                     TRUE, &mask_volume, (minc_input_options *) NULL) != OK)
+                     TRUE, &mask_volume, (minc_input_options *) NULL) != VIO_OK)
       return(1);
 
     // check that mask is a label volume
     nc_type mask_type;
-    BOOLEAN signed_flag;
-    Real voxel_min, voxel_max;
+    VIO_BOOL signed_flag;
+    VIO_Real voxel_min, voxel_max;
     mask_type = get_volume_nc_data_type(mask_volume, &signed_flag);
     get_volume_voxel_range(mask_volume, &voxel_min, &voxel_max);
     get_volume_real_range(mask_volume, &real_min, &real_max);
@@ -93,15 +93,15 @@ int main( int argc,  char *argv[] )
   }
 
   // open source volume
-  if (input_volume((char *)args.inputPath.string(), N_DIMENSIONS, 
+  if (input_volume((char *)args.inputPath.string(), VIO_N_DIMENSIONS, 
 		   File_order_dimension_names,
 		   NC_UNSPECIFIED, /* data type */ FALSE,
 		   NC_UNSPECIFIED, NC_UNSPECIFIED, /* min, max */
-		   TRUE, &volume, (minc_input_options *) NULL) != OK)
+		   TRUE, &volume, (minc_input_options *) NULL) != VIO_OK)
     return(1);
 
   // allocate histograms
-  int n_histograms = (args.mask_flag) ? ROUND(real_max + 1) : 1;
+  int n_histograms = (args.mask_flag) ? VIO_ROUND(real_max + 1) : 1;
   if(args.select_class_flag && (real_max < args.selected_class ||
                                   real_min > args.selected_class)) {
     cerr << "Error: no labels of selected class in mask volume." << endl;
@@ -113,7 +113,7 @@ int main( int argc,  char *argv[] )
     cerr << "Warning: mask volume may not me a label volume" << endl;
 
   // check that volumes are same size
-  int sizes[N_DIMENSIONS], mask_sizes[N_DIMENSIONS];
+  int sizes[VIO_N_DIMENSIONS], mask_sizes[VIO_N_DIMENSIONS];
   get_volume_sizes(volume, sizes);
   if(args.mask_flag == TRUE) 
     {
@@ -130,8 +130,8 @@ int main( int argc,  char *argv[] )
   get_volume_real_range(volume, &real_min, &real_max);
   DHistogram **histogram = (DHistogram **) 
     malloc(sizeof(DHistogram *)*n_histograms);
-  Real *class_min = new Real[n_histograms];
-  Real *class_max = new Real[n_histograms];
+  VIO_Real *class_min = new VIO_Real[n_histograms];
+  VIO_Real *class_max = new VIO_Real[n_histograms];
   
   if(args.auto_range == FALSE)
     {
@@ -149,9 +149,9 @@ int main( int argc,  char *argv[] )
     }
   else // compute range for each class
     {
-      progress_struct progress;
+      VIO_progress_struct progress;
       int bin;
-      Real value;
+      VIO_Real value;
 
       initialize_progress_report(&progress, FALSE, sizes[0], 
 			    "Computing ranges for each class.");
@@ -167,7 +167,7 @@ int main( int argc,  char *argv[] )
               {
                 for(k = 0; k < sizes[2]; k++)
                   {
-                    bin = ROUND(get_volume_real_value(mask_volume,
+                    bin = VIO_ROUND(get_volume_real_value(mask_volume,
                                                       i, j, k, 0, 0));
                     if(bin >= 0 && bin < n_histograms)
                       {
@@ -288,12 +288,12 @@ write_histogram_to_text_file(FILE *fp, int select, DHistogram *histogram)
 
 // bin all values in source volume
 void
-bin_volume(Volume volume, Volume mask_volume, args &args, 
+bin_volume(VIO_Volume volume, VIO_Volume mask_volume, args &args, 
            DHistogram *histogram[], int n_histograms)
 {
-  progress_struct progress;
+  VIO_progress_struct progress;
   int bin, i,j,k;
-  int sizes[N_DIMENSIONS];
+  int sizes[VIO_N_DIMENSIONS];
   get_volume_sizes(volume, sizes);
   
   initialize_progress_report(&progress, FALSE, sizes[0], 
@@ -306,7 +306,7 @@ bin_volume(Volume volume, Volume mask_volume, args &args,
           for(j = 0; j < sizes[1]; j++)
             for(k = 0; k < sizes[2]; k++)
               {
-                bin = ROUND(get_volume_real_value
+                bin = VIO_ROUND(get_volume_real_value
                             (mask_volume, i, j, k, 0, 0));
                 if(bin >= 0 && bin < n_histograms)
                   {

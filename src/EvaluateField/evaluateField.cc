@@ -35,13 +35,13 @@ $State: Exp $
 #include "../Splines/Spline.h"
 #include "../Splines/TBSpline.h"
 #include "EBTKS/MString.h"	/* (bert) */
-#undef ROUND
+#undef VIO_ROUND
 #undef SIGN
 extern "C" {
 #include <volume_io.h>
 }
-#undef ROUND // Added to avoid conflict between Volume_io's and
-             // AZgen's definition of ROUND, Alex Zijdenbos 97/12/05
+#undef VIO_ROUND // Added to avoid conflict between Volume_io's and
+             // AZgen's definition of VIO_ROUND, Alex Zijdenbos 97/12/05
 #include "evaluateFieldArgs.h"
 #include "../SplineSmooth/fieldIO.h"
 #include <iostream>		/* (bert) */
@@ -62,10 +62,10 @@ using namespace std;		/* (bert) */
 int main( int argc,  char *argv[] )
      
 {
-  Volume volume, mask_volume; 
+  VIO_Volume volume, mask_volume; 
   enum spline_type spline_type;   
   nc_type output_type; /* type for output volume */
-  BOOLEAN signed_flag;
+  VIO_BOOL signed_flag;
   evaluateArgs args(argc, argv);
   DblMat domain;   // region in world coordinates on which splines are defined
 
@@ -89,15 +89,15 @@ int main( int argc,  char *argv[] )
 
   // read compact field representation from file
   Spline *theSplines;
-  Status status = inputCompactField(args.inputPath, &theSplines, 
+  VIO_Status status = inputCompactField(args.inputPath, &theSplines, 
                                     &spline_type, volume);
-  if(status != OK) {
+  if(status != VIO_OK) {
     cerr << "Failure reading field file: " << args.inputPath << endl;
-    return(ERROR);
+    return(VIO_ERROR);
   }
 
   // write smooth function to volume
-  Real real_min, real_max;
+  VIO_Real real_min, real_max;
   
   //#ifdef DEBUG_FIELDIO
   double value = (*(TBSplineVolume *) theSplines)(0,0,0);
