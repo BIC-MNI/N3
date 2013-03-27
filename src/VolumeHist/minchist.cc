@@ -44,7 +44,7 @@ using namespace std;		/* (bert) */
 extern "C" {
 #include <volume_io.h>
 }
-#undef VIO_ROUND
+#undef ROUND
 #include "DHistogram.h"
 #include "WHistogram.h"
 #include "args.h"
@@ -101,7 +101,7 @@ int main( int argc,  char *argv[] )
     return(1);
 
   // allocate histograms
-  int n_histograms = (args.mask_flag) ? VIO_ROUND(real_max + 1) : 1;
+  int n_histograms = (args.mask_flag) ? ROUND(real_max + 1) : 1;
   if(args.select_class_flag && (real_max < args.selected_class ||
                                   real_min > args.selected_class)) {
     cerr << "Error: no labels of selected class in mask volume." << endl;
@@ -167,7 +167,7 @@ int main( int argc,  char *argv[] )
               {
                 for(k = 0; k < sizes[2]; k++)
                   {
-                    bin = VIO_ROUND(get_volume_real_value(mask_volume,
+                    bin = ROUND(get_volume_real_value(mask_volume,
                                                       i, j, k, 0, 0));
                     if(bin >= 0 && bin < n_histograms)
                       {
@@ -306,7 +306,7 @@ bin_volume(VIO_Volume volume, VIO_Volume mask_volume, args &args,
           for(j = 0; j < sizes[1]; j++)
             for(k = 0; k < sizes[2]; k++)
               {
-                bin = VIO_ROUND(get_volume_real_value
+                bin = ROUND(get_volume_real_value
                             (mask_volume, i, j, k, 0, 0));
                 if(bin >= 0 && bin < n_histograms)
                   {

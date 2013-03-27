@@ -220,9 +220,9 @@ main(int argc, char *argv[])
 		      VIO_Real voxel1, voxel2, voxel3;
 		      convert_3D_world_to_voxel(mask, xWorld, yWorld, zWorld,
 						&voxel1, &voxel2, &voxel3);
-		      int v1 = VIO_ROUND(voxel1);
-		      int v2 = VIO_ROUND(voxel2);
-		      int v3 = VIO_ROUND(voxel3);
+		      int v1 = ROUND(voxel1);
+		      int v2 = ROUND(voxel2);
+		      int v3 = ROUND(voxel3);
 		      if ((v1 >= 0) && (v2 >= 0) && (v3 >= 0) &&
 			  (v1 < maskD1) && (v2 < maskD2) && (v3 < maskD3))
 			GET_VALUE_3D(value, mask, v1, v2, v3);
@@ -478,7 +478,7 @@ VIO_Volume loadVolume(const Path& rawPath, char **axisOrder, int verbose)
     cout << "Reading volume " << path << flush;
   if (start_volume_input(path, 3, axisOrder, NC_UNSPECIFIED, 
 			 TRUE, 0.0, 0.0, TRUE, &volume, (minc_input_options *) NULL, 
-			 &inputInfo) != OK)
+			 &inputInfo) != VIO_OK)
     return 0;
   while (input_more_of_volume(volume, &inputInfo, &amountDone))
     if (verbose)
