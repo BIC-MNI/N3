@@ -41,15 +41,12 @@ $State: Exp $
 #include <config.h>
 #include <EBTKS/Matrix.h>	// (bert) - Added EBTKS subdirectory
 #include <EBTKS/MString.h>	// (bert)
-#undef VIO_ROUND
 #undef SIGN
 extern "C" {
 #include <volume_io.h>
 }
 #include <version.h>
 
-#undef VIO_ROUND // Added to avoid conflict between Volume_io's and
-             // AZgen's definition of VIO_ROUND, Alex Zijdenbos 97/12/05
 #include "splineSmoothArgs.h"
 
 
