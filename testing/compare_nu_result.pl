@@ -52,10 +52,11 @@ my $tmpdir = &tempdir( "$me-XXXXXXXX", TMPDIR => 1, CLEANUP => 1 );
 
 my @args=("nu_estimate", $in, "$tmpdir/brain.imp");
 push(@args,'-mask',$mask) if $mask;
+push(@args,'-verbose') if $verbose;
 
 do_cmd(@args);
 
-do_cmd("nu_evaluate", $in, '-mapping', "$tmpdir/brain.imp", "$tmpdir/brain_nu.mnc");
+do_cmd("nu_evaluate", $in, '-mapping', "$tmpdir/brain.imp", "$tmpdir/brain_nu.mnc",'-verbose');
 
 do_cmd('mincmath','-sub','-float',"$tmpdir/brain_nu.mnc" , $ref, "$tmpdir/diff.mnc");
 
