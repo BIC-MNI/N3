@@ -1,3 +1,6 @@
+2014-10-29  Claude Lepage  <claude@bic.mni.mcgill.ca>
+	* Set verbose=0 for calls to Spawn that return parsed values
+
 2011-01-13  Claude Lepage  <claude@bic.mni.mcgill.ca>
 	* Fixed typo with headers in fieldIO.cc
 

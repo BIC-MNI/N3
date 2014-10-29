@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #----------------------------------------------------------------------------
 #$RCSfile: nu_evaluate.in,v $
-#$Revision: 1.4 $
+#$Revision: 1.5 $
 #$Author: claude $
-#$Date: 2010-12-09 19:35:01 $
+#$Date: 2014-10-29 21:15:13 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : August 7, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_evaluate.in,v 1.4 2010-12-09 19:35:01 claude Exp $
+#  $Id: nu_evaluate.in,v 1.5 2014-10-29 21:15:13 claude Exp $
 #-----------------------------------------------------------------------------
 
 use MNI::Startup qw(nocputimes);
@@ -49,7 +49,7 @@ use Getopt::Tabular;
 if( !( defined $user_mask_volume ) || !( -e $user_mask_volume ) ) {
   my $threshold = 0;
   &Spawn(['mincstats', '-quiet', '-biModalT', $input_volume],
-           err_action => 'ignore', stdout => \$threshold );
+           err_action => 'ignore', verbose => 0, stdout => \$threshold );
   $user_mask_volume = "${TmpDir}/nuc_auto_mask.mnc";
   &Spawn(['minccalc', '-quiet', '-byte', '-expression',
           "if(A[0]>=$threshold){out=1}else{out=0}",

@@ -13,9 +13,9 @@
 #             express or implied warranty.
 #---------------------------------------------------------------------------- 
 #$RCSfile: nu_estimate_np_and_em.in,v $
-#$Revision: 1.7 $
+#$Revision: 1.8 $
 #$Author: claude $
-#$Date: 2009-07-29 15:07:44 $
+#$Date: 2014-10-29 21:15:13 $
 #$State: Exp $
 #---------------------------------------------------------------------------
 # ------------------------------ MNI Header ----------------------------------
@@ -30,7 +30,7 @@
 #@CALLS      : 
 #@CREATED    : January 15, 1996      J.G.Sled  
 #@MODIFIED   : 
-#  $Id: nu_estimate_np_and_em.in,v 1.7 2009-07-29 15:07:44 claude Exp $
+#  $Id: nu_estimate_np_and_em.in,v 1.8 2014-10-29 21:15:13 claude Exp $
 #-----------------------------------------------------------------------------
 use warnings "all";
 use MNI::Startup qw(nocputimes);
@@ -304,7 +304,7 @@ sub CreateMask
       if($auto_mask_flag) { # determine if brain is in talairach space
          Spawn(['mincinfo', '-attvalue', 'xspace:spacetype',
               qw(-attvalue yspace:spacetype -attvalue zspace:spacetype),
-              $input_volume], err_action => 'ignore', stdout => \$output);
+              $input_volume], err_action => 'ignore', verbose => 0, stdout => \$output);
          @spacetype = split('\n', $output);
         (@spacetype == 3) && ($spacetype[0] =~ /talairach/i) 
              && ($spacetype[1] =~ /talairach/i) &&
@@ -320,7 +320,7 @@ sub CreateMask
          if (defined($Mask)) {
             push(@VolumeStatsCmd, ('-mask', $Mask));
          }
-         Spawn(\@VolumeStatsCmd, stdout => \$background_threshold);
+         Spawn(\@VolumeStatsCmd, verbose => 0, stdout => \$background_threshold);
          chop($background_threshold);
       }
    }
@@ -375,7 +375,7 @@ sub CreateMask
    # Check that mask volume is not empty
    my $max;
    Spawn(['volume_stats', '-quiet', '-max', $mask_volume],
-         stdout => \$max);
+         verbose => 0, stdout => \$max);
    die("Error: Composite mask volume is empty.  Check for one of the"
        ." following:\n 1) the user supplied mask is empty (all zeros)\n"
        ." 2) the values within the region of interest are entirely"
@@ -598,7 +598,7 @@ sub normalize_field_volume
    (-r $_[1]) || die("&normalize_field_volume. Can't read file: $_[1]\n");
 
    Spawn(['volume_stats', '-quiet', '-mean', '-mask', $mask, $volume],
-         stdout => \$mean);
+         verbose => 0, stdout => \$mean);
    if(chomp($mean) != 0) {
      Spawn("mincmath -div -const $mean $volume $norm_field_volume");
      Spawn("mv $norm_field_volume $volume");
@@ -703,7 +703,7 @@ sub field_CV
 
    (-r $_[0]) || die("field_CV. Can't read file: $_[0]\n");
    Spawn(['volume_stats', '-quiet', '-stddev', '-mean',
-                              '-mask', $_[1], $_[0]], stdout => \$result);
+                              '-mask', $_[1], $_[0]], verbose => 0, stdout => \$result);
    ($mean, $stddev) = split("\n",$result);
    ($stddev =~ /NAN/i) && die("function: field_CV()\n"
                                  ."Field standard deviation not defined\n");
