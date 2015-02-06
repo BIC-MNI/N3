@@ -162,12 +162,13 @@ for ($iter = 0; $iter < $iterations; $iter++)
          else {
             &filter_volume($working, $norm_volume, $distance, $residue_volume);
          }
-         (defined @stopping_threshold) &&  # use ratio for stopping condition
-            (Spawn(['mincmath', '-sub', '-zero', $estimate_volume,
-                     $residue_volume, $working]));
+         if (@stopping_threshold) {  # use ratio for stopping condition
+            Spawn(['mincmath', '-sub', '-zero', $estimate_volume,
+                     $residue_volume, $working]); 
+                 }
       }
       # check stopping condition
-      if(defined @stopping_threshold) {
+      if( @stopping_threshold) {
          $field_difference = &field_CV($working, $mask_volume);
          ($debug_flag) && print RECORD "CV for change in field estimate"
             ." at iteration $iter: $field_difference\n";
@@ -208,7 +209,7 @@ if($debug_flag) {
    close(RECORD);
 }
 
-print "Number of iterations: $iter \n" . ((defined @stopping_threshold)? 
+print "Number of iterations: $iter \n" . ((@stopping_threshold)? 
    "CV of field change: $field_difference\n"  : "\n"); 
 &verbose("# NU estimation complete.");
 
@@ -1030,10 +1031,10 @@ sub print_info
          print RECORD "\nUsing parametric tissue model estimated using"
             ." tag file:\n";
       }
-      (defined @variance_override) &&
+      (@variance_override) &&
          print RECORD "Tissue variances overridden with values:"
             ." @variance_override\n";
-      if((not defined @probability_maps) || 
+      if((not @probability_maps) || 
          ($probability_maps[0] =~ /default/)) {
          print RECORD "Using default tissue probability maps. \n";
       }
@@ -1430,15 +1431,15 @@ HELP
 sub ValidateArgs
 {
    if($sharpen_flag) {
-      (defined @probability_option) && 
+      ( @probability_option) && 
          die("-probability option not compatible with -sharpen\n");
       (defined $mean_file) && 
          die("-mean option not compatible with -sharpen\n");
       (defined $tag_file) && 
          die("-tag option not compatible with -sharpen\n");
-      (defined @variance_override) && 
+      ( @variance_override) && 
          die("-variance option not compatible with -sharpen\n");
-      (defined @reduce_flag) &&
+      ( @reduce_flag) &&
          die("-reduce option not compatible with -sharpen\n");
       ($sharpen_options[0] > 0 && $sharpen_options[1] > 0) || 
         die("Invalid sharpen parameters: $sharpen_options[0]".
@@ -1462,7 +1463,7 @@ sub ValidateArgs
       die("Subsampling factor for splines should be positive.\n");
    (defined $workspace && $shrink_workspace != 1.0) &&
       die("-workspace and -shrink options are not compatible\n");
-   (defined @stopping_threshold && 
+   ( @stopping_threshold && 
     ($#stopping_threshold != $#iteration_stages)) &&
       die("Number of arguments to -iterations and -stop must match\n");
 
@@ -1614,15 +1615,15 @@ sub Initialize
    ($input_volume, $output_mapping) = @reducedARGV;
 
    # expand some arguments
-   (defined @iteration_stages) && 
+   ( @iteration_stages) && 
       ($iterations = $iteration_stages[$#iteration_stages]);
-   (defined @sharpen_options) && ($sharpen_flag = 1);
+   ( @sharpen_options) && ($sharpen_flag = 1);
    (defined $workspace || $shrink_workspace != 1.0) && ($workspace_flag = 1);
-   @variance_option  = (defined @variance_override) ? 
+   @variance_option  = ( @variance_override) ? 
       ('-variance', @variance_override) : ();
-   @reduce_option = (defined @reduce_threshold) ? 
+   @reduce_option = ( @reduce_threshold) ? 
       ('-reduce', @reduce_threshold) : ();
-    if(defined @probability_maps) {
+    if( @probability_maps) {
       if($probability_maps[0] =~ /^default$/i) {
          @probability_option = ('-probability', 
             join(',', @default_probability_maps));
