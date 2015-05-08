@@ -94,8 +94,8 @@ public:
   }
 
 // Other operators
-  WHistogram&  operator += (const WHistogram& hist);
-  LUT<double> equalize(const WHistogram& hist) const;
+  /*WHistogram&  operator += (const WHistogram& hist);*/
+  /*LUT<double> equalize(const WHistogram& hist) const*/
 
 // Friends
   friend ostream&    operator << (ostream& os, const WHistogram& hist);
