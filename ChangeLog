@@ -1,3 +1,7 @@
+2015-06-26  Robert D. Vincent <robert.d.vincent@mcgill.ca>
+	* Fixed some compiler warnings.
+	* src/Splines/TBSpline.cc: Fixed memory overwrite.
+
 2011-01-13  Claude Lepage  <claude@bic.mni.mcgill.ca>
 	* Fixed typo with headers in fieldIO.cc
 

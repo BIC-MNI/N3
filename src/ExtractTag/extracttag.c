@@ -635,7 +635,7 @@ void get_tag_points(VIO_Real lo, VIO_Real hi)
   if ( debug > 1 ) {
 
     fprintf( stdout, "stepsize = %f \n", stepsize);
-    fprintf( stdout, "num_points = %d \n", num_points);
+    fprintf( stdout, "num_points = %ld \n", num_points);
 
   }
 
@@ -759,8 +759,8 @@ void get_tag_points(VIO_Real lo, VIO_Real hi)
   
   if ( verbose ) {
 
-    fprintf( stdout, "Number of qualifying tags = %d\n", point_count);
-    fprintf( stdout, "Number of tags chosen = %d\n", points_chosen);
+    fprintf( stdout, "Number of qualifying tags = %ld\n", point_count);
+    fprintf( stdout, "Number of tags chosen = %ld\n", points_chosen);
 
   }
 
@@ -1047,11 +1047,11 @@ void build_histogram(void)
 
     for_less ( k, 0, 101 ) {
 
-      fprintf( stdout, "histogram[%d] = %d\n", k, histogram[k]);;
+      fprintf( stdout, "histogram[%d] = %ld\n", k, histogram[k]);;
       total_test += histogram[k];
     }
     
-    fprintf( stdout, "total voxels  = %d\n", total_test);
+    fprintf( stdout, "total voxels  = %ld\n", total_test);
   }
 
 } /* build_histogram */
@@ -1180,7 +1180,7 @@ void find_proper_threshold(VIO_Real *lo, VIO_Real *hi)
 
   }
 
-  fprintf( stderr, "Could not find %d tag points\n", min_tags);
+  fprintf( stderr, "Could not find %ld tag points\n", min_tags);
   exit(EXIT_FAILURE);
 
 } /* find_proper_threshold */

@@ -259,12 +259,9 @@ load_histogram(char *filename, DblMat &X, double *min_bin, double *max_bin)
       exit(EXIT_FAILURE);
     }
 
-  while(!feof(fp)) 
+  while(fgets(str, SIZE, fp) != NULL)
     {
       char *ptr;
-
-      *str = '\0';
-      fgets(str, SIZE, fp);
       
       // remove everything following a '#' character from the string
       for(ptr = str; *ptr; ptr++)

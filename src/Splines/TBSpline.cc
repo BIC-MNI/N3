@@ -640,12 +640,14 @@ TBSpline::solveSymmetricSystem(DblMat &A, DblMat b, int *info)
   _integer *ipiv = new _integer[n];
   _doublereal work;
   _integer lwork = 1;
+  _integer w_info;
 
   dsysv_("U", &n, &nrhs, (_doublereal *) *A.getEl(), &lda, ipiv, 
 	 (_doublereal *) *b.getEl(), &ldb,
-	 &work, &lwork, (_integer *)info);
+	 &work, &lwork, &w_info);
 
   delete [] ipiv;
+  *info = (int) w_info;
   return(b);
 }
 
