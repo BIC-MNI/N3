@@ -173,7 +173,7 @@ Spline::fit()
 
   W *= _AtF;
 
-  _coef = array(W);
+  _coef = ::array(W);
   assert(_nCoef == _coef.size());
 
   _fitted = TRUE;
@@ -569,8 +569,8 @@ TPSpline::fit()
   // Calculate W
   DblMat W(inv(_AtA + (_lambda*_nsamples)*J) * _AtF);
 
-  _coef = array(-_Psi * R * W.rows(0, _nKnots - _nDimensions - 2));
-  _coef.append(array(W));
+  _coef = ::array(-_Psi * R * W.rows(0, _nKnots - _nDimensions - 2));
+  _coef.append(::array(W));
   assert(_nCoef == _coef.size());
 
   _fitted = TRUE;
