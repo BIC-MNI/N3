@@ -261,7 +261,15 @@ int main( int argc,  char *argv[] )
 	}
       fclose(fp);
     }
-  
+
+  delete [] class_min;
+  delete [] class_max;
+  delete_volume(volume);
+  if (args.mask_flag)
+    delete_volume(mask_volume);
+  for(i = 0; i < n_histograms; i++)
+    delete histogram[i];
+  free(histogram);
   return(0);
 } 
 
