@@ -209,16 +209,22 @@ VIO_Status inputCompactField(VIO_STR filename, Spline **splines,
       if( mni_skip_expected_character( file, (char) ';' ) != VIO_OK )
         return( VIO_ERROR );
 
+      delete_string(version_name);
+      delete_string(line);
       /* read next field */
       status = mni_input_string( file, &line, (char) '=', (char) 0 );
       if( status != VIO_OK || 
           mni_skip_expected_character( file, (char) '=' ) != VIO_OK )
-        return( status );
+        {
+          delete_string( line );
+          return( status );
+        }
     }
 
   /* --- read the type of field */
   if(!equal_strings( line, TYPE_STRING )) 
     return(VIO_ERROR);
+  delete_string( line );
   
   if( mni_input_string( file, &type_name, (char) ';', (char) 0 ) != VIO_OK )
     {
@@ -430,6 +436,7 @@ loadEmptyFloatVolume(const MString filename, nc_type *data_type, VIO_BOOL *signe
  
   *data_type = get_volume_nc_data_type(volume, signed_flag);
   delete_volume_input( &input_info);
+  delete_volume(volume);
   
   // open this time using float type
   if (start_volume_input((char *)(const char *)filename, VIO_N_DIMENSIONS, 

@@ -1366,6 +1366,7 @@ long int gen_seed(void)
     res = res - x * divisor;
     divisor /= 10;
   }
+
   return res;
 }
 
