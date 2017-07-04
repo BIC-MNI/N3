@@ -1346,19 +1346,12 @@ int voxel_is_in_mask_volume( VIO_Real vox1, VIO_Real vox2, VIO_Real vox3)
 ---------------------------------------------------------------------------- */
 long int gen_seed(void)
 {
-  struct timeval   *tp;
-  struct timezone  *tz;
+  struct timeval   tp;
   long   tempo, divisor, res, tempo_sec;
   int    x;
 
-  tp = (struct timeval *)malloc(sizeof(struct timeval));
-  if (tp == NULL)
-      fprintf(stderr,"Can't allocate memory for struct timeval\n");
-  tz = (struct timezone *)malloc(sizeof(struct timezone));
-  if (tz == NULL)
-      fprintf(stderr,"Can't allocate memory for struct timezone\n");
-  tempo = gettimeofday(tp, tz);
-  tempo_sec = tp->tv_sec;
+  tempo = gettimeofday(&tp, NULL);
+  tempo_sec = tp.tv_sec;
    /*    printf("time of day = %d, time in sec = %ld\n",
         tempo, tempo_sec); */
   res = tempo_sec;
