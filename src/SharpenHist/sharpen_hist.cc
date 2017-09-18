@@ -76,13 +76,15 @@ CompMat weiner(CompMat &blur, double noise);
 void  non_negative(DblMat *X);
 
 #if HAVE_FINITE
+
 #ifndef finite
-extern "C" int finite(double);
+/*extern "C" int finite(double); */ /*VF: modern gcc defines finite differently!*/
 #endif /* finite() not defined (as macro) */
+
 #define N3FINITE(x) finite(x)
 #elif HAVE_ISFINITE
 #ifndef isfinite
-extern "C" int isfinite(double);
+/*extern "C" int isfinite(double);*/ /*VF: modern gcc can define isfinite differently!*/
 #endif /* isfinite() not defined (as macro) */
 #define N3FINITE(x) isfinite(x)
 #else
