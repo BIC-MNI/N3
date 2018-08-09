@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#! /usr/bin/env perl
 #
 #  Usage: do_test logfile.txt
 #

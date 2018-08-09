@@ -1,4 +1,4 @@
-#!@PERL@ -w
+#! /usr/bin/env perl
 # ------------------------------ MNI Header ----------------------------------
 #@NAME       : rms_diff
 #@INPUT      : 
