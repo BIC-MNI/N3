@@ -132,6 +132,12 @@ int main( int argc,  char *argv[] )
   outputVolume(volume, args.outputPath, output_type, signed_flag, real_min, real_max, 
                args.command);
 
+  delete theSplines;
+
+  delete_volume(volume);
+  if (args.use_mask)
+    delete_volume(mask_volume);
+
   return(0);
 } 
 
