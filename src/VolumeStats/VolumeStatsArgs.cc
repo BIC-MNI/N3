@@ -17,6 +17,10 @@ $Author: stever $
 $Date: 2003-11-17 04:30:56 $
 $State: Exp $
 --------------------------------------------------------------------------*/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "VolumeStatsArgs.h"
 #include <assert.h>
 #include <ctype.h>

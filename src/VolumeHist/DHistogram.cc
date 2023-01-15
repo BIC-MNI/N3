@@ -582,7 +582,7 @@ asDblArray(const DHistogram& hist)
   const double *histPtr = hist._contents;
   double         *binPtr  = bins.contents();
 
-  for (register unsigned i = hist._size; i; i--)
+  for (unsigned i = hist._size; i; i--)
     *binPtr++ = (double) *histPtr++;
 
   return bins;

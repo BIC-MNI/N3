@@ -30,7 +30,9 @@ $State: Exp $
 @MODIFIED   : Log: evaluateField.c,v 
 @COPYRIGHT  : 1996
 ---------------------------------------------------------------------------- */
-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "../Splines/Spline.h"
 #include "../Splines/TBSpline.h"

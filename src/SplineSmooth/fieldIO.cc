@@ -30,6 +30,9 @@ $State: Exp $
 @MODIFIED   : 
 @COPYRIGHT  : 1996
 ---------------------------------------------------------------------------- */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "../Splines/Spline.h"
 #include <EBTKS/MString.h>	// (bert)

@@ -40,6 +40,9 @@ $State: Exp $
  *
 @COPYRIGHT  : 1996
 ---------------------------------------------------------------------------- */
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "TBSpline.h"
 

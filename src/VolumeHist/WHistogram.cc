@@ -17,6 +17,10 @@ $Author: bert $
 $Date: 2003-04-16 14:31:39 $
 $State: Exp $
 --------------------------------------------------------------------------*/
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "WHistogram.h"
 #include <assert.h>
 
