@@ -128,8 +128,8 @@ protected:
   IntArray _blockIndex;     // nDimensions
   DblArray _values;         // 4^nDimensions
   IntArray _locations;      // 4^nDimensions
-  int *_dloc_i;
-  int *_dloc_j;
+  int *_dloc_i = nullptr;
+  int *_dloc_j = nullptr;
 
 public:
   static double _default_lambda;

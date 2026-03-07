@@ -481,7 +481,7 @@ TBSpline::bendingEnergy(int size, int order)
 
   if(size < 4 || order < 0 || order > 2)  
     // bending energy not defined for size < 4
-    return(*(new DblMat));
+    return DblMat();
 
 
   // standardized cubic B-spline defined on [-4 0] with knots at
@@ -752,7 +752,7 @@ TSubIndex::init(const IntArray &smallN)
     {
       _smallStep[i] = 1;
       for(j = i+1; j < _nDimensions; j++)
-	_smallStep *= _smallN[j];
+	_smallStep[i] *= _smallN[j];
     }
 }
 

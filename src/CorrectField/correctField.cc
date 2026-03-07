@@ -95,7 +95,7 @@ void smooth( int sizes[VIO_MAX_DIMENSIONS], VIO_Real seps[VIO_MAX_DIMENSIONS],
                   uyy += fy * val[(i*sizes[1]+j+inc)*sizes[2]+k];
                   norm += fy;
                 }
-                if( k > (inc+1) ) {
+                if( k > (inc-1) ) {
                   uzz += fz * val[(i*sizes[1]+j)*sizes[2]+k-inc];
                   norm += fz;
                 }
@@ -114,7 +114,7 @@ void smooth( int sizes[VIO_MAX_DIMENSIONS], VIO_Real seps[VIO_MAX_DIMENSIONS],
             }
           }
         }
-        res /= (float)count;
+        if( count > 0 ) res /= (float)count;
         if( debug ) cout << "Iter = " << iter << " res = " << res << endl;
         if( res < thresh ) break;
       }
