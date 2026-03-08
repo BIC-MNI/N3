@@ -59,3 +59,33 @@ ADD_PERL_TEST(nu_estimate_7 nu_estimate ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz
 ADD_PERL_TEST(nu_evaluate_8 nu_evaluate ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz -mapping ${CMAKE_CURRENT_BINARY_DIR}/brain.imp ${CMAKE_CURRENT_BINARY_DIR}/brain_nu.mnc -clobber  -verbose )
 
 ADD_CUSTOM_PERL_TEST(nu_reference_1 compare_nu_result.pl ${CMAKE_CURRENT_SOURCE_DIR}/brain.mnc.gz -mask ${CMAKE_CURRENT_SOURCE_DIR}/../model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc.gz ${CMAKE_CURRENT_SOURCE_DIR}/brain_nu_ref.mnc.gz 0.0001  --verbose)
+
+# ---- Test dependencies and resource locks for parallel ctest ----
+# Several tests write to the same temp files in CMAKE_CURRENT_BINARY_DIR.
+# Use DEPENDS for sequential producer/consumer relationships and
+# RESOURCE_LOCK to prevent concurrent writes to the same files.
+
+# test.imp / test.mnc: field2imp produces, imp2field consumes
+set_tests_properties(nu_imp2field_1 PROPERTIES DEPENDS "nu_field2imp_1")
+set_tests_properties(nu_imp2field_2 PROPERTIES DEPENDS "nu_field2imp_2")
+set_tests_properties(nu_field2imp_1 nu_field2imp_2
+                     nu_imp2field_1 nu_imp2field_2
+                     PROPERTIES RESOURCE_LOCK "n3_test_imp")
+
+# chunk_sharp.mnc: both sharpen_volume tests write to same file
+set_tests_properties(nu_sharpen_volume_1 nu_sharpen_volume_2
+                     PROPERTIES RESOURCE_LOCK "n3_chunk_sharp")
+
+# brain.imp / brain_nu.mnc: estimate produces, evaluate consumes
+set_tests_properties(nu_evaluate_2 PROPERTIES DEPENDS "nu_estimate_np_and_em_2")
+set_tests_properties(nu_evaluate_8 PROPERTIES DEPENDS "nu_estimate_7")
+set_tests_properties(nu_estimate_np_and_em_2 nu_evaluate_2
+                     nu_estimate_7 nu_evaluate_8
+                     PROPERTIES RESOURCE_LOCK "n3_brain_imp")
+
+# chunk.imp: multiple tests write to same file
+set_tests_properties(nu_estimate_np_and_em_3 nu_estimate_np_and_em_4
+                     nu_estimate_np_and_em_5
+                     nu_estimate_4 nu_estimate_5 nu_estimate_6
+                     nu_correct_8
+                     PROPERTIES RESOURCE_LOCK "n3_chunk_imp")
