@@ -55,6 +55,31 @@ ADD_DEFINITIONS(-DUSE_COMPMAT)
 ADD_DEFINITIONS(-DUSE_DBLMAT)
 ADD_DEFINITIONS(-DUSE_FCOMPMAT)
 
+# Disable floating-point contraction (fused multiply-add) for this library.
+#
+# N3's NU estimation is an iterative feedback loop (~31 iterations) whose inner
+# numerics -- the Bunch-Kaufman factorisation in dsysv_ and the FFT histogram
+# deconvolution -- are exquisitely sensitive to rounding. Pivot selection in
+# dsysv_ is a discrete magnitude comparison, so a 1-ULP difference flips the
+# factorisation path and the trajectories diverge.
+#
+# ARM64 has FMA in the baseline ISA and compilers contract a*b+c into a fused
+# op by default; baseline x86-64 has no FMA instruction and must round the
+# intermediate. That alone makes the two platforms disagree: N3's
+# nu_reference_1 regression test drifts ~8.5e-4 relative RMS on Apple Silicon
+# against an x86-64-generated reference, over the test's 1e-4 tolerance.
+#
+# Verified on x86-64: rebuilding only this library and N3 with -mfma reproduces
+# the failure (4.8e-3 RMS, 48x tolerance); adding -ffp-contract=off emits zero
+# FMA instructions and restores a bit-identical result. Both N3 and EBTKS need
+# the flag -- either one alone still contracts enough to diverge.
+#
+# -ffp-contract=off is GCC/Clang spelling; MSVC uses /fp: and rejects it.
+IF(NOT MSVC)
+  SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -ffp-contract=off")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffp-contract=off")
+ENDIF()
+
 # aliases
 SET(VERSION "${PACKAGE_VERSION}")
 
