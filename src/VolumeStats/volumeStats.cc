@@ -438,6 +438,9 @@ main(int argc, char *argv[])
     }
   }
 
+  if (mask)
+    delete_volume(mask);
+
   if (voxels)
     delete voxels;
 
