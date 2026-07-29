@@ -63,12 +63,27 @@ do_cmd('mincmath','-sub','-float',"$tmpdir/brain_nu.mnc" , $ref, "$tmpdir/diff.m
 my $mean=`mincstats -q -mean $ref`;
 my $count=`mincstats -q -count $tmpdir/diff.mnc`;
 my $sum2=`mincstats -q -sum2 $tmpdir/diff.mnc`;
+my $dmin=`mincstats -q -min $tmpdir/diff.mnc`;
+my $dmax=`mincstats -q -max $tmpdir/diff.mnc`;
 
-chomp($mean);chomp($count);chomp($sum2);
+chomp($mean);chomp($count);chomp($sum2);chomp($dmin);chomp($dmax);
 
 my $rms=sqrt($sum2/$count);
 
 my $rms_pc=$rms/$mean;
+
+# Always report the measured value, not only on failure, so the margin against
+# the tolerance is visible in CI logs and drift can be spotted before it turns
+# into a red build.
+#
+# The peak difference is reported for triage only (it distinguishes a diffuse
+# numerical offset from localised corruption) and is deliberately NOT a pass/
+# fail criterion: measured against this reference, peak difference separates
+# noise from a real failure by only ~36x, versus ~80x for relative RMS, and it
+# swings 30-50x more than the RMS between runs that differ purely in rounding.
+my $max_pc=(abs($dmin)>abs($dmax)? abs($dmin): abs($dmax))/$mean;
+printf STDERR "%s: relative RMS difference %.6g (tolerance %.6g; %.1f%% of budget), peak difference %.6g\n",
+       $me, $rms_pc, $tol, 100.0*$rms_pc/$tol, $max_pc;
 
 if($rms_pc>$tol) {
   die "relative RMS difference: $rms_pc larger then $tol\n";
