@@ -566,8 +566,14 @@ TPSpline::fit()
   J = R.t() * _Psi.t() * J.rows(0, _nDimensions) + J.rows(_nDimensions + 1, _nKnots-1);
   J.pad(_nKnots, _nKnots, 0, 0);
 
-  // Calculate W
-  DblMat W(inv(_AtA + (_lambda*_nsamples)*J) * _AtF);
+  // Calculate W.  inv() prints its own message and returns an empty matrix
+  // on a singular system, so report the failure rather than going on to
+  // assert (or, with NDEBUG, to produce coefficients from nothing).
+  DblMat Ainv(inv(_AtA + (_lambda*_nsamples)*J));
+  if (!Ainv)
+    return FALSE;
+
+  DblMat W(Ainv * _AtF);
 
   _coef = ::array(-_Psi * R * W.rows(0, _nKnots - _nDimensions - 2));
   _coef.append(::array(W));
