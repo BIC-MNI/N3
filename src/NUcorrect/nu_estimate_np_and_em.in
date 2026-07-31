@@ -60,8 +60,12 @@ if($debug_flag) {
 &verbose("\n# Start of NU estimation algorithm");
 
 # create resampled volumes in working space if necessary
-($input_volume_wks, $user_mask_volume_wks) 
+($input_volume_wks, $user_mask_volume_wks)
    = &WorkspaceSampling($input_volume, $user_mask_volume);
+
+# put the estimation on a known intensity scale
+($normalize_intensity) &&
+   &normalize_intensity($input_volume_wks, $user_mask_volume_wks);
 
 &log_transform($input_volume_wks, $log_volume);
 
@@ -641,6 +645,64 @@ sub compact_spline_volume
 }
 
 # ------------------------------ MNI Header ----------------------------------
+#@NAME       : &normalize_intensity
+#@INPUT      : $_[0]  volume to rescale, in place
+#              $_[1]  user mask, or undef
+#@OUTPUT     :
+#@RETURNS    :
+#@DESCRIPTION: Rescale the volume so that the median intensity of the region of
+#              interest is $normalized_median, making the estimation independent
+#              of the absolute intensity scale of the input.
+#@METHOD     : With a mask, the median is taken over it.  Without one, it is
+#              taken over the voxels above the volume's own bimodal (Otsu)
+#              threshold, which scales with the data and so leaves this step
+#              scale-equivariant.
+#@GLOBALS    : $normalized_median
+#@CALLS      : mincstats, minccalc
+#@CREATED    :
+#@MODIFIED   :
+#-----------------------------------------------------------------------------
+sub normalize_intensity
+{
+   my ($volume, $mask) = @_;
+   my (@median_cmd, $threshold, $median, $factor, $scaled);
+
+   (-r $volume) || die("normalize_intensity. Can't read file: $volume\n");
+
+   @median_cmd = ('mincstats', '-quiet', '-median', '-hist_bins', 20000);
+   if(defined $mask && -e $mask) {
+      push(@median_cmd, '-mask', $mask, '-mask_binvalue', 1);
+   }
+   else {
+      Spawn(['mincstats', '-quiet', '-biModalT', $volume],
+            verbose => 0, stdout => \$threshold);
+      chomp($threshold);
+      ($threshold =~ /^\s*[-+]?[\d.]+([eE][-+]?\d+)?\s*$/) ||
+         die("normalize_intensity. Could not determine a threshold: $threshold\n");
+      push(@median_cmd, '-floor', $threshold);
+   }
+   push(@median_cmd, $volume);
+
+   Spawn(\@median_cmd, verbose => 0, stdout => \$median);
+   chomp($median);
+   ($median =~ /^\s*[-+]?[\d.]+([eE][-+]?\d+)?\s*$/) ||
+      die("normalize_intensity. Could not determine a median: $median\n");
+
+   if($median <= 0) {
+      &verbose("# skipping intensity normalization: median is not positive");
+      return 1;
+   }
+
+   $factor = $normalized_median / $median;
+   &verbose("# normalizing intensity: median $median -> $normalized_median");
+
+   $scaled = &UniqueMincFile("$TmpDir${basename}_norm.mnc");
+   Spawn(['minccalc', '-expression', "A[0]*$factor", $volume, $scaled]);
+   Spawn(['mv', '-f', $scaled, $volume]);
+   1;
+}
+
+# ------------------------------ MNI Header ----------------------------------
 #@NAME       : &log_transform
 #@INPUT      : $_[0]  input volume
 #              $_[1]  output volume (can be same as $_[0]
@@ -1175,6 +1237,11 @@ sub SetupArgTables
 	"specifiy region for processing", "<mask.mnc>"],
        ["-background", "float", 1, \$background_threshold,
         "set threshold for masking background (t > 1)","<threshold>"],
+       ["-normalize_intensity", "boolean", undef, \$normalize_intensity,
+        "rescale the input to a known median before estimating, so that the"
+        ." result does not depend on the absolute intensity scale (default)"],
+       ["-normalized_median", "float", 1, \$normalized_median,
+        "median to normalize to (default 500)", "<value>"],
        ["-bimodalT", "boolean", undef, \$bimodalT_flag,
         "choose background threshold automatically by histogram analysis"
         ."(this option is be overridden by -mask option)"],
@@ -1554,6 +1621,11 @@ sub Initialize
    $islands_threshold = 0;
    $shrink_workspace = 1.0;  # no change
    $sharpen_bins = 200;
+   $normalize_intensity = 1;
+   # 500 is not special; it only has to sit far enough above -background that
+   # no part of the region of interest is clipped by it or by log_transform's
+   # clamp.  Above that margin the estimated field is invariant to the scale.
+   $normalized_median = 500;
   
    # change from MNI::Datadir (no-portable) to FindBin
    # $default_model_data = MNI::DataDir::dir('N3');  # find where model data is kept
@@ -1663,8 +1735,9 @@ sub Initialize
        'sharpen_volume',   'mincinfo', 'mincmath',
        'mincresample',     'resample_labels') :
       ('class_statistics', 'estimate', 'spline_smooth', 'volume_stats',
-       'mincinfo',       'mincmath', 
+       'mincinfo',       'mincmath',
        'mincresample', 'resample_labels');
+   ($normalize_intensity) && push(@local_programs, 'mincstats', 'minccalc');
    ($need_mincblur) && push(@local_programs, 'mincblur');
 
 
@@ -1679,6 +1752,7 @@ sub Initialize
      AddDefaultArgs('mincblur', ['-clobber', '-no_apodize', $verbose_option]);
    AddDefaultArgs(['spline_smooth', 'mincresample', 'resample_labels',
                    'mincmath'], ['-clobber', $verbose_option]);
+   ($normalize_intensity) && AddDefaultArgs('minccalc', ['-clobber', '-quiet']);
 
    if($debug_flag) {
       # create script to rerun trial
