@@ -158,10 +158,6 @@ main(int argc, char *argv[])
 
       unsigned D1 = sizes[0];
       Boolean haveSliceList = Boolean(args.sliceList[0] >= 0);
-      for (unsigned D1ctr = 0; D1ctr < D1; D1ctr++) {
-	if (!haveSliceList)
-	  args.sliceList[D1ctr] = D1ctr;
-      }
 
       unsigned D2 = sizes[1];
       unsigned D3 = sizes[2];
@@ -206,8 +202,9 @@ main(int argc, char *argv[])
 	  if (args.verbose)
 	    cout << "Scanning " << path << flush;
 	  
-	  for (unsigned d1i = 0; d1i < D1; d1i++) {
-	    int d1 = args.sliceList[d1i];
+	  unsigned nSliceIndices = haveSliceList ? _MAX_ITEMS_IN_LIST : D1;
+	  for (unsigned d1i = 0; d1i < nSliceIndices; d1i++) {
+	    int d1 = haveSliceList ? args.sliceList[d1i] : int(d1i);
 	    if ((d1 >= 0) && (d1 < D1)) {
 	      for (unsigned d2 = 0; d2 < D2; d2++)
 		for (unsigned d3 = 0; d3 < D3; d3++) {
