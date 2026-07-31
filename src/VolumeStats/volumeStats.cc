@@ -273,7 +273,13 @@ main(int argc, char *argv[])
 	      voxels->newSize(nVoxels);
 	    
 	    double meanVal  = sumVal/nVoxels;
+	    // E[x^2] - E[x]^2 loses the leading digits when the values barely
+	    // vary, and on a constant region it can come out negative by an ulp.
+	    // sqrt() of that prints -nan, which nu_estimate_np_and_em's field_CV
+	    // treats as fatal, so clamp rather than propagate it.
 	    double variance = sum2val/nVoxels - SQR(meanVal);
+	    if (variance < 0)
+	      variance = 0;
 	    
 	    double majorityVal = 0;
 	    double biModalT = 0;
