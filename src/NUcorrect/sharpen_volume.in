@@ -44,7 +44,7 @@ $min_bin = 0;
 $max_bin = 1;
 open(FILE, "$base_name.hist");
 while(<FILE>) {
-   if(/domain: +([-e\d\.]+) +([-e\d\.]+)/) {
+   if(/domain: +([-+e\d\.]+) +([-+e\d\.]+)/) {
       $min_bin = $1;
       $max_bin = $2;
    }
