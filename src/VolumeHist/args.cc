@@ -148,7 +148,14 @@ args::args(int argc, char **argv)
       maskPath = maskPath.expanded() + extension;
     }
   else if(select_class_flag == TRUE)
-    cerr << "Warning select option has no effect without mask option\n";
+    {
+      // Leaving the flag set is not harmless: minchist.cc tests the selected
+      // class against real_min/real_max, which are only ever assigned from
+      // the mask volume, and then indexes histogram[selected_class] in an
+      // array that has one entry when there is no mask.
+      cerr << "Warning select option has no effect without mask option\n";
+      select_class_flag = FALSE;
+    }
 
 
   inputPath = argv[1];
