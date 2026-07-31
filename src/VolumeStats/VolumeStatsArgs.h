@@ -25,6 +25,11 @@ $State: Exp $
 
 const unsigned _MAX_ITEMS_IN_LIST = 256;
 
+// Bins used for the histogram-derived statistics when the voxel range does
+// not imply a sensible count (floating point volumes), and the cap on the
+// count derived from an integer voxel range.
+const unsigned _MAX_HISTOGRAM_BINS = 65536;
+
 class VolumeStatsArgs {
 public:
   MString     command;
