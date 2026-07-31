@@ -280,7 +280,7 @@ void
 write_histogram_to_text_file(FILE *fp, int select, DHistogram *histogram)
 {
   fprintf(fp, "# histogram for class %d\n"
-          "#  domain: %lf  %lf\n"
+          "#  domain: %.15f  %.15f\n"
           "#  entropy: %lg\n",
           select, histogram->binCenter(0),
           histogram->binCenter(histogram->nBins()-1), 
@@ -288,7 +288,7 @@ write_histogram_to_text_file(FILE *fp, int select, DHistogram *histogram)
   fprintf(fp, "#  bin centers     counts\n");
   for(int i = 0; i < histogram->nBins(); i++)
     {
-      fprintf(fp, "  %lf       %lf\n", histogram->binCenter(i), 
+      fprintf(fp, "  %.15f       %.15f\n", histogram->binCenter(i), 
 	      (*histogram)[i]);
     }
 }

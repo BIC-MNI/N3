@@ -322,15 +322,15 @@ save_lookup(char *filename, DblMat &Y,
   double slope = (new_max - new_min) / double(Y.getrows() - 1);
 
   if(zero < min_bin)
-    fprintf(fp, "0.0     %lf\n", Y(0,0));
+    fprintf(fp, "0.0     %.15f\n", Y(0,0));
 
   for(int i = 0; i < Y.getrows(); i++)
     {
-      fprintf(fp, "%lf     %lf\n",  new_min +  i*slope, Y(i,0));
+      fprintf(fp, "%.15f     %.15f\n",  new_min +  i*slope, Y(i,0));
     }
 
   if(one > max_bin)
-    fprintf(fp, "1.0     %lf\n", Y(Y.getrows()-1,0));
+    fprintf(fp, "1.0     %.15f\n", Y(Y.getrows()-1,0));
 
   fclose(fp);
 }
