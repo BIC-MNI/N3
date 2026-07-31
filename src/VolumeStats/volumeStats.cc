@@ -283,7 +283,23 @@ main(int argc, char *argv[])
 	    
 	    if (args.all || args.calcMajority || args.calcBiModalT || args.calcPctT || 
 		args.calcEntropy) {
-	      unsigned nBins = unsigned(ceil(voxelMax - voxelMin + 1));
+	      // One bin per distinct voxel value is right for integer volumes.
+	      // For floating point it is not: libminc sets the voxel range equal
+	      // to the real range, which describes the data's magnitude rather
+	      // than its resolution -- a volume spanning 0..1 would get two bins.
+	      // Use a fixed count there, and cap the integer case so that a
+	      // 32-bit volume does not ask for four billion bins.
+	      unsigned nBins;
+	      VIO_Data_types dataType = get_volume_data_type(volume);
+	      if (dataType == VIO_FLOAT || dataType == VIO_DOUBLE)
+		nBins = _MAX_HISTOGRAM_BINS;
+	      else {
+		nBins = unsigned(ceil(voxelMax - voxelMin + 1));
+		if (nBins > _MAX_HISTOGRAM_BINS)
+		  nBins = _MAX_HISTOGRAM_BINS;
+	      }
+	      if (nBins < 2)
+		nBins = 2;
 	      Histogram hist(minVal, maxVal, nBins);
 	      if (args.verbose) 
 		cout << "Creating histogram with " << nBins << " bins, bin width "
