@@ -363,15 +363,24 @@ fitSplinesToVolume(Spline *spline, VIO_Volume volume, VIO_Volume mask_volume,
   get_volume_sizes(volume, sizes);
 
   // only look at values within domain
+  // domain(i,0) is the smaller world coordinate, so dividing by a negative
+  // separation swaps the two -- without this the loops below run zero times
+  // and the fit sees no data at all.  Same handling as the b_spline path.
   int lower[VIO_N_DIMENSIONS], upper[VIO_N_DIMENSIONS];
   for(i = 0; i < VIO_N_DIMENSIONS; i++)
     {
-      lower[i] = (int) ceil(domain(i,0)/separations[i]);
-      upper[i] = (int) floor(domain(i,1)/separations[i]);
+      if(separations[i] > 0) {
+        lower[i] = (int) ceil(domain(i,0)/separations[i]);
+        upper[i] = (int) floor(domain(i,1)/separations[i]);
+      }
+      else {
+        upper[i] = (int) floor(domain(i,0)/separations[i]);
+        lower[i] = (int) ceil(domain(i,1)/separations[i]);
+      }
     }
 
   VIO_progress_struct progress;
-  initialize_progress_report(&progress, FALSE, upper[0]-lower[0]+1, 
+  initialize_progress_report(&progress, FALSE, upper[0]-lower[0]+1,
 			    "Fitting splines");
   for(i = lower[0]; i <= upper[0]; i += subsample)
     {
