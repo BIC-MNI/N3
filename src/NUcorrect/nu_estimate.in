@@ -59,8 +59,16 @@ else { #run nu_correct
 
    Spawn("$nu_estimate $estimation_options @Inputs @Imps");
    for($i = 0; $i < $#Inputs+1; $i++) {
+      my @field_option = ();
+      if(defined $save_field) {
+         # <output>.mnc -> <output>_field.mnc, also for a compressed output
+         my $field_volume = $Outputs[$i];
+         $field_volume =~ s/\.mnc(\.(gz|z|Z))?$//;
+         @field_option = ('-field', "${field_volume}_field.mnc");
+      }
       Spawn(['nu_evaluate', ($Verbose) ? '-verbose' : '-quiet',
              ($user_options{'mask'}) ? ('-mask', $user_options{'mask'}) : (),
+             @field_option,
              $Inputs[$i], '-mapping', $Imps[$i], $Outputs[$i]]);
       &construct_history($Inputs[$i], $Outputs[$i], "$0 @ARGV");
    }
@@ -171,8 +179,10 @@ sub SetupArgTables
       ["-options", "string", 1, \$estimation_options,
         "method specific options (quoted if more than one)",<'options ...'>]); 
 
-  @correct_args =  (["-mapping_dir", "string", 1, \$mapping_dir, 
-                      "specifiy directory to put imp files in","<directory>"]);
+  @correct_args =  (["-mapping_dir", "string", 1, \$mapping_dir,
+                      "specifiy directory to put imp files in","<directory>"],
+                    ["-save_field", "const", 1, \$save_field,
+                      "also write the correction field, as <output>_field.mnc"]);
   
   @np_em_args = ((($N3_only_flag) ? 
                   (["N3 specific options", "section"]) : 
@@ -422,8 +432,9 @@ sub Initialize
    $user_options{'distance'} = 200;
    $user_options{'lambda'} = "1.0e-7";
    $user_options{'sharpen'} = 0.15;
-   $version_number = '1.0'; 
-   undef $mapping_dir; 
+   $version_number = '1.0';
+   undef $mapping_dir;
+   undef $save_field;
 
    @option_names = ('iterations', 'stop', 'shrink');
    %defaults = ('np:iterations:0.9' => '10 20',         
