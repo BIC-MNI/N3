@@ -162,10 +162,14 @@ sub SetupArgTables
       ["-mask", "volume", 1, \$user_options{'mask'},
        "specify region for processing", "<mask.mnc>"],
       ["-distance", "float", 1, \$user_options{'distance'}, 
-        "characteristic distance over which field varies in mm",
+        "characteristic distance over which field varies in mm."
+        ." Lowering this requires raising -lambda; see the note above the"
+        ." option list",
         "<value>"],
       ["-lambda", "float", 1, \$user_options{'lambda'}, 
-        "regularization coefficient for splines", "<value>"],
+        "regularization coefficient for splines.  Set jointly with"
+        ." -distance, and raised on noisy data; see the note above the"
+        ." option list", "<value>"],
       ["-iterations", "integer", 1, \$user_options{'iterations'},
        "maximum number of iterations to run", "<number>"],
       ["-options", "string", 1, \$estimation_options,
@@ -232,6 +236,100 @@ sub SetHelp
    $Version = '@version@';
    $LongVersion = '@long_version@';
 
+   # -distance and -lambda are two halves of one setting, and changing either
+   # alone commonly gives a worse answer than the defaults do.
+   $SmoothnessHelp = <<SMOOTHNESSHELP;
+   Setting -distance and -lambda:
+
+       -distance determines how many coefficients describe the field; -lambda
+       determines how much bending is permitted between them.  The penalty is
+       there to absorb freedom the data does not need, so how much is wanted
+       depends on how the spacing compares with the scale of the field that is
+       actually present -- which varies with field strength and coil
+       construction and is not known in advance.
+
+       Non-uniformity left after correcting colin27 with a known field
+       introduced into it: six draws per cell, a fixed 30 iterations, the field
+       a cosine expansion band-limited at the stated wavelength.  In brackets,
+       the part of the residual the spline could not represent even when handed
+       the field, which is a property of the basis rather than of the
+       estimation:
+
+                                        -distance 200      -distance 50
+          200 mm field   -lambda 1e-8   0.78% (0.03%)      0.97% (0.02%)
+                                 1e-7   0.80% (0.03%)      0.93% (0.02%)
+                                 1e-4   1.71% (0.45%)      1.11% (0.09%)
+          100 mm field           1e-8   0.87% (0.64%)      0.75% (0.23%)
+                                 1e-7   1.05% (0.69%)      0.69% (0.24%)
+                                 1e-4   2.19% (1.68%)      1.55% (0.67%)
+           50 mm field           1e-8   2.40% (2.18%)      1.68% (1.38%)
+                                 1e-7   2.47% (2.20%)      1.82% (1.44%)
+                                 1e-4   2.49% (2.42%)      2.37% (2.06%)
+
+       The spacing matters more than the weight, and it is the one that has to
+       follow the field: a 200 mm field is corrected 15% better at -distance
+       200 than at 50, while a 100 mm field is 34% better at 50 than at 200.
+       Against a 50 mm field no weight at -distance 200 recovers much, because
+       the spline cannot represent that field at that spacing at all -- the
+       bracketed floor is nearly the whole residual.
+
+       The default -lambda 1e-7 is within 3% of the best weight in four of
+       those six cells and 20% from it at worst.  Erring loose is the safe
+       direction: a looser weight is better or level in every cell above.  A
+       stiffer one pays only where the spacing is far finer than the field, and
+       there it is worth about 1%.
+
+       Noise reverses this, and is the exception.  On a noisy volume a stiff
+       weight suppresses noise the fit would otherwise follow, so at a
+       signal-to-noise ratio of 20 the stiffest weight tried is the best and
+       no single weight serves every noise level -- one choice for all of them
+       costs 91% against knowing the noise in advance.  Raise -lambda on noisy
+       data.
+
+       Unless the noise is dealt with first, which is the better answer where
+       it is available.  Estimating the field from a denoised copy of the
+       volume removes that job from -lambda entirely: measured on the same
+       fields, the residual at each weight becomes the same at every noise
+       level (0.66%, 0.70%, 0.64% at 1e-8 across signal-to-noise ratios of
+       infinity, 40 and 20), the loosest weight wins throughout, and one
+       weight for all noise levels costs nothing.  The correction is then at
+       what the spline can represent, so -distance is the only lever left.
+
+SMOOTHNESSHELP;
+   Setting -distance and -lambda:
+
+       -distance determines how many coefficients describe the field;
+       -lambda determines how much bending is permitted between them.
+       Halving the spacing without raising the penalty spends the additional
+       coefficients on tissue contrast, which is returned as field that was
+       not present.
+
+       Non-uniformity left behind on colin27 after correcting it with a known
+       20% field planted on it, at a fixed 30 iterations.  Lower is better;
+       * marks the best weight for each spacing:
+
+                                        -distance
+             -lambda          200 mm    100 mm     50 mm
+             1e-7 (default)   0.738%*   0.904%    1.287%
+             1e-6             0.775%    0.863%*   1.284%
+             1e-5             0.924%    0.872%    0.863%*
+             1e-4             1.046%    1.016%    0.887%
+
+       The best weight moves one decade for each halving of the spacing, so
+       raise -lambda by about a decade whenever -distance is halved.  Err high
+       rather than low: at 50 mm the shipped weight costs 0.42 points against
+       the best weight for that spacing, while overshooting it by a decade
+       costs 0.02.  How much a mismatched pair costs depends on the volume,
+       and on a 2 mm volume corrected at the shipped -shrink 4 it is far more
+       than this table suggests.
+
+       On noisy data raise -lambda whatever the spacing.  Repeating the table
+       at a signal-to-noise ratio of 20, every cell of the 1e-7 row leaves
+       more non-uniformity than was planted -- that is, worse than applying no
+       correction at all.
+
+SMOOTHNESSHELP
+
    # common help message
    if($N3_only_flag) {
       $CommonHelp = <<COMMONHELP;
@@ -240,6 +338,7 @@ sub SetHelp
        (non-stereotaxic) data.  The performance of this method can be
        enhanced by supplying a mask for the region of interest.
 
+$SmoothnessHelp
    References: 
    [1] J.G. Sled, A.P. Zijdenbos and A.C. Evans, "A non-parametric method
        for automatic correction of intensity non-uniformity in MRI data",
@@ -314,6 +413,7 @@ CORRECTHELP
        "Adaptive Segmentation of MRI Data", in "IEEE Transactions on
        Medical Imaging", volume 15, number 4, 1996, pp. 429-442
 
+$SmoothnessHelp
 COMMONHELP
 
       if($program_type eq 'estimate') {
