@@ -89,3 +89,28 @@ set_tests_properties(nu_estimate_np_and_em_3 nu_estimate_np_and_em_4
                      nu_estimate_4 nu_estimate_5 nu_estimate_6
                      nu_correct_8
                      PROPERTIES RESOURCE_LOCK "n3_chunk_imp")
+
+# ---- N3Pipeline: the in-memory C++ reimplementation of the Perl drivers ----
+#
+# These are plain executables, not Perl.  Each links the same object libraries
+# as nu_correct_cxx and reads its oracle answers from n3pipeline/reference/,
+# recorded once by n3pipeline/regenerate_reference.sh.
+
+MACRO(ADD_N3PIPELINE_TEST name)
+  ADD_EXECUTABLE(${name} n3pipeline/${name}.cc ${ARGN})
+  TARGET_INCLUDE_DIRECTORIES(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+  TARGET_COMPILE_DEFINITIONS(${name} PRIVATE
+    N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference"
+    N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+  ADD_TEST(n3cxx_${name} ${CMAKE_CURRENT_BINARY_DIR}/${name})
+  IF(MINC_TEST_ENVIRONMENT)
+    set_tests_properties(n3cxx_${name} PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+  ENDIF(MINC_TEST_ENVIRONMENT)
+ENDMACRO(ADD_N3PIPELINE_TEST)
+
+ADD_N3PIPELINE_TEST(test_harness)
+
+# A failing check must exit non-zero.  Asserted permanently rather than
+# demonstrated once and deleted.
+ADD_TEST(n3cxx_test_harness_red ${CMAKE_CURRENT_BINARY_DIR}/test_harness --fail)
+set_tests_properties(n3cxx_test_harness_red PROPERTIES WILL_FAIL TRUE)
