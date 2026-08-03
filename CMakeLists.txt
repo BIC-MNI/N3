@@ -43,6 +43,31 @@ IF(NOT MINC_TOOLKIT_BUILD)
   FIND_PACKAGE( EBTKS REQUIRED )
 ENDIF(NOT MINC_TOOLKIT_BUILD)
 
+# LIBMINCConfig.cmake records the absolute paths of the machine libminc was built
+# on.  Where such a path no longer exists, look the same file up by name in
+# LIBMINC_LIBRARY_DIRS instead.  A no-op on an install whose paths are intact.
+FOREACH(_var LIBMINC_LIBRARIES VOLUME_IO_LIBRARIES)
+  SET(_repaired)
+  FOREACH(_lib ${${_var}})
+    IF(IS_ABSOLUTE "${_lib}" AND NOT EXISTS "${_lib}")
+      GET_FILENAME_COMPONENT(_name "${_lib}" NAME)
+      UNSET(_found CACHE)
+      FIND_FILE(_found ${_name} PATHS ${LIBMINC_LIBRARY_DIRS} NO_DEFAULT_PATH)
+      IF(_found)
+        MESSAGE(STATUS "LIBMINC: ${_lib} -> ${_found}")
+        LIST(APPEND _repaired ${_found})
+      ELSE(_found)
+        MESSAGE(FATAL_ERROR "LIBMINC names ${_lib}, which does not exist, and "
+                            "${_name} is not in ${LIBMINC_LIBRARY_DIRS}")
+      ENDIF(_found)
+    ELSE(IS_ABSOLUTE "${_lib}" AND NOT EXISTS "${_lib}")
+      LIST(APPEND _repaired ${_lib})
+    ENDIF(IS_ABSOLUTE "${_lib}" AND NOT EXISTS "${_lib}")
+  ENDFOREACH(_lib)
+  SET(${_var} ${_repaired})
+ENDFOREACH(_var)
+UNSET(_found CACHE)
+
 FIND_PACKAGE( Perl REQUIRED )
 INCLUDE( ${LIBMINC_USE_FILE} )
 INCLUDE( ${EBTKS_USE_FILE} )
