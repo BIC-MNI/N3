@@ -111,6 +111,7 @@ ENDMACRO(ADD_N3PIPELINE_TEST)
 ADD_N3PIPELINE_TEST(test_harness)
 ADD_N3PIPELINE_TEST(test_shrink)
 ADD_N3PIPELINE_TEST(test_resample_label)
+ADD_N3PIPELINE_TEST(test_buffers)
 
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.

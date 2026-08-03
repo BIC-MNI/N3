@@ -54,6 +54,27 @@ VIO_Volume shrink(VIO_Volume in, double factor);
  * Samples outside the input contribute zero, as mincresample fills them. */
 VIO_Volume resample_label(VIO_Volume in, VIO_Volume model);
 
+/* What volume_stats prints, over the voxels where mask is non-zero
+ * (volumeStats.cc:236).  A null mask takes the whole volume.  The standard
+ * deviation is the population one, sqrt(E[x^2] - E[x]^2) (:276) -- the same
+ * quantity the stopping rule needs, and not the default of most libraries. */
+struct Stats
+{
+  double mean, stddev, minimum, maximum;
+  int count;
+};
+
+Stats masked_stats(VIO_Volume volume, VIO_Volume mask);
+
+/* The storage type of a file, which an output has to carry to be what
+ * `mincmath -copy_header` would have written. */
+nc_type storage_type(const std::string &path, VIO_BOOL *signed_flag);
+
+/* Write, taking the header from like_path as -copy_header does. */
+void save(VIO_Volume volume, const std::string &path,
+          const std::string &like_path, nc_type type, VIO_BOOL signed_flag,
+          const std::string &history);
+
 }  // namespace n3
 
 #endif

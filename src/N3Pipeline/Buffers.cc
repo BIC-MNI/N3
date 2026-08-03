@@ -218,4 +218,74 @@ VIO_Volume resample_label(VIO_Volume in, VIO_Volume model)
   return out;
 }
 
+Stats masked_stats(VIO_Volume volume, VIO_Volume mask)
+{
+  int n = voxel_count(volume);
+  double *v = values(volume);
+  double *m = mask ? values(mask) : NULL;
+
+  if(mask && voxel_count(mask) != n)
+    fail("masked_stats: mask and volume are on different grids");
+
+  Stats s;
+  s.count = 0;
+  s.mean = s.stddev = 0.0;
+  s.minimum = s.maximum = 0.0;
+
+  double sum = 0.0, sum2 = 0.0;
+  for(int i = 0; i < n; i++)
+    {
+      if(m && m[i] == 0.0) continue;   /* volumeStats.cc:236 */
+      if(s.count == 0) { s.minimum = s.maximum = v[i]; }
+      if(v[i] < s.minimum) s.minimum = v[i];
+      if(v[i] > s.maximum) s.maximum = v[i];
+      sum += v[i];
+      sum2 += v[i] * v[i];
+      s.count++;
+    }
+
+  if(s.count > 0)
+    {
+      s.mean = sum / s.count;
+      /* Population, as volumeStats.cc:276 computes it. */
+      double variance = sum2 / s.count - s.mean * s.mean;
+      s.stddev = variance > 0.0 ? sqrt(variance) : 0.0;
+    }
+
+  return s;
+}
+
+nc_type storage_type(const std::string &path, VIO_BOOL *signed_flag)
+{
+  VIO_Volume volume;
+  volume_input_struct input_info;
+
+  if(start_volume_input((char *) path.c_str(), VIO_N_DIMENSIONS,
+                        File_order_dimension_names, NC_UNSPECIFIED, FALSE,
+                        0.0, 0.0, TRUE, &volume,
+                        (minc_input_options *) NULL, &input_info) != VIO_OK)
+    fail("cannot read volume header", path);
+
+  nc_type type = get_volume_nc_data_type(volume, signed_flag);
+
+  delete_volume_input(&input_info);
+  delete_volume(volume);
+
+  return type;
+}
+
+void save(VIO_Volume volume, const std::string &path,
+          const std::string &like_path, nc_type type, VIO_BOOL signed_flag,
+          const std::string &history)
+{
+  /* output_modified_volume is what `mincmath -copy_header` amounts to: the
+   * header comes from like_path and the data from this buffer.  Passing 0,0
+   * for the range lets volume_io take it from the data. */
+  if(output_modified_volume((char *) path.c_str(), type, signed_flag, 0.0, 0.0,
+                            volume, (char *) like_path.c_str(),
+                            (char *) history.c_str(),
+                            (minc_output_options *) NULL) != VIO_OK)
+    fail("cannot write volume", path);
+}
+
 }  // namespace n3

@@ -77,5 +77,18 @@ done
 
 geometry $chunk > $out/chunk.geom
 
+# ---------------------------------------------------------------- cycle 3
+# Masked statistics.  volume_stats prints through cout at its default six
+# significant digits, which is the bound the test holds these to.  Its mask
+# rule is value != 0 (volumeStats.cc:236) and its variance is the population
+# one (:276), which is also what the stopping rule needs.
+
+for stat in mean stddev min max; do
+  volume_stats -quiet -$stat -mask $mask $chunk > $out/stats_masked_$stat.txt
+  volume_stats -quiet -$stat $chunk > $out/stats_whole_$stat.txt
+done
+
+geometry $chunk > $out/chunk.geom
+
 echo "reference written to $out"
 ls -l $out
