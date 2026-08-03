@@ -89,6 +89,18 @@ volume_hist $hist $chunk $out/hist_plain.txt
 volume_hist $hist -window $chunk $out/hist_window.txt
 $N3_LOCAL_BIN/volume_hist $hist -gaussian_window 2 $chunk $out/hist_gauss2.txt
 
+# ---------------------------------------------------------------- cycle 5
+# The sharpening, run on the histogram recorded above.  Taking sharpen_hist's
+# input from the same text the test reads keeps the comparison to the
+# deconvolution itself: the six decimals that text carries are a separate
+# divergence, measured where the pipeline is assembled.
+
+range=`grep domain: $out/hist_window.txt | sed 's/.*domain: *//'`
+sharpen_hist -clobber -quiet -fwhm 0.15 -noise 0.01 -range $range \
+    $out/hist_window.txt $out/sharp_window.txt
+sharpen_hist -clobber -quiet -blur -fwhm 0.15 -noise 0.01 -range $range \
+    $out/hist_window.txt $out/sharp_window_blur.txt
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask

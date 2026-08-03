@@ -191,9 +191,22 @@ ADD_EXECUTABLE(volume_stats
 # The in-memory C++ reimplementation of the Perl drivers.  Built as an OBJECT
 # library so that both nu_correct_cxx and the per-routine tests link the same
 # compilation.
+# sharpen_hist.cc keeps its algorithm inside main(), so it is compiled with
+# both main() and its args class renamed and linked for the three free
+# functions it does export.  args.cc comes along only to satisfy the
+# references that unused main() makes; renaming the class as well is what
+# lets a second such translation unit coexist -- SharpenHist, SplineSmooth and
+# VolumeHist each define a different global `class args`.
+ADD_LIBRARY(sharpenhist_core OBJECT
+        src/SharpenHist/sharpen_hist.cc
+        src/SharpenHist/args.cc)
+TARGET_COMPILE_DEFINITIONS(sharpenhist_core PRIVATE
+        main=n3_sharpen_hist_main args=n3_sharpen_hist_args)
+
 ADD_LIBRARY(n3pipeline_core OBJECT
         src/N3Pipeline/Buffers.cc
         src/N3Pipeline/Histogram.cc
+        src/N3Pipeline/Sharpen.cc
         src/VolumeHist/DHistogram.cc
         src/VolumeHist/WHistogram.cc
         src/VolumeHist/GHistogram.cc)
