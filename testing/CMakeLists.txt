@@ -97,7 +97,7 @@ set_tests_properties(nu_estimate_np_and_em_3 nu_estimate_np_and_em_4
 # recorded once by n3pipeline/regenerate_reference.sh.
 
 MACRO(ADD_N3PIPELINE_TEST name)
-  ADD_EXECUTABLE(${name} n3pipeline/${name}.cc ${ARGN})
+  ADD_EXECUTABLE(${name} n3pipeline/${name}.cc $<TARGET_OBJECTS:n3pipeline_core> ${ARGN})
   TARGET_INCLUDE_DIRECTORIES(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
   TARGET_COMPILE_DEFINITIONS(${name} PRIVATE
     N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference"
@@ -109,6 +109,7 @@ MACRO(ADD_N3PIPELINE_TEST name)
 ENDMACRO(ADD_N3PIPELINE_TEST)
 
 ADD_N3PIPELINE_TEST(test_harness)
+ADD_N3PIPELINE_TEST(test_shrink)
 
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.
