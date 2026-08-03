@@ -101,6 +101,15 @@ sharpen_hist -clobber -quiet -fwhm 0.15 -noise 0.01 -range $range \
 sharpen_hist -clobber -quiet -blur -fwhm 0.15 -noise 0.01 -range $range \
     $out/hist_window.txt $out/sharp_window_blur.txt
 
+# ---------------------------------------------------------------- cycle 6
+# minclookup applied to the whole volume, written as double so that the
+# comparison is against the interpolation and not against a storage type.
+# Both sides read the same lookup table text, for the same reason as cycle 5.
+
+minclookup -clobber -quiet -double -continuous -range $range \
+    -lookup_table $out/sharp_window.txt $chunk $work/looked_up.mnc
+mincextract -double $work/looked_up.mnc > $out/lookup_applied.f64
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask

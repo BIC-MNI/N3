@@ -207,6 +207,7 @@ ADD_LIBRARY(n3pipeline_core OBJECT
         src/N3Pipeline/Buffers.cc
         src/N3Pipeline/Histogram.cc
         src/N3Pipeline/Sharpen.cc
+        src/N3Pipeline/MincTools.cc
         src/VolumeHist/DHistogram.cc
         src/VolumeHist/WHistogram.cc
         src/VolumeHist/GHistogram.cc)
