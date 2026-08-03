@@ -217,6 +217,7 @@ ADD_LIBRARY(n3pipeline_core OBJECT
         src/N3Pipeline/Sharpen.cc
         src/N3Pipeline/MincTools.cc
         src/N3Pipeline/FitField.cc
+        src/N3Pipeline/SmoothField.cc
         src/SplineSmooth/fieldIO.cc
         src/Splines/Spline.cc
         src/Splines/TBSpline.cc

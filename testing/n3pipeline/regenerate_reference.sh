@@ -170,6 +170,19 @@ spline_smooth -clobber -quiet -full_support -b_spline -lambda 1e-7 \
 evaluate_field -clobber -quiet -like $out/chunk_float.mnc $work/fit.imp $work/field.mnc
 dump_strided $work/field.mnc $out/field_b200_full.f64
 
+# ---------------------------------------------------------------- cycle 9
+# correct_field, which extends the field beyond the mask by relaxing Laplace's
+# equation on the outside.  Its input is the masked b_spline fit at 200 mm,
+# kept here as a float volume so that the transcription can be given exactly
+# the numbers the oracle was given: the solve amplifies, so recomputing the
+# input would not do.
+
+spline_smooth -clobber -quiet -full_support -b_spline -lambda 1e-7 \
+    -distance 200 -subsample 1 -mask $mask \
+    $out/chunk_float.mnc $out/field_masked.mnc
+correct_field $out/field_masked.mnc $mask $work/extended.mnc
+dump_strided $work/extended.mnc $out/field_extended.f64
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask
