@@ -44,16 +44,26 @@ geometry()
 # -double gives the sampling with that quantisation absent.  The tests hold
 # the geometry and the double sampling exactly, and report the quantised one.
 
-for factor in 2 3 4; do
+#
+# The mask goes through the same driver call.  It is resampled onto the shrunk
+# grid by resample_labels, which is trilinear thresholded at 0.5 and not
+# nearest neighbour (resample_labels.in:176-177), so it is recorded here as
+# cycle 2's oracle.  At an integer factor the two grids coincide and trilinear
+# degenerates to selection; factor 2.5 is included so that the interpolation is
+# actually exercised.
+
+for factor in 2 3 4 2.5; do
   rm -rf $work/shrink && mkdir -p $work/shrink
   nu_estimate_np_and_em -tmpdir $work/shrink -keeptmp -shrink $factor \
       -iterations 1 -stop 0.001 -sharpen 0.15 0.01 -parzen -log \
-      -distance 200 $chunk $work/shrink.imp -clobber > /dev/null 2>&1
+      -distance 200 -mask $mask $chunk $work/shrink.imp -clobber > /dev/null 2>&1
   perl_out=$work/shrink/`basename $chunk .gz`
-  perl_out=`echo $perl_out | sed 's/\.mnc$/.mnc/'`
+  perl_mask=$work/shrink/`basename $mask .gz`
 
   geometry $perl_out > $out/shrink${factor}.geom
   mincextract -double $perl_out > $out/shrink${factor}_quantised.f64
+  geometry $perl_mask > $out/mask${factor}.geom
+  mincextract -double $perl_mask > $out/mask${factor}.f64
 
   # The same resample without the file's quantisation.  -step and -nelements
   # are read back from the Perl's own output, so the rule under test is not

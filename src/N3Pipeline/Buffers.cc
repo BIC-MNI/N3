@@ -170,4 +170,52 @@ VIO_Volume shrink(VIO_Volume in, double factor)
   return out;
 }
 
+VIO_Volume resample_label(VIO_Volume in, VIO_Volume model)
+{
+  int in_sizes[VIO_N_DIMENSIONS], out_sizes[VIO_N_DIMENSIONS];
+  get_volume_sizes(in, in_sizes);
+  get_volume_sizes(model, out_sizes);
+
+  VIO_Volume out = like(model);
+  double *dst = values(out);
+  double *src = values(in);
+
+  for(int i = 0; i < out_sizes[0]; i++)
+    for(int j = 0; j < out_sizes[1]; j++)
+      for(int k = 0; k < out_sizes[2]; k++)
+        {
+          /* Through world coordinates rather than index arithmetic: the two
+           * grids share an origin in this pipeline, but nothing in
+           * resample_labels requires that. */
+          VIO_Real x, y, z, u, v, w;
+          convert_3D_voxel_to_world(model, (VIO_Real) i, (VIO_Real) j,
+                                    (VIO_Real) k, &x, &y, &z);
+          convert_3D_world_to_voxel(in, x, y, z, &u, &v, &w);
+
+          int u0 = (int) floor(u), v0 = (int) floor(v), w0 = (int) floor(w);
+          double du = u - u0, dv = v - v0, dw = w - w0;
+
+          double sum = 0.0;
+          for(int a = 0; a < 2; a++)
+            for(int b = 0; b < 2; b++)
+              for(int c = 0; c < 2; c++)
+                {
+                  double weight = (a ? du : 1.0 - du) * (b ? dv : 1.0 - dv)
+                                  * (c ? dw : 1.0 - dw);
+                  if(weight == 0.0) continue;
+                  int ii = u0 + a, jj = v0 + b, kk = w0 + c;
+                  /* Outside the input contributes nothing, which is the fill
+                   * value mincresample uses. */
+                  if(ii < 0 || jj < 0 || kk < 0) continue;
+                  if(ii >= in_sizes[0] || jj >= in_sizes[1] || kk >= in_sizes[2])
+                    continue;
+                  sum += weight * src[(ii * in_sizes[1] + jj) * in_sizes[2] + kk];
+                }
+
+          dst[(i * out_sizes[1] + j) * out_sizes[2] + k] = sum >= 0.5 ? 1.0 : 0.0;
+        }
+
+  return out;
+}
+
 }  // namespace n3

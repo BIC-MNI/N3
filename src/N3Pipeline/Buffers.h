@@ -47,6 +47,13 @@ int voxel_count(VIO_Volume volume);
  * outside the input are zero, which is what mincresample fills them with. */
 VIO_Volume shrink(VIO_Volume in, double factor);
 
+/* CheckSampling's label branch (nu_estimate_np_and_em.in:861-868), which
+ * drives resample_labels: trilinear onto the model's grid, then thresholded at
+ * 0.5 (resample_labels.in:176-177).  Not nearest neighbour -- at an integer
+ * -shrink the two coincide, which is what makes the difference easy to miss.
+ * Samples outside the input contribute zero, as mincresample fills them. */
+VIO_Volume resample_label(VIO_Volume in, VIO_Volume model);
+
 }  // namespace n3
 
 #endif

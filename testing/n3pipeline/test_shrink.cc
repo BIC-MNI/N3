@@ -28,8 +28,12 @@
 #include <string>
 #include <vector>
 
-static const int FACTORS[] = { 2, 3, 4 };
-static const int N_FACTORS = 3;
+/* -shrink is a float (nu_estimate_np_and_em.in:1196), so 2.5 is legal and is
+ * the case that pins the nearest-neighbour rounding: at an integer factor
+ * every rule agrees. */
+static const char *FACTORS[] = { "2", "3", "4", "2.5" };
+static const double FACTOR_VALUE[] = { 2.0, 3.0, 4.0, 2.5 };
+static const int N_FACTORS = 4;
 
 static void check_geometry(const char *what, VIO_Volume volume,
                            const std::vector<double> &geom)
@@ -67,18 +71,17 @@ int main()
 
   for(int f = 0; f < N_FACTORS; f++)
     {
-      char name[64], what[128];
-      sprintf(name, "shrink%d", FACTORS[f]);
+      char what[160];
+      std::string name = std::string("shrink") + FACTORS[f];
 
-      VIO_Volume small = n3::shrink(chunk, (double) FACTORS[f]);
+      VIO_Volume small = n3::shrink(chunk, FACTOR_VALUE[f]);
 
-      sprintf(what, "shrink %d: the grid is the driver's own", FACTORS[f]);
-      check_geometry(what, small, n3fixture::read_text(std::string(name) + ".geom"));
+      sprintf(what, "shrink %s: the grid is the driver's own", FACTORS[f]);
+      check_geometry(what, small, n3fixture::read_text(name + ".geom"));
 
-      std::vector<double> oracle =
-        n3fixture::read_f64(std::string(name) + "_double.f64");
+      std::vector<double> oracle = n3fixture::read_f64(name + "_double.f64");
       int n = n3::voxel_count(small);
-      sprintf(what, "shrink %d: %d voxels equal mincresample -double", FACTORS[f], n);
+      sprintf(what, "shrink %s: %d voxels equal mincresample -double", FACTORS[f], n);
       n3fixture::must((int) oracle.size() == n, "size mismatch against oracle");
       CHECK_ALL(what, n3::values(small), &oracle[0], n, 0.0);
 
@@ -86,12 +89,11 @@ int main()
        * is 12-bit (valid_range 0 4095), so half a quantum over the resampled
        * volume's own range is the most the Perl's output can differ from the
        * same resample written as double. */
-      std::vector<double> quantised =
-        n3fixture::read_f64(std::string(name) + "_quantised.f64");
+      std::vector<double> quantised = n3fixture::read_f64(name + "_quantised.f64");
       double lo = oracle[0], hi = oracle[0];
       for(int i = 0; i < n; i++)
         { if(oracle[i] < lo) lo = oracle[i]; if(oracle[i] > hi) hi = oracle[i]; }
-      sprintf(what, "shrink %d: the Perl's own output is 12-bit", FACTORS[f]);
+      sprintf(what, "shrink %s: the Perl's own output is 12-bit", FACTORS[f]);
       CHECK_ALL(what, &quantised[0], &oracle[0], n, 0.5 * (hi - lo) / 4095.0);
 
       delete_volume(small);
