@@ -1190,8 +1190,19 @@ sub SetupArgTables
        ["-iterations", "call", undef, \&multiple_int_callback,
 	"<number> number of classification / field estimation cycles"],
        ["-stop", "call", undef, \&multiple_float_callback,
-        "CV of change in field estimate below which"
-        ." iteration stops (suggest 0.01 to 0.0001)", "<threshold>" ], 
+        "threshold on the change in the field estimate between iterations,"
+        ." not on how much field is left, and a small change does not imply"
+        ." a small residual.  What a tighter threshold buys depends on"
+        ." whether -distance suits the field: measured on colin27 against"
+        ." fields carrying 100 mm structure at the shipped 200 mm spacing,"
+        ." the default leaves 30-50% of the non-uniformity and 0.0001"
+        ." leaves at most 19% less, because what remains is mostly what the"
+        ." spline cannot represent rather than what the iteration has not"
+        ." reached.  Under noise a tighter threshold is worse: at a"
+        ." signal-to-noise ratio of 20 it leaves 1.4 to 1.8 times as much."
+        ." Note also that a stiffer -lambda reaches this threshold sooner,"
+        ." 49 iterations at 1e-7 against 7 at 1e-4."
+        ." (suggest 0.01 to 0.0001)", "<threshold>" ], 
        ["-shrink", "float", 1, \$shrink_workspace,
         "specify a smaller workspace; the"
         ." sampling in each dimension is reduced to that of the finest"
