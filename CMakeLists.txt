@@ -192,7 +192,11 @@ ADD_EXECUTABLE(volume_stats
 # library so that both nu_correct_cxx and the per-routine tests link the same
 # compilation.
 ADD_LIBRARY(n3pipeline_core OBJECT
-        src/N3Pipeline/Buffers.cc)
+        src/N3Pipeline/Buffers.cc
+        src/N3Pipeline/Histogram.cc
+        src/VolumeHist/DHistogram.cc
+        src/VolumeHist/WHistogram.cc
+        src/VolumeHist/GHistogram.cc)
 
 
 SET(PERL ${PERL_EXECUTABLE})

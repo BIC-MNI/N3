@@ -75,7 +75,19 @@ for factor in 2 3 4 2.5; do
   mincextract -double $work/shrink_double.mnc > $out/shrink${factor}_double.f64
 done
 
-geometry $chunk > $out/chunk.geom
+# ---------------------------------------------------------------- cycle 4
+# The masked histogram, in all three estimators.  -window is N3's linear split
+# between the two nearest bin centres; -gaussian_window is the modification
+# this tree carries, so its oracle is the locally built volume_hist and not
+# the installed one, which has no such option.
+#
+# The text carries six decimals of everything (%lf, minchist.cc), which is
+# what the comparisons are held to.
+
+hist="-bins 200 -auto_range -mask $mask -clobber -text -select 1 -quiet"
+volume_hist $hist $chunk $out/hist_plain.txt
+volume_hist $hist -window $chunk $out/hist_window.txt
+$N3_LOCAL_BIN/volume_hist $hist -gaussian_window 2 $chunk $out/hist_gauss2.txt
 
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
