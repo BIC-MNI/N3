@@ -183,6 +183,26 @@ spline_smooth -clobber -quiet -full_support -b_spline -lambda 1e-7 \
 correct_field $out/field_masked.mnc $mask $work/extended.mnc
 dump_strided $work/extended.mnc $out/field_extended.f64
 
+# ---------------------------------------------------------------- cycle 11
+# One iteration of the estimation loop, with the driver's own intermediates
+# kept by -save_fields: chunk_est0.mnc is exp(log - sharpened) before
+# smoothing, chunk_field0.mnc is exp(residue) after it.  A per-iteration oracle
+# rather than an end-to-end one.
+#
+# -shrink 1 so that the estimation runs on the full grid and the fewest MINC
+# round trips stand between the two implementations.  -stop 0.0 never fires
+# (0 alone is not a float to the driver's own regex), so the iteration count is
+# fixed at one on both sides.
+
+rm -rf $work/est && mkdir -p $work/est
+nu_estimate_np_and_em -shrink 1 -iterations 1 -stop 0.0 -distance 200 \
+    -b_spline 1.0e-7 -spline_subsample 1 -sharpen 0.15 0.01 -parzen -log \
+    -save_fields -mask $mask $chunk $work/est/chunk.imp -clobber \
+    > $work/est/log 2>&1
+grep 'CV of field change' $work/est/log | sed 's/.*: *//' > $out/estimate_change.txt
+dump_strided $work/est/chunk_est0.mnc $out/estimate_est0.f64
+dump_strided $work/est/chunk_field0.mnc $out/estimate_field0.f64
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask

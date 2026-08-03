@@ -120,6 +120,7 @@ ADD_N3PIPELINE_TEST(test_bimodal)
 ADD_N3PIPELINE_TEST(test_spline)
 ADD_N3PIPELINE_TEST(test_extend)
 ADD_N3PIPELINE_TEST(test_stopping)
+ADD_N3PIPELINE_TEST(test_estimate)
 
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.
