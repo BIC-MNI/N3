@@ -68,18 +68,19 @@ int main()
    * than absorbed into a bound. */
   {
     std::vector<double> oracle = n3fixture::read_f64("lookup_applied.f64");
-    n3fixture::must((int) oracle.size() == n, "size mismatch against oracle");
 
     std::vector<double> positions(entries);
     for(int i = 0; i < entries; i++)
       positions[i] = lo + table[2 * i] * (hi - lo);
 
     n3::apply_lookup(chunk, positions, lut);
-    double *mine = n3::values(chunk);
-    CHECK_RMS("the whole volume is minclookup's", mine, &oracle[0], n, 1e-14);
+    std::vector<double> mine = n3fixture::strided(n3::values(chunk), n);
+    n3fixture::must(mine.size() == oracle.size(), "stride mismatch");
+    int m = (int) mine.size();
+    CHECK_RMS("the whole volume is minclookup's", &mine[0], &oracle[0], m, 1e-14);
 
     double worst = 0.0, span = 0.0;
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < m; i++)
       { double d = fabs(mine[i] - oracle[i]); if(d > worst) worst = d; }
     for(int i = 0; i < entries; i++)
       { double d = fabs(lut[i]); if(d > span) span = d; }
@@ -89,7 +90,8 @@ int main()
      * answer, and it is deliberately not the oracle's. */
     VIO_Volume exact = n3::load(data + "/chunk.mnc.gz");
     n3::apply_lookup(exact, lut, lo, hi);
-    double drift = n3check::rel_rms(n3::values(exact), &oracle[0], n);
+    std::vector<double> exact_strided = n3fixture::strided(n3::values(exact), n);
+    double drift = n3check::rel_rms(&exact_strided[0], &oracle[0], m);
     CHECK_TRUE("exact entry positions move the result, and by more than "
                "rounding", drift > 1e-9);
     printf("  (six decimals of entry position are worth %.3e relative)\n", drift);
@@ -109,7 +111,8 @@ int main()
         if(k > entries - 1) k = entries - 1;
         nn[i] = lut[k];
       }
-    double nn_rms = n3check::rel_rms(nn, &oracle[0], n);
+    std::vector<double> nn_strided = n3fixture::strided(nn, n);
+    double nn_rms = n3check::rel_rms(&nn_strided[0], &oracle[0], m);
     CHECK_TRUE("nearest neighbour is not interpolation", nn_rms > 1e-6);
     printf("  (nearest neighbour would sit %.3e away)\n", nn_rms);
     delete_volume(again);

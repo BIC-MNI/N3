@@ -203,11 +203,23 @@ ADD_LIBRARY(sharpenhist_core OBJECT
 TARGET_COMPILE_DEFINITIONS(sharpenhist_core PRIVATE
         main=n3_sharpen_hist_main args=n3_sharpen_hist_args)
 
+# splineSmooth.cc carries volume_domain, reduced_domain and the two fit loops,
+# and a main() and an args class alongside them.  Same treatment.
+ADD_LIBRARY(splinesmooth_core OBJECT
+        src/SplineSmooth/splineSmooth.cc
+        src/SplineSmooth/splineSmoothArgs.cc)
+TARGET_COMPILE_DEFINITIONS(splinesmooth_core PRIVATE
+        main=n3_spline_smooth_main args=n3_spline_smooth_args)
+
 ADD_LIBRARY(n3pipeline_core OBJECT
         src/N3Pipeline/Buffers.cc
         src/N3Pipeline/Histogram.cc
         src/N3Pipeline/Sharpen.cc
         src/N3Pipeline/MincTools.cc
+        src/N3Pipeline/FitField.cc
+        src/SplineSmooth/fieldIO.cc
+        src/Splines/Spline.cc
+        src/Splines/TBSpline.cc
         src/VolumeHist/DHistogram.cc
         src/VolumeHist/WHistogram.cc
         src/VolumeHist/GHistogram.cc)

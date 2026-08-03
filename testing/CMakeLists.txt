@@ -98,7 +98,7 @@ set_tests_properties(nu_estimate_np_and_em_3 nu_estimate_np_and_em_4
 
 MACRO(ADD_N3PIPELINE_TEST name)
   ADD_EXECUTABLE(${name} n3pipeline/${name}.cc
-    $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> ${ARGN})
+    $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core> ${ARGN})
   TARGET_INCLUDE_DIRECTORIES(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
   TARGET_COMPILE_DEFINITIONS(${name} PRIVATE
     N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference"
@@ -117,6 +117,7 @@ ADD_N3PIPELINE_TEST(test_histogram)
 ADD_N3PIPELINE_TEST(test_sharpen)
 ADD_N3PIPELINE_TEST(test_lookup)
 ADD_N3PIPELINE_TEST(test_bimodal)
+ADD_N3PIPELINE_TEST(test_spline)
 
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.

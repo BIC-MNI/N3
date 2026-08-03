@@ -24,6 +24,22 @@ mkdir -p $out
 chunk=$data/chunk.mnc.gz
 mask=$data/chunk_mask.mnc.gz
 
+# Volume-sized oracles are recorded on every fourth voxel in file order.  A
+# relative RMS over a systematic quarter of a volume says what one over all of
+# it says, and the whole thing would put ten megabytes of float64 in a source
+# tree.  The tests apply the same stride.
+STRIDE=4
+
+dump_strided()
+{
+  mincextract -double $1 | perl -e '
+    binmode STDIN; binmode STDOUT;
+    my $stride = shift;
+    my $i = 0;
+    while(read(STDIN, my $buf, 8) == 8) { print $buf if $i % $stride == 0; $i++; }
+  ' $STRIDE > $2
+}
+
 # Geometry of a volume, one number per line, in the order the tests read it:
 # nx ny nz (file order), then start, step, dircos per file dimension.
 geometry()
@@ -108,7 +124,7 @@ sharpen_hist -clobber -quiet -blur -fwhm 0.15 -noise 0.01 -range $range \
 
 minclookup -clobber -quiet -double -continuous -range $range \
     -lookup_table $out/sharp_window.txt $chunk $work/looked_up.mnc
-mincextract -double $work/looked_up.mnc > $out/lookup_applied.f64
+dump_strided $work/looked_up.mnc $out/lookup_applied.f64
 
 # ---------------------------------------------------------------- cycle 7
 # Two different bimodal thresholds, both of which the pipeline needs.
@@ -121,6 +137,38 @@ volume_stats -quiet -biModalT $chunk > $out/bimodal_volume_stats.txt
 volume_stats -quiet -biModalT -mask $mask $chunk > $out/bimodal_volume_stats_masked.txt
 mincstats -quiet -biModalT $chunk > $out/bimodal_mincstats.txt
 mincinfo -attval image:valid_range $chunk > $out/chunk_valid_range.txt
+
+# ---------------------------------------------------------------- cycle 8
+# The spline fit.  spline_smooth reads every volume as float
+# (loadFloatVolume, splineSmooth.cc:101) and writes the result in the input's
+# storage type, so the input here is a float copy of chunk.mnc: both sides then
+# fit identical numbers and the only remaining difference is that the oracle's
+# output is rounded to float on the way out.
+#
+# -full_support goes with -b_spline and not with -tp_spline, which is how the
+# driver calls it and which gives the two different domains.
+
+mincreshape -clobber -quiet -float $chunk $out/chunk_float.mnc
+dump_strided $out/chunk_float.mnc $out/chunk_float.f64
+
+for distance in 200 100 50; do
+  spline_smooth -clobber -quiet -full_support -b_spline -lambda 1e-7 \
+      -distance $distance -subsample 1 -mask $mask \
+      $out/chunk_float.mnc $work/fit.mnc
+  dump_strided $work/fit.mnc $out/fit_b${distance}.f64
+done
+
+spline_smooth -clobber -quiet -tp_spline -lambda 1e-7 -distance 200 \
+    -subsample 1 -mask $mask $out/chunk_float.mnc $work/fit.mnc
+dump_strided $work/fit.mnc $out/fit_tp200.f64
+
+# The same fit evaluated on the full grid through the .imp file, which is the
+# path nu_evaluate takes.
+spline_smooth -clobber -quiet -full_support -b_spline -lambda 1e-7 \
+    -distance 200 -subsample 1 -mask $mask -novolume \
+    $out/chunk_float.mnc -compact $work/fit.imp
+evaluate_field -clobber -quiet -like $out/chunk_float.mnc $work/fit.imp $work/field.mnc
+dump_strided $work/field.mnc $out/field_b200_full.f64
 
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six

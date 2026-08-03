@@ -94,6 +94,19 @@ inline void read_domain(const std::string &name, double *min_bin, double *max_bi
   must(found, "no domain line in " + p);
 }
 
+/* Volume-sized oracles are recorded on every fourth voxel in file order
+ * (regenerate_reference.sh).  A relative RMS over a systematic quarter says
+ * what one over the whole volume says, without ten megabytes of float64 in the
+ * source tree; the tests apply the same stride to their own answer. */
+const int STRIDE = 4;
+
+inline std::vector<double> strided(const double *values, int n)
+{
+  std::vector<double> out;
+  for(int i = 0; i < n; i += STRIDE) out.push_back(values[i]);
+  return out;
+}
+
 inline double read_scalar(const std::string &name)
 {
   std::vector<double> v = read_text(name);
