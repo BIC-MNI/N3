@@ -97,6 +97,7 @@ HELP
    $bins        = 200;
    $blur_flag    = 0;
    $window_flag  = 0;
+   undef $window_sigma;
    undef $save_histogram;
 
    sub print_version
@@ -131,6 +132,9 @@ HELP
 	"use blurring.  -deblur: skip deblurring step."],
        ["-parzen|-noparzen", "boolean", undef, \$window_flag,
         "use Parzen window when estimating intensity distribution"],
+       ["-parzen_sigma", "float", 1, \$window_sigma,
+        "<sigma> use a Gaussian Parzen window of this width, in bin widths,"
+        ." in place of the triangular one"],
        ["-save_histogram", "string", 1, \$save_histogram,
         "keep uncorrected histogram"]);
 
@@ -155,7 +159,18 @@ HELP
       ." a minc volume.\n";
 
    @blur_option = $blur_flag ? ('-blur') : ();
-   @window_option = $window_flag ? ('-window') : ();
+   # A stated width wins over -parzen, so that the two never reach volume_hist
+   # together, where asking for both windows is an error.
+   if(defined $window_sigma)
+   {
+      ($window_sigma > 0) ||
+         die "sharpen_volume: -parzen_sigma must be positive\n";
+      @window_option = ('-gaussian_window', $window_sigma);
+   }
+   else
+   {
+      @window_option = $window_flag ? ('-window') : ();
+   }
 
    # Set global variables for calling various programs
    MNI::Spawn::SetOptions (strict  => 2);

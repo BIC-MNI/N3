@@ -502,7 +502,8 @@ sub sharpen_estimate
    my (@sharpen_option, @parzen_option, @save_option, $histogram, $command);
    @sharpen_option = ('-bins', $sharpen_bins, '-fwhm', $sharpen_options[0],
       '-noise', $sharpen_options[1]);
-   @parzen_option = ($parzen_flag) ? ('-parzen') : ();
+   @parzen_option = (defined $parzen_sigma) ?
+      ('-parzen_sigma', $parzen_sigma) : (($parzen_flag) ? ('-parzen') : ());
    
    ($save_histogram_flag) &&
       ($histogram = "$output_directory/$basename" . "_hist$_[3].txt");
@@ -1221,7 +1222,11 @@ sub SetupArgTables
         "skip deblurring step in sharpening method"],
        ["-parzen|-noparzen", "boolean", undef, \$parzen_flag,
         "use Parzen window for non-parametric distribution estimation"
-        ." (default -noparzen)"], 
+        ." (default -noparzen)"],
+       ["-parzen_sigma", "float", 1, \$parzen_sigma,
+        "width of the Gaussian Parzen window, in bin widths, for the"
+        ." non-parametric distribution estimation (default: the triangular"
+        ." window)", "<sigma>"],
        ["-bins", "integer", 1, \$sharpen_bins,
         "specify number of bins for histograms", "<number>"],
        ["-save_histograms", "boolean", undef, \$save_histograms_flag,
@@ -1441,9 +1446,15 @@ sub ValidateArgs
          die("-variance option not compatible with -sharpen\n");
       ( @reduce_flag) &&
          die("-reduce option not compatible with -sharpen\n");
-      ($sharpen_options[0] > 0 && $sharpen_options[1] > 0) || 
+      ($sharpen_options[0] > 0 && $sharpen_options[1] > 0) ||
         die("Invalid sharpen parameters: $sharpen_options[0]".
                " $sharpen_options[1]\n");
+      (!defined $parzen_sigma || $parzen_sigma > 0) ||
+        die("Parzen window width must be positive: $parzen_sigma\n");
+   }
+   else {
+      (defined $parzen_sigma) &&
+        die("-parzen_sigma option requires -sharpen\n");
    }
    ($sharpen_bins > 1) || die("Number of bins for histogram must be"
                                  ." greater than one\n");
@@ -1587,6 +1598,7 @@ sub Initialize
    # NUcorrect specific booleans
    $sharpen_flag = 0;
    $parzen_flag = 0;
+   undef $parzen_sigma;
    $real_flag = 0;
    $nodeblur_flag = 0;
    $save_fields_flag = 0;

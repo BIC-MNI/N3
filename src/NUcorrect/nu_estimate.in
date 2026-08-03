@@ -206,7 +206,13 @@ sub SetupArgTables
                 "width of deconvolution kernal used to"
                 ." sharpen histogram.  Larger values give faster convergence"
                 ." while smaller values give greater accuracy. "
-                ." (suggest 0.05 to 0.5, default is 0.15)","<width>"]);
+                ." (suggest 0.05 to 0.5, default is 0.15)","<width>"],
+              ["-parzen_sigma", "float", 1, \$user_options{'parzen_sigma'},
+                "width of the Gaussian Parzen window, in bin widths, used to"
+                ." estimate the intensity distribution.  Default is the"
+                ." triangular window one bin wide that N3 has always used;"
+                ." a Gaussian of 2 to 4 bins suppresses noise the deconvolution"
+                ." would otherwise sharpen back into the estimate.","<sigma>"]);
 
   (\@pref_args, \@protocol_args, \@correct_args, \@np_em_args, \@np_args);
 }
@@ -422,6 +428,7 @@ sub Initialize
    $user_options{'distance'} = 200;
    $user_options{'lambda'} = "1.0e-7";
    $user_options{'sharpen'} = 0.15;
+   undef $user_options{'parzen_sigma'};
    $version_number = '1.0'; 
    undef $mapping_dir; 
 
@@ -495,8 +502,12 @@ sub Initialize
                $user_options{$option_name} :
                $defaults{"np:$option_name:$version_number"})]);
          }
-     (defined $user_options{'normalize_field'}) and 
+     (defined $user_options{'normalize_field'}) and
        AddDefaultArgs('nu_estimate_np_and_em','-normalize_field');
+     # nu_estimate_np_and_em lets a stated width win over the -parzen above.
+     (defined $user_options{'parzen_sigma'}) and
+       AddDefaultArgs('nu_estimate_np_and_em',
+                      ['-parzen_sigma', $user_options{'parzen_sigma'}]);
    }
    # assemble options for EM method
    elsif($estimation_type eq 'em') {
