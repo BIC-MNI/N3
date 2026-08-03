@@ -47,8 +47,10 @@ extern "C" {
 #undef ROUND
 #include "DHistogram.h"
 #include "WHistogram.h"
+#include "GHistogram.h"
 #include "args.h"
 
+DHistogram *new_histogram(double min, double max, args &args);
 void write_histogram_to_text_file(FILE *fp, int select, DHistogram *histogram);
 void bin_volume(VIO_Volume volume, VIO_Volume mask_volume, args &args, 
            DHistogram *histogram[], int n_histograms);
@@ -137,12 +139,7 @@ int main( int argc,  char *argv[] )
     {
       for(i = 0; i < n_histograms; i++)
         {
-          if(args.window_flag == FALSE) 
-            histogram[i] = new DHistogram(real_min, real_max, 
-                                          (unsigned)args.number_of_bins);
-          else
-            histogram[i] = new WHistogram(real_min, real_max, 
-                                          (unsigned)args.number_of_bins);
+          histogram[i] = new_histogram(real_min, real_max, args);
           class_min[i] = real_min;
           class_max[i] = real_max;
         }
@@ -196,14 +193,9 @@ int main( int argc,  char *argv[] )
 
       for(i = 0; i < n_histograms; i++)
 	{
-	  if(class_max[i] <= class_min[i]) 
+	  if(class_max[i] <= class_min[i])
 	    class_max[i] = class_min[i] + 1.0;
-          if(args.window_flag == FALSE) 
-            histogram[i] = new DHistogram(class_min[i], class_max[i], 
-                                      (unsigned)args.number_of_bins);
-          else
-            histogram[i] = (DHistogram *) new WHistogram(class_min[i],
-                             class_max[i], (unsigned)args.number_of_bins);
+          histogram[i] = new_histogram(class_min[i], class_max[i], args);
 	}
     }
 
@@ -275,8 +267,22 @@ int main( int argc,  char *argv[] )
 
 
 
+// allocate a histogram of whichever window was asked for
+DHistogram *
+new_histogram(double min, double max, args &args)
+{
+  unsigned nBins = (unsigned) args.number_of_bins;
+
+  if(args.parzen_sigma > 0.0)
+    return (DHistogram *) new GHistogram(min, max, nBins, args.parzen_sigma);
+  if(args.window_flag == TRUE)
+    return (DHistogram *) new WHistogram(min, max, nBins);
+  return new DHistogram(min, max, nBins);
+}
+
+
 // write bin centers and count to open text file
-void 
+void
 write_histogram_to_text_file(FILE *fp, int select, DHistogram *histogram)
 {
   fprintf(fp, "# histogram for class %d\n"

@@ -39,6 +39,7 @@ int   args::matlab_format = FALSE;
 #endif
 int   args::mask_flag = FALSE;
 int   args::window_flag = FALSE;
+double args::parzen_sigma = 0.0;
 
 char *mask_string = NULL;
 
@@ -68,8 +69,10 @@ ArgvInfo args::argTable[] = {
    "<class> Only compute histogram for selected class."},
   {"-auto_range", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::auto_range, 
    "Compute histogram range for each class."},
-  {"-window", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::window_flag, 
+  {"-window", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::window_flag,
    "Use triangular Parzen window."},
+  {"-gaussian_window", ARGV_FLOAT, (char *) 1, (char *) &args::parzen_sigma,
+   "<sigma> Use Gaussian Parzen window of this width, in bin widths."},
 #ifdef HAVE_MATLAB
   {"-matlab", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::matlab_format, 
    "Produce files in matlab format. (default)"},
@@ -123,6 +126,21 @@ args::args(int argc, char **argv)
   if(number_of_bins < 1) 
     {
       cerr << "Must have one or bins per histogram\n";
+      exit(EXIT_FAILURE);
+    }
+
+  if(parzen_sigma < 0.0)
+    {
+      cerr << "Gaussian window must have a positive width\n";
+      exit(EXIT_FAILURE);
+    }
+
+  // The two windows are different kernels giving different answers, so letting
+  // one of them silently win would hide the mistake.
+  if(parzen_sigma > 0.0 && window_flag == TRUE)
+    {
+      cerr << "-window and -gaussian_window select different Parzen windows;"
+              " give only one\n";
       exit(EXIT_FAILURE);
     }
 

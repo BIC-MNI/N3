@@ -177,8 +177,9 @@ ADD_EXECUTABLE(spline_smooth
         
 ADD_EXECUTABLE(volume_hist  
         src/VolumeHist/minchist.cc 
-        src/VolumeHist/DHistogram.cc 
-        src/VolumeHist/WHistogram.cc 
+        src/VolumeHist/DHistogram.cc
+        src/VolumeHist/WHistogram.cc
+        src/VolumeHist/GHistogram.cc
         src/VolumeHist/args.cc)
 
 ADD_EXECUTABLE(volume_stats  
