@@ -110,6 +110,18 @@ minclookup -clobber -quiet -double -continuous -range $range \
     -lookup_table $out/sharp_window.txt $chunk $work/looked_up.mnc
 mincextract -double $work/looked_up.mnc > $out/lookup_applied.f64
 
+# ---------------------------------------------------------------- cycle 7
+# Two different bimodal thresholds, both of which the pipeline needs.
+# volume_stats builds an EBTKS histogram over ceil(voxelMax-voxelMin+1) bins of
+# the file's *voxel* range (volumeStats.cc:286) and takes its biModalThreshold;
+# mincstats runs 2000-bin Otsu and reports the winning bin centre.  They do not
+# agree, and nothing in the drivers suggests they should.
+
+volume_stats -quiet -biModalT $chunk > $out/bimodal_volume_stats.txt
+volume_stats -quiet -biModalT -mask $mask $chunk > $out/bimodal_volume_stats_masked.txt
+mincstats -quiet -biModalT $chunk > $out/bimodal_mincstats.txt
+mincinfo -attval image:valid_range $chunk > $out/chunk_valid_range.txt
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask

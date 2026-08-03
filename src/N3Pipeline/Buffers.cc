@@ -274,6 +274,23 @@ nc_type storage_type(const std::string &path, VIO_BOOL *signed_flag)
   return type;
 }
 
+void voxel_range(const std::string &path, double *lo, double *hi)
+{
+  VIO_Volume volume;
+  volume_input_struct input_info;
+
+  if(start_volume_input((char *) path.c_str(), VIO_N_DIMENSIONS,
+                        File_order_dimension_names, NC_UNSPECIFIED, FALSE,
+                        0.0, 0.0, TRUE, &volume,
+                        (minc_input_options *) NULL, &input_info) != VIO_OK)
+    fail("cannot read volume header", path);
+
+  get_volume_voxel_range(volume, lo, hi);
+
+  delete_volume_input(&input_info);
+  delete_volume(volume);
+}
+
 void save(VIO_Volume volume, const std::string &path,
           const std::string &like_path, nc_type type, VIO_BOOL signed_flag,
           const std::string &history)

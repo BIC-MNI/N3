@@ -70,6 +70,11 @@ Stats masked_stats(VIO_Volume volume, VIO_Volume mask);
  * `mincmath -copy_header` would have written. */
 nc_type storage_type(const std::string &path, VIO_BOOL *signed_flag);
 
+/* The file's valid_range, in voxel units.  volume_stats sizes its histogram
+ * from this (volumeStats.cc:286), so a rule stated in real intensities still
+ * depends on how the file was stored. */
+void voxel_range(const std::string &path, double *lo, double *hi);
+
 /* Write, taking the header from like_path as -copy_header does. */
 void save(VIO_Volume volume, const std::string &path,
           const std::string &like_path, nc_type type, VIO_BOOL signed_flag,

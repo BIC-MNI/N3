@@ -33,6 +33,22 @@ void apply_lookup(VIO_Volume volume, const std::vector<double> &positions,
 void apply_lookup(VIO_Volume volume, const std::vector<double> &values,
                   double lo, double hi);
 
+/* volume_stats -biModalT: an EBTKS histogram over the selected voxels' real
+ * range, with as many bins as the file's voxel range has whole steps
+ * (volumeStats.cc:286-299), and that class's own biModalThreshold.  Used by
+ * CreateMask.
+ *
+ * The bin count comes from how the file was stored, so it is passed in rather
+ * than derived from the buffer: on a volume held in double there is no such
+ * quantity.  Legacy behaviour, reproduced and not repaired. */
+double bimodal_threshold_volume_stats(VIO_Volume volume, VIO_Volume mask,
+                                      int bins);
+
+/* mincstats -biModalT: Otsu over 2000 bins, returning the winning bin's
+ * centre.  A different rule from the one above, giving a different answer on
+ * the same volume; nu_evaluate uses this one and CreateMask the other. */
+double bimodal_threshold_mincstats(VIO_Volume volume, int bins = 2000);
+
 }  // namespace n3
 
 #endif
