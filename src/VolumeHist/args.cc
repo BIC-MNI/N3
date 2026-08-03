@@ -39,6 +39,7 @@ int   args::matlab_format = FALSE;
 #endif
 int   args::mask_flag = FALSE;
 int   args::window_flag = FALSE;
+double args::window_sigma = 0.0;
 
 char *mask_string = NULL;
 
@@ -68,8 +69,11 @@ ArgvInfo args::argTable[] = {
    "<class> Only compute histogram for selected class."},
   {"-auto_range", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::auto_range, 
    "Compute histogram range for each class."},
-  {"-window", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::window_flag, 
+  {"-window", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::window_flag,
    "Use triangular Parzen window."},
+  {"-window_sigma", ARGV_FLOAT, (char *) 1, (char *) &args::window_sigma,
+   "<sigma> Use a Gaussian Parzen window of this standard deviation, in bin"
+   " widths, in place of the triangular one.  Implies -window."},
 #ifdef HAVE_MATLAB
   {"-matlab", ARGV_CONSTANT, (char *)(int)TRUE, (char *) &args::matlab_format, 
    "Produce files in matlab format. (default)"},
@@ -125,6 +129,16 @@ args::args(int argc, char **argv)
       cerr << "Must have one or bins per histogram\n";
       exit(EXIT_FAILURE);
     }
+
+  if(window_sigma < 0.0)
+    {
+      cerr << "Window width must not be negative\n";
+      exit(EXIT_FAILURE);
+    }
+
+  // A width with no window would be silently ignored, so it selects one.
+  if(window_sigma > 0.0)
+    window_flag = TRUE;
 
   if(number_of_classes > 0)
     limit_classes = TRUE;

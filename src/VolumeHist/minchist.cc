@@ -137,12 +137,16 @@ int main( int argc,  char *argv[] )
     {
       for(i = 0; i < n_histograms; i++)
         {
-          if(args.window_flag == FALSE) 
-            histogram[i] = new DHistogram(real_min, real_max, 
+          if(args.window_flag == FALSE)
+            histogram[i] = new DHistogram(real_min, real_max,
                                           (unsigned)args.number_of_bins);
           else
-            histogram[i] = new WHistogram(real_min, real_max, 
+            {
+              WHistogram *windowed = new WHistogram(real_min, real_max,
                                           (unsigned)args.number_of_bins);
+              windowed->setWindowSigma(args.window_sigma);
+              histogram[i] = windowed;
+            }
           class_min[i] = real_min;
           class_max[i] = real_max;
         }
@@ -198,12 +202,16 @@ int main( int argc,  char *argv[] )
 	{
 	  if(class_max[i] <= class_min[i]) 
 	    class_max[i] = class_min[i] + 1.0;
-          if(args.window_flag == FALSE) 
-            histogram[i] = new DHistogram(class_min[i], class_max[i], 
+          if(args.window_flag == FALSE)
+            histogram[i] = new DHistogram(class_min[i], class_max[i],
                                       (unsigned)args.number_of_bins);
           else
-            histogram[i] = (DHistogram *) new WHistogram(class_min[i],
+            {
+              WHistogram *windowed = new WHistogram(class_min[i],
                              class_max[i], (unsigned)args.number_of_bins);
+              windowed->setWindowSigma(args.window_sigma);
+              histogram[i] = windowed;
+            }
 	}
     }
 

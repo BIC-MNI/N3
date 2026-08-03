@@ -42,33 +42,50 @@ using namespace std;		/* (bert) */
 #include "DHistogram.h"
 #include <math.h>
 
-class WHistogram  : public DHistogram 
+class WHistogram  : public DHistogram
 {
+protected:
+  // Standard deviation of the Parzen window, in bin widths.  Zero selects the
+  // original behaviour: each sample split linearly between the two bin centers
+  // it falls between, which is a triangular kernel exactly one bin wide.
+  double _sigma;
+
 public:
   // Constructors/destructor
   // The min and max values in these constructors are bin centers,
   // not absolute extrema.
-  WHistogram() : DHistogram() {;}
+  WHistogram() : DHistogram(), _sigma(0.0) {;}
   // min and max refer to bin centers
-  WHistogram(double min, double max, unsigned nBins = 0) : 
-    DHistogram(min, max, nBins) {;}
-  WHistogram(double min, double max, double binWidth) : 
-    DHistogram(min, max, binWidth) {;}
+  WHistogram(double min, double max, unsigned nBins = 0) :
+    DHistogram(min, max, nBins), _sigma(0.0) {;}
+  WHistogram(double min, double max, double binWidth) :
+    DHistogram(min, max, binWidth), _sigma(0.0) {;}
   WHistogram(unsigned nBins, double min = 0.0, double binWidth = 1.0) :
-    DHistogram(nBins, min, binWidth) {;}
-  WHistogram(const WHistogram& hist) : DHistogram(hist) {;}
+    DHistogram(nBins, min, binWidth), _sigma(0.0) {;}
+  WHistogram(const WHistogram& hist) : DHistogram(hist), _sigma(hist._sigma) {;}
 
   WHistogram& operator = (const WHistogram&);
   // Changes ranges; keeps binWidth
-  WHistogram& newRange(double min, double max); 
+  WHistogram& newRange(double min, double max);
+
+  // Get functions
+  double windowSigma() const { return _sigma; }
 
   // Set functions
-  virtual Boolean add(double value) 
+  // Width of the Gaussian window in bin widths; zero restores the triangular
+  // one.  The width is in bins rather than in intensity units, so it follows
+  // the range -auto_range picks rather than being fixed in the data's units.
+  void setWindowSigma(double sigma) { _sigma = sigma; }
+
+  virtual Boolean add(double value)
   {
-    // throw away value beyond top half of last bin and bottom half of first 
+    // throw away value beyond top half of last bin and bottom half of first
     if ((value < _cmin) || (value > _cmax))
       return FALSE;
-    
+
+    if (_sigma > 0.0)
+      return addWindowed(value);
+
     double loc = (value - _min)/_binWidth;
     int index = int(::floor(loc));
     double offset = loc - index - 0.5;
@@ -93,6 +110,52 @@ public:
       return FALSE;
   }
 
+protected:
+  // Distribute one sample over the bins with a Gaussian kernel of standard
+  // deviation _sigma bin widths, in place of the linear split above.  The
+  // kernel is evaluated at the bin centers, truncated at four standard
+  // deviations, and normalized per sample, so that every sample the range
+  // admits contributes exactly one count however near an end of the range it
+  // falls.  Only the shape of the kernel differs from add() above; which
+  // samples are kept does not.
+  Boolean addWindowed(double value)
+  {
+    // Bin centers sit at the integers of this coordinate, and the caller has
+    // already rejected anything outside the outermost two, so the nearest bin
+    // is always one of this histogram's own.
+    double loc = (value - _cmin)/_binWidth;
+    int nearest = int(::floor(loc + 0.5));
+
+    int radius = int(::ceil(4.0*_sigma));
+    if(radius < 1)
+      radius = 1;
+    int last  = int(_size) - 1;
+    int lower = (nearest - radius > 0) ? nearest - radius : 0;
+    int upper = (nearest + radius < last) ? nearest + radius : last;
+
+    // Exponents are taken relative to the nearest bin's, as a softmax is, so
+    // that a window much narrower than one bin cannot underflow to no counts
+    // at all.  That bin then carries a weight of exactly one and the total
+    // cannot be zero.
+    double reference = _exponent(loc, nearest);
+    double total = 0.0;
+    int i;
+
+    for(i = lower; i <= upper; i++)
+      total += ::exp(reference - _exponent(loc, i));
+    for(i = lower; i <= upper; i++)
+      _contents[i] += ::exp(reference - _exponent(loc, i))/total;
+
+    return TRUE;
+  }
+
+  double _exponent(double loc, int bin) const
+  {
+    double distance = (loc - bin)/_sigma;
+    return 0.5*distance*distance;
+  }
+
+public:
 // Other operators
   /*WHistogram&  operator += (const WHistogram& hist);*/
   /*LUT<double> equalize(const WHistogram& hist) const*/

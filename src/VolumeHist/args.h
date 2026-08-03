@@ -41,7 +41,8 @@ public:
   static int select_class_flag; // only compute one histogram if true
   static int mask_flag;      // true -> use mask
   static int window_flag;       // true -> use Parzen window
-  
+  static double window_sigma;   // width of the window in bins; 0 -> triangular
+
 
   static ArgvInfo argTable[];
 
