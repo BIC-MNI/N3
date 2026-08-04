@@ -16,6 +16,8 @@
 
 #include <config.h>
 
+#include <string>
+
 #include <volume_io.h>
 
 #include <EBTKS/Matrix.h>
@@ -60,6 +62,27 @@ Field *fit_field(VIO_Volume volume, VIO_Volume mask, enum spline_type type,
  * Outside the mask the result is zero, as smoothVolume does it; that is why
  * nu_evaluate then runs correct_field. */
 void evaluate_field(Field *field, VIO_Volume target, VIO_Volume mask);
+
+/* The .imp file: what nu_estimate writes and evaluate_field reads.
+ *
+ * outputCompactField needs a volume for the header it writes into the file;
+ * inputCompactField needs one because it lays the basis out on that grid, so
+ * reading and evaluating are one step here rather than two. */
+void save_field(const std::string &path, Field *field, VIO_Volume like,
+                const std::string &command);
+void evaluate_saved_field(const std::string &path, VIO_Volume target,
+                          VIO_Volume mask);
+
+/* Read an .imp back into a Field, so that the evaluation can be driven from
+ * the same field the Perl wrote -- which is how -estimate_only is consumed
+ * and how cycle 12 keeps the estimation's differences out of the comparison.
+ *
+ * The spline and its type come from inputCompactField, the linked reader.
+ * Distance and domain are in the same file but inputCompactField does not
+ * surface them, and Field needs them to lay the basis out on another grid
+ * (evaluate_field), so they are read back here.  The domain goes through the
+ * same world-to-voxel conversion (fieldIO.cc:285-292). */
+Field *load_field(const std::string &path, VIO_Volume like);
 
 }  // namespace n3
 

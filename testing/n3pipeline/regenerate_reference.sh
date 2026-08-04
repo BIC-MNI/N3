@@ -203,6 +203,24 @@ grep 'CV of field change' $work/est/log | sed 's/.*: *//' > $out/estimate_change
 dump_strided $work/est/chunk_est0.mnc $out/estimate_est0.f64
 dump_strided $work/est/chunk_field0.mnc $out/estimate_field0.f64
 
+# --------------------------------------------------------------- cycle 12
+# nu_evaluate, driven from the .imp the run above produced.  Keeping that .imp
+# lets the evaluation be tested against the driver's without the estimation's
+# own differences entering: both sides start from the same field.
+
+cp $work/est/chunk.imp $out/estimate.imp
+nu_evaluate $chunk -mapping $out/estimate.imp -mask $mask \
+    $work/est/corrected.mnc -clobber > /dev/null 2>&1
+dump_strided $work/est/corrected.mnc $out/evaluate_corrected.f64
+
+# --------------------------------------------------------------- cycle 14
+# The whole pipeline, at the protocol cycle 11 uses.  nu_correct is the Perl
+# top level: estimate then evaluate, with no intermediate left behind.
+
+nu_correct -shrink 1 -iterations 1 -stop 0.0 -distance 200 \
+    -mask $mask $chunk $work/nu.mnc -clobber > /dev/null 2>&1
+dump_strided $work/nu.mnc $out/nu_correct_shrink1.f64
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask
