@@ -45,13 +45,13 @@ struct Arguments
   std::string mask;
   std::string mapping_dir;
 
-  double distance = 200.0;
+  double distance = 200.0;      /* -distance: the field knot spacing, mm */
   double lambda = 1e-7;
   int subsample = 1;
   enum spline_type type = b_spline;
 
-  bool sharpen = true;          /* -sharpen fwhm noise, on by default (V1.0) */
-  double fwhm = 0.15, noise = 0.01;
+  bool sharpen = true;          /* sharpening on by default (V1.0) */
+  double fwhm = 0.15, noise = 0.01; /* -sharpen/-fwhm width, and its noise */
   bool window = true;           /* -parzen, on by default */
   double parzen_sigma = 0.0;    /* 0 = off */
   int bins = 200;
@@ -98,12 +98,12 @@ void usage()
     "\n"
     "  -mask <file>       region to process\n"
     "  -distance <mm>     field knot spacing (default 200)\n"
-    "  -fwhm <mm>         alias of -distance\n"
     "  -lambda <x>        spline regularisation (default 1e-7)\n"
     "  -b_spline [-x]     tensor B-splines (default); optional lambda\n"
     "  -tp_spline [-x]    thin-plate splines; optional lambda\n"
     "  -subsample <n>     fit every n-th voxel each axis (also -spline_subsample)\n"
     "  -sharpen <f> <n>   histogram deconvolution (default 0.15 0.01)\n"
+    "  -fwhm <x>          sharpening width; same as -sharpen <x> <noise>\n"
     "  -parzen            triangular window (default); -noparzen disables\n"
     "  -parzen_sigma <x>  Gaussian Parzen window, in bin widths\n"
     "  -bins <n>          histogram bins (default 200)\n"
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
           if(out_of_scope(tok)) continue;
 
           if(tok == "-mask") { if(i+1>=argc) die("-mask needs a value"); A.mask = argv[++i]; }
-          else if(tok == "-distance" || tok == "-fwhm") { if(i+1>=argc) die("%s needs a value", tok.c_str()); A.distance = atof(argv[++i]); }
+          else if(tok == "-distance") { if(i+1>=argc) die("-distance needs a value"); A.distance = atof(argv[++i]); }
           else if(tok == "-lambda") { if(i+1>=argc) die("-lambda needs a value"); A.lambda = atof(argv[++i]); }
           else if(tok == "-b_spline") { A.type = b_spline; if(i+1<argc && is_number(argv[i+1])) A.lambda = atof(argv[++i]); }
           else if(tok == "-tp_spline") { A.type = thin_plate_spline; if(i+1<argc && is_number(argv[i+1])) A.lambda = atof(argv[++i]); }
@@ -226,6 +226,15 @@ int main(int argc, char *argv[])
             if(i+1<argc && is_number(argv[i+1]))
               { A.fwhm = atof(argv[++i]);
                 if(i+1<argc && is_number(argv[i+1])) A.noise = atof(argv[++i]); }
+          }
+          else if(tok == "-fwhm") {
+            /* The sharpening width, not the knot spacing.  The top-level
+             * nu_estimate.in:205 maps -fwhm to $user_options{'sharpen'} and
+             * passes it on as -sharpen <width> 0.01 (:498); -distance is the
+             * knots (:164-165).  Only the inner nu_estimate_np_and_em.in:1163
+             * calls the sharpen width -fwhm. */
+            if(i+1>=argc) die("-fwhm needs a value");
+            A.fwhm = atof(argv[++i]);
           }
           else if(tok == "-parzen") { A.window = true; }
           else if(tok == "-noparzen") { A.window = false; }

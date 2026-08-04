@@ -139,6 +139,24 @@ ADD_TEST(n3cxx_driver_correct
   ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz
   ${CMAKE_CURRENT_BINARY_DIR}/driver_chunk_nu.mnc -clobber)
 
+# -fwhm is the sharpening width at this level, NOT the knot spacing
+# (nu_estimate.in:205 maps it to 'sharpen'; only the inner
+# nu_estimate_np_and_em.in:1163 calls that -fwhm).  Changing the sharpening
+# width must move the correction; changing -distance must too, and in the
+# opposite direction from what a wrong -fwhm-to-distance alias would give.
+ADD_TEST(n3cxx_driver_fwhm_sharpens
+  ${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx
+  -shrink 1 -iterations 1 -stop 0.0 -distance 200 -fwhm 0.3
+  -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz
+  ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz
+  ${CMAKE_CURRENT_BINARY_DIR}/driver_fwhm_nu.mnc -clobber)
+ADD_TEST(n3cxx_driver_distance_knots
+  ${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx
+  -shrink 1 -iterations 1 -stop 0.0 -distance 100 -fwhm 0.15
+  -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz
+  ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz
+  ${CMAKE_CURRENT_BINARY_DIR}/driver_dist_nu.mnc -clobber)
+
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.
 ADD_TEST(n3cxx_test_harness_red ${CMAKE_CURRENT_BINARY_DIR}/test_harness --fail)
