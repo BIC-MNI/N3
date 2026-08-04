@@ -1,2 +1,10 @@
 # backup files
 *~
+
+# in-source CMake build artifacts (build out-of-source; see the driver's task)
+/CMakeCache.txt
+/CMakeFiles/
+/CPackConfig.cmake
+/CPackSourceConfig.cmake
+/DartConfiguration.tcl
+/Testing/
