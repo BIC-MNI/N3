@@ -46,8 +46,8 @@ Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
 
   VIO_Volume mask_wks = NULL;
   if(user_mask)
-    mask_wks = (options.shrink != 1.0) ? resample_label(user_mask, work)
-                                       : resample_label(user_mask, work);
+    /* resample_label is the identity at shrink == 1 (test_resample_label). */
+    mask_wks = resample_label(user_mask, work);
 
   int n = voxel_count(work);
 

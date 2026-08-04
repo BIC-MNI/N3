@@ -141,21 +141,20 @@ ADD_TEST(n3cxx_driver_correct
 
 # -fwhm is the sharpening width at this level, NOT the knot spacing
 # (nu_estimate.in:205 maps it to 'sharpen'; only the inner
-# nu_estimate_np_and_em.in:1163 calls that -fwhm).  Changing the sharpening
-# width must move the correction; changing -distance must too, and in the
-# opposite direction from what a wrong -fwhm-to-distance alias would give.
-ADD_TEST(n3cxx_driver_fwhm_sharpens
-  ${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx
-  -shrink 1 -iterations 1 -stop 0.0 -distance 200 -fwhm 0.3
-  -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz
-  ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz
-  ${CMAKE_CURRENT_BINARY_DIR}/driver_fwhm_nu.mnc -clobber)
-ADD_TEST(n3cxx_driver_distance_knots
-  ${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx
-  -shrink 1 -iterations 1 -stop 0.0 -distance 100 -fwhm 0.15
-  -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz
-  ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz
-  ${CMAKE_CURRENT_BINARY_DIR}/driver_dist_nu.mnc -clobber)
+# nu_estimate_np_and_em.in:1163 calls that -fwhm).  The earlier smoke tests
+# asserted only exit status, which a re-aliasing of -fwhm to -distance could
+# pass; test_driver_fwhm drives the binary and compares its outputs so that
+# both channels must move the correction.
+ADD_EXECUTABLE(test_driver_fwhm n3pipeline/test_driver_fwhm.cc
+  $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+TARGET_INCLUDE_DIRECTORIES(test_driver_fwhm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+TARGET_COMPILE_DEFINITIONS(test_driver_fwhm PRIVATE
+  N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
+  N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+ADD_TEST(n3cxx_driver_fwhm ${CMAKE_CURRENT_BINARY_DIR}/test_driver_fwhm)
+IF(MINC_TEST_ENVIRONMENT)
+  set_tests_properties(n3cxx_driver_fwhm PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+ENDIF(MINC_TEST_ENVIRONMENT)
 
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.

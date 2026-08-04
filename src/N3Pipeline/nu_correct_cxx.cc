@@ -50,7 +50,6 @@ struct Arguments
   int subsample = 1;
   enum spline_type type = b_spline;
 
-  bool sharpen = true;          /* sharpening on by default (V1.0) */
   double fwhm = 0.15, noise = 0.01; /* -sharpen/-fwhm width, and its noise */
   bool window = true;           /* -parzen, on by default */
   double parzen_sigma = 0.0;    /* 0 = off */
@@ -123,21 +122,16 @@ void usage()
     "                     iterations 10 20\n");
 }
 
-/* The .imp path for a correct run: the output's directory and basename with a
- * .imp extension instead of the volume's, relocated into mapping_dir if that
- * was given (nu_estimate.in:57-58, replace_ext/replace_dir). */
+/* The .imp path for a correct run: the output's directory and basename with
+ * its final extension replaced by .imp, relocated into mapping_dir if that was
+ * given (nu_estimate.in:57-58).  MNI::PathUtilities::replace_ext is exactly
+ * s/\.[^\.]*$/\.imp/, so out.mnc.gz -> out.mnc.imp (the .gz stays): only the
+ * last extension is replaced, not the whole ".mnc.gz". */
 std::string imp_path(const Arguments &args)
 {
-  /* The .imp's name is the output's basename with its volume extension
-   * replaced (nu_estimate.in:57-58, replace_ext), under mapping_dir if one was
-   * given and in the output's directory otherwise (replace_dir). */
   std::string out = args.output;
   size_t dot = out.find_last_of('.');
-  if(dot != std::string::npos &&
-     (out.compare(dot, 12, ".mnc.gz") == 0 ||
-      out.compare(dot, 10, ".mnc.Z") == 0 ||
-      out.compare(dot, 6, ".mnc") == 0))
-    out = out.substr(0, dot);
+  if(dot != std::string::npos) out = out.substr(0, dot);
   out += ".imp";
 
   if(!args.mapping_dir.empty())
@@ -222,7 +216,9 @@ int main(int argc, char *argv[])
           else if(tok == "-tp_spline") { A.type = thin_plate_spline; if(i+1<argc && is_number(argv[i+1])) A.lambda = atof(argv[++i]); }
           else if(tok == "-subsample" || tok == "-spline_subsample") { if(i+1>=argc) die("-subsample needs a value"); A.subsample = atoi(argv[++i]); }
           else if(tok == "-sharpen") {
-            A.sharpen = true;
+            /* sharpening is always on in the ported scope (there is no
+             * -nosharpen; omitting -sharpen is what selects the Perl's EM
+             * branch, which PLAN excludes). */
             if(i+1<argc && is_number(argv[i+1]))
               { A.fwhm = atof(argv[++i]);
                 if(i+1<argc && is_number(argv[i+1])) A.noise = atof(argv[++i]); }
@@ -281,8 +277,6 @@ int main(int argc, char *argv[])
 
   if(A.iterations.size() != A.stop.size())
     die("-iterations and -stop must match in number of arguments");
-  if(!A.sharpen && A.parzen_sigma > 0)
-    die("-parzen_sigma requires -sharpen");
   if(A.lambda <= 0) die("smoothing parameter must be positive");
   if(A.subsample <= 0) die("subsampling factor must be positive");
 
@@ -340,14 +334,16 @@ int main(int argc, char *argv[])
       e.bimodal_bins = (int) ceil(hi - lo + 1);
     }
 
-  /* The estimate.  When writing a .imp is wanted -- every estimate-only run,
-   * and every correct run for a record like the Perl leaves -- it is written
-   * here, from the estimation grid, so its world domain comes out right. */
+  /* The estimate.  Every run writes a .imp -- the estimate-only run's output
+   * is the .imp itself, and a correct run leaves a record just as the Perl
+   * always does (nu_estimate.in:57-58), relocated to -mapping_dir when given.
+   * It is written here, from the estimation grid, so its world domain comes
+   * out right. */
   int iterations_run = 0;
   double final_change = 0.0;
   std::string imp;
-  if(A.estimate_only) imp = A.output;   /* the output is the .imp itself */
-  else if(!A.mapping_dir.empty()) imp = imp_path(A); /* record like Perl leaves */
+  if(A.estimate_only) imp = A.output;  /* the output is the .imp itself */
+  else imp = imp_path(A);              /* every correct run writes a record */
 
   n3::Field *field = n3::nu_estimate(input, user_mask, e, &iterations_run,
                                       &final_change, NULL,
