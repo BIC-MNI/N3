@@ -228,6 +228,15 @@ ADD_LIBRARY(n3pipeline_core OBJECT
         src/VolumeHist/WHistogram.cc
         src/VolumeHist/GHistogram.cc)
 
+# The in-memory driver: nu_correct and nu_estimate collapsed into one binary,
+# chosen by argv[0] (an installed name of nu_estimate*) or -estimate_only.  The
+# two installed names are the same source, so the estimate-only program is a
+# second executable target rather than a rename.
+ADD_EXECUTABLE(nu_correct_cxx src/N3Pipeline/nu_correct_cxx.cc
+  $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+ADD_EXECUTABLE(nu_estimate_cxx src/N3Pipeline/nu_correct_cxx.cc
+  $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+
 
 SET(PERL ${PERL_EXECUTABLE})
 
@@ -244,6 +253,7 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/src/NUcorrect/sharpen_volume.in   ${C
 
 INSTALL(TARGETS 
  correct_field evaluate_field extracttag sharpen_hist spline_smooth volume_hist volume_stats
+ nu_correct_cxx nu_estimate_cxx
   DESTINATION bin)
 
 INSTALL(PROGRAMS

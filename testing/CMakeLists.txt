@@ -123,6 +123,22 @@ ADD_N3PIPELINE_TEST(test_stopping)
 ADD_N3PIPELINE_TEST(test_estimate)
 ADD_N3PIPELINE_TEST(test_evaluate)
 
+# The in-memory driver.  Smoke tests only: the estimate produces its .imp and
+# the correct run produces a volume, both by driving the compiled binary as a
+# user would.  The bounded end-to-end comparisons belong to cycles 13-14.
+ADD_TEST(n3cxx_driver_estimate
+  ${CMAKE_CURRENT_BINARY_DIR}/../nu_estimate_cxx
+  -shrink 1 -iterations 1 -stop 0.0 -distance 200
+  -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz
+  ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz
+  ${CMAKE_CURRENT_BINARY_DIR}/driver_chunk.imp -clobber)
+ADD_TEST(n3cxx_driver_correct
+  ${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx
+  -shrink 1 -iterations 1 -stop 0.0 -distance 200
+  -mask ${CMAKE_CURRENT_SOURCE_DIR}/chunk_mask.mnc.gz
+  ${CMAKE_CURRENT_SOURCE_DIR}/chunk.mnc.gz
+  ${CMAKE_CURRENT_BINARY_DIR}/driver_chunk_nu.mnc -clobber)
+
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.
 ADD_TEST(n3cxx_test_harness_red ${CMAKE_CURRENT_BINARY_DIR}/test_harness --fail)

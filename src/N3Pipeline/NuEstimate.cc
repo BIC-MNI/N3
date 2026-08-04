@@ -33,7 +33,7 @@ static double six_decimals(double value)
 Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
                    const EstimateOptions &options,
                    int *iterations_run, double *final_change,
-                   EstimateTrace *trace)
+                   EstimateTrace *trace, const std::string *mapping_path)
 {
   /* 1. The estimation grid (nu_estimate_np_and_em.in:63-64). */
   VIO_Volume work = (options.shrink != 1.0) ? shrink(input, options.shrink)
@@ -236,6 +236,16 @@ Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
    * field rather than to the log one the loop accumulated. */
   Field *compact = fit_field(field, mask, options.type, options.distance,
                              options.lambda, options.subsample);
+
+  if(mapping_path)
+    {
+      /* compact_spline_volume (:202) writes the .imp with the estimation
+       * grid's geometry as its header, which is what makes the world-domain
+       * conversion (fieldIO.cc:120-133) come out right. */
+      char command[256];
+      snprintf(command, sizeof(command), "nu_correct_cxx");
+      save_field(*mapping_path, compact, work, command);
+    }
 
   delete_volume(field);
   delete_volume(working);

@@ -68,11 +68,18 @@ struct EstimateTrace
  *
  * iterations_run and final_change report what the stopping rule did, which is
  * the first thing to check when two implementations disagree end to end.  The
- * caller owns the result. */
+ * caller owns the result.
+ *
+ * When mapping_path is set the compact fit is also written there (the .imp),
+ * like Perl's compact_spline_volume.  It is written from the estimation grid,
+ * whose separations are the ones Field::domain is expressed in, so giving any
+ * other volume to the header would put the domain in the wrong world place --
+ * the .imp's Domain block is world coordinates (fieldIO.cc:120-133). */
 Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
                    const EstimateOptions &options,
                    int *iterations_run, double *final_change,
-                   EstimateTrace *trace = NULL);
+                   EstimateTrace *trace = NULL,
+                   const std::string *mapping_path = NULL);
 
 }  // namespace n3
 
