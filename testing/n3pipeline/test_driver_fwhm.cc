@@ -54,19 +54,16 @@ static std::string run(const std::string &opts, const char *tag)
 
 static void cleanup(const char *path)
 {
+  /* The driver's .imp for a correct output <out>.mnc is <out>.imp (final
+   * extension replaced, MNI::PathUtilities::replace_ext) -- not <out>.mnc.imp
+   * -- so the volume, that .imp, and any <out>* .log all go here. */
+  std::string ip(path);
+  size_t dot = ip.find_last_of('.');
+  ip = (dot == std::string::npos ? ip : ip.substr(0, dot)) + ".imp";
   char cmd[512];
-  snprintf(cmd, sizeof(cmd), "rm -f \"%s\" \"%s.imp\" \"%s\"*.log",
-           path, path, path);
+  snprintf(cmd, sizeof(cmd), "rm -f \"%s\" \"%s\" \"%s\"*.log",
+           path, ip.c_str(), path);
   system(cmd);
-}
-
-/* rel RMS over all voxels (not strided): determinism means identical runs give
- * exactly zero, which is the strongest possible statement about an alias. */
-static double all_rms(const double *a, const double *b, int n)
-{
-  double sd = 0.0, sb = 0.0;
-  for(int i = 0; i < n; i++) { double d = a[i] - b[i]; sd += d*d; sb += b[i]*b[i]; }
-  return (sb == 0.0) ? (sd == 0.0 ? 0.0 : 1.0/0.0) : sqrt(sd/sb);
 }
 
 int main()
@@ -90,18 +87,38 @@ int main()
   const double *vd = n3::values(w_dist);
 
   printf("  (the default sharpens at 0.15 with 200 mm knots)\n");
-  CHECK_TRUE("default and -fwhm 0.15 agree byte-for-byte",
-             all_rms(vb, vs, n) == 0.0);
-  CHECK_TRUE("-fwhm 0.3  moves the correction", all_rms(vb, vf, n) > 1e-4);
-  CHECK_TRUE("-distance 100 moves the correction", all_rms(vb, vd, n) > 1e-4);
-  CHECK_TRUE("and the two channels move it differently",
-             all_rms(vf, vd, n) > 1e-4);
+  double d_same = n3check::rel_rms(vb, vs, n);
+  double d_fw   = n3check::rel_rms(vb, vf, n);
+  double d_dist = n3check::rel_rms(vb, vd, n);
+  double d_diff = n3check::rel_rms(vf, vd, n);
+  printf("  rel RMS: default vs -fwhm 0.15 = %.3e,  vs -fwhm 0.3 = %.3e,\n"
+         "        vs -distance 100 = %.3e,  fwhm0.3 vs dist100 = %.3e\n",
+         d_same, d_fw, d_dist, d_diff);
+
+  CHECK_TRUE("default and -fwhm 0.15 agree byte-for-byte", d_same == 0.0);
+
+  /* A "the correction moved" check must clear the output's own quantisation:
+   * chunk.mnc is 12-bit, so any corrected value can differ by one level of the
+   * (range/4095) quantum, and rel RMS of a single-level difference is of that
+   * order.  Requiring the movement to exceed one whole quantum -- derived from
+   * the data, not a round figure -- proves the channel changed the correction
+   * more than a least-significant-bit wobble could.  Measured: -fwhm 0.3 ~10x,
+   * -distance 100 ~3x that quantum (see print above). */
+  VIO_Volume mask = n3::load(std::string(N3_DATA_DIR) + "/chunk_mask.mnc.gz");
+  n3::Stats bs = n3::masked_stats(w_base, mask);
+  double quantum = (bs.maximum - bs.minimum) / 4095.0 / bs.mean;
+  printf("  (one output quantum is %.3e of the in-mask mean)\n", quantum);
+  CHECK_TRUE("-fwhm 0.3  moves the correction", d_fw > quantum);
+  CHECK_TRUE("-distance 100 moves the correction", d_dist > quantum);
+  CHECK_TRUE("and the two channels move it differently", d_diff > quantum);
+  delete_volume(mask);
 
   delete_volume(w_dist);
   delete_volume(w_fw);
   delete_volume(w_same);
   delete_volume(w_base);
   cleanup(base.c_str());
+  cleanup(same.c_str());
   cleanup(fw.c_str());
   cleanup(dist.c_str());
   return n3check::report("driver_fwhm");

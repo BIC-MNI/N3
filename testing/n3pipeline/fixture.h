@@ -114,6 +114,19 @@ inline double read_scalar(const std::string &name)
   return v[0];
 }
 
+/* The number of representable levels between a MINC file's valid_range
+ * endpoints (chunk.mnc records "0 4095", regenerated as chunk_valid_range.txt).
+ * The MINC-round-trip bounds are derived from this and from the data rather
+ * than assuming 16 bits: a 12-bit file has 4095 steps, and quoting a fixed
+ * denominator is wrong for any other. */
+inline double valid_steps(const std::string &name)
+{
+  std::vector<double> r = read_text(name);
+  must(r.size() == 2, name + " must hold the valid range");
+  must(r[1] > r[0], name + " has an empty range");
+  return r[1] - r[0];
+}
+
 }  // namespace n3fixture
 
 #endif

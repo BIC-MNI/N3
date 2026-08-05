@@ -33,7 +33,8 @@ static double six_decimals(double value)
 Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
                    const EstimateOptions &options,
                    int *iterations_run, double *final_change,
-                   EstimateTrace *trace, const std::string *mapping_path)
+                   EstimateTrace *trace, const std::string *mapping_path,
+                   const std::string *command)
 {
   /* 1. The estimation grid (nu_estimate_np_and_em.in:63-64). */
   VIO_Volume work = (options.shrink != 1.0) ? shrink(input, options.shrink)
@@ -63,8 +64,9 @@ Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
    * volume_stats' rule rather than from -background. */
   double background = options.background_threshold;
   if(options.bimodalT)
-    background = bimodal_threshold_volume_stats(work, user_mask ? mask_wks : NULL,
-                                                options.bimodal_bins);
+    /* The threshold histogram is never masked: CreateMask's `-mask $Mask`
+     * push (:321-322) is dead, $Mask being assigned nowhere in the script. */
+    background = bimodal_threshold_volume_stats(work, NULL, options.bimodal_bins);
 
   VIO_Volume mask = like(work);
   {
@@ -242,9 +244,8 @@ Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
       /* compact_spline_volume (:202) writes the .imp with the estimation
        * grid's geometry as its header, which is what makes the world-domain
        * conversion (fieldIO.cc:120-133) come out right. */
-      char command[256];
-      snprintf(command, sizeof(command), "nu_correct_cxx");
-      save_field(*mapping_path, compact, work, command);
+      save_field(*mapping_path, compact, work,
+                 command ? *command : std::string("nu_correct_cxx"));
     }
 
   delete_volume(field);

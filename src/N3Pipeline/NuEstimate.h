@@ -74,12 +74,16 @@ struct EstimateTrace
  * like Perl's compact_spline_volume.  It is written from the estimation grid,
  * whose separations are the ones Field::domain is expressed in, so giving any
  * other volume to the header would put the domain in the wrong world place --
- * the .imp's Domain block is world coordinates (fieldIO.cc:120-133). */
+ * the .imp's Domain block is world coordinates (fieldIO.cc:120-133).  command,
+ * if non-null, is written as the .imp's command attribute (the Perl splices
+ * the estimator's full invocation); when null the default "nu_correct_cxx" is
+ * used. */
 Field *nu_estimate(VIO_Volume input, VIO_Volume user_mask,
                    const EstimateOptions &options,
                    int *iterations_run, double *final_change,
                    EstimateTrace *trace = NULL,
-                   const std::string *mapping_path = NULL);
+                   const std::string *mapping_path = NULL,
+                   const std::string *command = NULL);
 
 }  // namespace n3
 

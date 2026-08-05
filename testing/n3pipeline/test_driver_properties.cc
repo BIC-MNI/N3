@@ -4,22 +4,27 @@
  * end-to-end bound exists -- and they survive iteration and machine changes the
  * way a measured bound does not.
  *
- *   1. the field is strictly positive everywhere in the mask
- *      (the correct output is input / field, so field > 0 forces the output
- *      and input to share a sign and never cross zero);
+ *   1. the field, read from the driver's own .imp, is strictly positive and
+ *      finite everywhere in the mask (a field that reached zero would divide
+ *      the output to infinity); this checks the field itself, not a quotient
+ *      of the input and an output that is input/field by construction;
  *   2. the in-mask coefficient of variation of the corrected output is below
  *      that of the input, on a real volume (chunk) with real inhomogeneity;
- *   3. a volume with NO planted non-uniformity -- a constant volume -- yields a
- *      field within 1e-3 of constant: the estimator invents nothing where there
- *      is no shading to remove;
+ *   3. a volume with NO planted non-uniformity -- a two-tissue phantom plus
+ *      additive noise, anatomy with no smooth multiplicative bias for N3 to
+ *      remove -- yields a bounded, finite field whose variation stays below
+ *      the phantom's own tissue contrast (the estimator must not absorb the
+ *      structure it is meant to be invariant to).  Neither this port nor the
+ *      legacy reaches a flat field here (see the assertion's comment);
  *   4. iteration counts at -stop 0: total_iterations() is the LAST staged count
- *      (Perl :1630-1631), and -stop 0 can never stop a stage early, so the
- *      driver reports exactly the requested count, as the Perl does.
+ *      (Perl :1630-1631), so with -stop 0 a stage can never stop early and the
+ *      driver reports exactly the requested count.
  */
 
 #include "check.h"
 
 #include "../../src/N3Pipeline/Buffers.h"
+#include "../../src/N3Pipeline/FitField.h"
 
 #include <cmath>
 #include <cstdio>
@@ -51,9 +56,22 @@ static std::string tag_path(const char *ext)
   return p;
 }
 
-static void cleanup(const std::string &base)
+/* The .imp the driver writes beside a correct output: the final extension is
+ * replaced by .imp (nu_correct_cxx.cc::imp_path, MNI::PathUtilities::replace_ext
+ * = s/\.[^\.]*$/\.imp/), so _corr.mnc -> _corr.imp, never _corr.mnc.imp. */
+static std::string imp_of(const std::string &path)
 {
-  for(const char *ext : {"", ".imp", ".log"}) unlink((base + ext).c_str());
+  size_t dot = path.find_last_of('.');
+  return (dot == std::string::npos ? path : path.substr(0, dot)) + ".imp";
+}
+
+/* Remove a correct run's outputs: the volume, its .imp, and any log we asked
+ * the shell to write as <volume>.log. */
+static void cleanup(const std::string &out_path)
+{
+  unlink(out_path.c_str());
+  unlink(imp_of(out_path).c_str());
+  unlink((out_path + ".log").c_str());
 }
 
 int main()
@@ -87,15 +105,25 @@ int main()
 
   /* ---- 1. the field is strictly positive in the mask ---- */
   {
-    bool ok = true;
-    for(int i = 0; i < n && ok; i++)
+    /* The driver's correct run writes the .imp (imp_path), and the field is
+     * what it holds, evaluated onto the input grid: a positivity test on the
+     * field itself, not a quotient whose numerator/denominator the correction
+     * already forces into agreement. */
+    VIO_Volume field = n3::like(input);
+    n3::evaluate_saved_field(imp_of(corr_path), field, mask);
+    const double *fv = n3::values(field);
+    int nonfinite = 0, nonpositive = 0;
+    for(int i = 0; i < n; i++)
       if(mv[i] > 0.0)
-        if(!(vi[i] > 0.0) || !(vo[i] > 0.0)) ok = false;
-        else {
-          double f = vi[i]/vo[i];          /* field = input / output */
-          if(!(f > 0.0) || !std::isfinite(f)) ok = false;
+        {
+          if(!std::isfinite(fv[i])) nonfinite++;
+          else if(!(fv[i] > 0.0)) nonpositive++;
         }
-    CHECK_TRUE("the field is strictly positive in the mask", ok);
+    printf("  in-mask field: %d non-finite, %d non-positive values\n",
+           nonfinite, nonpositive);
+    CHECK_TRUE("the field is strictly positive in the mask",
+               nonfinite == 0 && nonpositive == 0);
+    delete_volume(field);
   }
 
   /* ---- 2. in-mask CV of the output below the input's ---- */
@@ -107,14 +135,20 @@ int main()
     printf("  CV in %g -> CV out %g\n", cvin, cvout);
   }
 
-  /* ---- 3. a no-non-uniformity volume -> the field stays near constant ----
-   * A two-tissue phantom (sharp boundary = structure, not shading) with
+  /* ---- 3. a no-non-uniformity volume -> a bounded, finite field ----
+   * A two-tissue phantom (sharp boundary = structure, not shading, so the
+   * anatomy contrast is a hard floor the estimation must stay below) with
    * additive noise: noise is additive anatomy, not the smooth multiplicative
-   * term N3 removes, so there is no bias to estimate and the field must come
-   * out flat.  A noise-free or single-valued volume is a degenerate histogram
-   * for the sharpen deconvolution and diverges (the Wiener filter divides by
-   * an empty spectrum); the noise keeps it estimatable. */
+   * term N3 removes, so there is no bias to estimate.  A noise-free or
+   * single-valued volume is a degenerate histogram for the sharpen
+   * deconvolution and diverges (the Wiener filter divides by an empty
+   * spectrum); the noise keeps it estimatable. */
   {
+    /* The phantom is indexed in values()'s storage order: contiguous along
+     * sizes[2] (z), then sizes[1] (y), then sizes[0] (x) -- i = x*(ny*nz) +
+     * y*nz + z -- so the fastest-varying counter walks z, not x, and rx/ry/rz
+     * sit on their own axes.  The old `x = i % sizes[0]` marched across
+     * rows and the region came out aliased stripes, not an ellipsoid. */
     int sizes[VIO_N_DIMENSIONS];
     get_volume_sizes(input, sizes);
     int nx = sizes[0], ny = sizes[1], nz = sizes[2];
@@ -126,7 +160,7 @@ int main()
     std::normal_distribution<double> noise(0.0, 15.0);
     for(int i = 0; i < n; i++)
       {
-        int x = i % nx, yz = i / nx, y = yz % ny, z = yz / ny;
+        int z = i % nz, yz = i / nz, y = yz % ny, x = yz / ny;
         double dx = (x - cx)/rx, dy = (y - cy)/ry, dz = (z - cz)/rz;
         bool in = dx*dx + dy*dy + dz*dz <= 1.0;
         pd[i] = (in ? 250.0 : 100.0) + noise(rng);
@@ -140,35 +174,47 @@ int main()
              "\"%s\" -shrink 2 -iterations 15 -stop 0.0 -distance 100 "
              "-mask \"%s\" \"%s\" \"%s\" -clobber",
              N3_DRIVER_BIN, mask_in.c_str(), ph_path.c_str(), out_path.c_str());
-    int rc3 = system(cmd);
-    (void) rc3;
+    if(system(cmd) != 0)
+      {
+        printf("driver did not finish the correction on the phantom\n");
+        n3check::failures()++;
+        delete_volume(ph); cleanup(out_path); cleanup(ph_path);
+        return n3check::report("driver_properties");
+      }
     VIO_Volume out = n3::load(out_path.c_str());
     /* Compare against the phantom as stored on disk (reload it): the field is
      * phantom/output, and the phantom must be read at the same quantisation as
      * the driver saw it, or reloading-noise shows up as field structure. */
     VIO_Volume ph_disk = n3::load(ph_path.c_str());
     const double *od = n3::values(out), *pd_disk = n3::values(ph_disk);
-    double lo = 0, hi = 0, sum = 0, cnt = 0; bool nan = false, inf = false;
+    double sum = 0, sumsq = 0, cnt = 0;
+    bool nan = false, inf = false;
     for(int i = 0; i < n; i++)
       if(mv[i] > 0.0)
         {
           double f = pd_disk[i]/od[i];  /* field = phantom / output */
           if(std::isnan(f)) nan = true;
           if(!std::isfinite(f)) { inf = true; continue; }
-          if(cnt == 0) lo = hi = f;
-          if(f < lo) lo = f; if(f > hi) hi = f;
-          sum += f; cnt += 1.0;
+          sum += f; sumsq += f*f; cnt += 1.0;
         }
-    double mean = sum/cnt, lo_r = lo/mean, hi_r = hi/mean;
-    printf("  no-bias phantom field: lo %.4g hi %.4g mean %.4g (spread/mean %.4g)\n",
-           lo, hi, mean, hi_r - lo_r);
-    /* The estimator invents no diverging field where there is no bias: the
-     * field is finite and bounded within a factor of two of its mean.  (Neither
-     * this port nor the legacy reaches plan's 1e-3-constant ideal: measured
-     * field CV is ~0.05 here vs ~0.0064 legacy -- a recorded over-correction to
-     * chase in cycle 14, not a pass criterion.) */
+    double mean = sum/cnt;
+    /* A mean-square coefficient of variation over the mask, not an extreme
+     * value: a handful of quantisation-boundary voxels must not drive the
+     * pass/fail the way lo/hi of a ratio would (CLAUDE.md, whole-volume
+     * extremes).  The phantom is two-valued at 100/250, so a field that
+     * absorbed the anatomy would sit at a CV of order the tissue spread; the
+     * bound below is a quarter of that contrast, so the property is "the
+     * estimator does not absorb the structure it is meant to be blind to",
+     * not a tautological near-constant ideal no N3 reaches.  Measured field CV
+     * is ~0.05 here (legacy ~0.0064), a port over-correction churned in cycle
+     * 14, so the 0.3 derived bound leaves that gap clearly under it. */
+    double rms_cv = sqrt(fabs(sumsq/cnt - mean*mean))/mean;
+    double contrast = (250.0 - 100.0) / ((250.0 + 100.0) / 2.0);
+    printf("  no-bias phantom field: mean %.4g  RMS CV %.4g  (tissue contrast %.4g)\n",
+           mean, rms_cv, contrast);
     CHECK_TRUE("a no-nonuniformity volume yields a bounded, finite field",
-               !nan && !inf && cnt > 0 && lo_r > 0.5 && hi_r < 2.0);
+               !nan && !inf && cnt > 0
+               && std::isfinite(rms_cv) && rms_cv < 0.25 * contrast);
     delete_volume(ph_disk);
     delete_volume(out);
     delete_volume(ph);
@@ -184,17 +230,25 @@ int main()
              "\"%s\" -shrink 2 -iterations 6 -stop 0.0 -distance 100 "
              "-mask \"%s\" -estimate_only \"%s\" \"%s\" > \"%s\" 2>&1",
              N3_DRIVER_BIN, mask_in.c_str(), inp.c_str(), imp.c_str(), outlog.c_str());
-    int rc4 = system(cmd);
-    (void) rc4;
+    if(system(cmd) != 0)
+      {
+        printf("driver did not finish the estimate on chunk\n");
+        n3check::failures()++;
+        unlink(outlog.c_str()); unlink(imp.c_str());
+        return n3check::report("driver_properties");
+      }
     FILE *f = fopen(outlog.c_str(), "r");
     int got = -1;
     char line[256];
     while(f && fgets(line, sizeof(line), f))
       if(sscanf(line, "Number of iterations: %d", &got) == 1) break;
     if(f) fclose(f);
-    /* total_iterations is the last staged count (Perl :1630-1631), and -stop 0
-     * never stops a stage early, so the count is exactly the request. */
-    CHECK_NEAR("-stop 0 runs all stages: iterations == 6 (the Perl reports the same)",
+    /* total_iterations is the LAST staged count (Perl :1630-1631), not the
+     * sum, and -stop 0 never stops a stage early, so an estimate requested at
+     * -iterations 6 -stop 0 runs exactly 6 stages and reports 6.  This asserts
+     * the driver's reading of the staged rule (cycle 10) end to end; it does
+     * not claim agreement with the Perl, which the test never invokes. */
+    CHECK_NEAR("-stop 0 runs all stages: iterations == the requested 6",
                (double) got, 6.0, 0.0);
     unlink(outlog.c_str()); unlink(imp.c_str());
   }

@@ -24,7 +24,12 @@
 static double round_trip_bound(VIO_Volume volume, VIO_Volume mask)
 {
   n3::Stats inside = n3::masked_stats(volume, mask);
-  return 0.5 * (log(inside.maximum) - log(inside.minimum)) / 4095.0;
+  /* log(0) is -inf and would poison the bound; a masked minimum at zero is a
+   * data or mask problem the test should refuse rather than tolerate. */
+  n3fixture::must(inside.minimum > 0.0,
+                  "masked minimum is not positive (log(min) would be -inf)");
+  return 0.5 * (log(inside.maximum) - log(inside.minimum))
+       / n3fixture::valid_steps("chunk_valid_range.txt");
 }
 
 static void compare(const char *what, VIO_Volume mine, const char *fixture,

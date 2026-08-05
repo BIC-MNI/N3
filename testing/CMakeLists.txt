@@ -156,11 +156,10 @@ IF(MINC_TEST_ENVIRONMENT)
   set_tests_properties(n3cxx_driver_fwhm PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
 ENDIF(MINC_TEST_ENVIRONMENT)
 
-# A failing check must exit non-zero.  Asserted permanently rather than
-# demonstrated once and deleted.
-# Cycle 13: end-to-end properties, asserted by driving the binary (field > 0,
-# CV of the output below the input's, a no-nonuniformity volume -> constant
-# field within 1e-3, and iteration counts at -stop 0).
+# Cycle 13: end-to-end properties of the whole pipeline, asserted by driving
+# the binary (field > 0 in the mask, CV of the correct output below the
+# input's, a no-nonuniformity phantom -> bounded finite field with CV below a
+# quarter of its tissue contrast, and iteration counts at -stop 0).
 ADD_EXECUTABLE(test_driver_properties n3pipeline/test_driver_properties.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
 TARGET_INCLUDE_DIRECTORIES(test_driver_properties PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)

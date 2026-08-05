@@ -65,7 +65,6 @@ struct Arguments
   bool auto_mask = true;             /* nu_estimate.in adds -auto_mask always */
   bool bimodalT = false;
   double background = 1.0;
-  bool have_background = false;
 
   double floor = 0.1;
   bool clobber = false;
@@ -143,6 +142,21 @@ std::string imp_path(const Arguments &args)
   return out;
 }
 
+/* The program's full invocation, as the Perl records it (nu_estimate_np_and_em
+ * sets $Invocation = "$0 @ARGV"; :1557): the command name and every argument,
+ * unrescaped, no options resolved.  This is what the .imp's command attribute
+ * and the corrected output's appended history carry. */
+std::string invocation(int argc, char *argv[])
+{
+  std::string s = argv[0];
+  for(int i = 1; i < argc; i++)
+    {
+      s += " ";
+      s += argv[i] ? argv[i] : "";
+    }
+  return s;
+}
+
 /* Whether a token is a number, so the multi-value options can tell their own
  * values from a following option or the positional arguments. */
 bool is_number(const std::string &s)
@@ -166,8 +180,10 @@ struct Parsed
 };
 
 /* The options that are out of the ported scope.  They must fail, not be
- * ignored: silently dropping -em would run the wrong algorithm. */
-bool out_of_scope(const std::string &tok)
+ * ignored: silently dropping -em would run the wrong algorithm.  Only the
+ * process name is used in the message so that nu_estimate_cxx reports its own
+ * name. */
+void out_of_scope(const std::string &tok, const char *program)
 {
   static const char *names[] = {
     "-em", "-expectation_maximization", "-white_matter", "-fir",
@@ -178,11 +194,10 @@ bool out_of_scope(const std::string &tok)
   for(size_t i = 0; i < sizeof(names)/sizeof(names[0]); i++)
     if(tok.compare(names[i]) == 0)
       {
-        fprintf(stderr, "nu_correct_cxx: %s is outside the ported scope\n",
+        fprintf(stderr, "%s: %s is outside the ported scope\n", program,
                 names[i]);
         exit(1);
       }
-  return false;
 }
 
 }  // namespace
@@ -192,12 +207,20 @@ int main(int argc, char *argv[])
   /* Which program was asked for: an installed name of nu_estimate* means
    * estimate-only, as it does for the Perl (nu_estimate.in:420). */
   Arguments A;
+  std::string program_name = argv[0];
   {
-    std::string name = argv[0];
-    size_t slash = name.find_last_of('/');
-    if(slash != std::string::npos) name = name.substr(slash + 1);
-    A.estimate_only = (name.find("nu_estimate") != std::string::npos);
+    size_t slash = program_name.find_last_of('/');
+    if(slash != std::string::npos)
+      program_name = program_name.substr(slash + 1);
+    A.estimate_only = (program_name.find("nu_estimate") != std::string::npos);
   }
+
+  /* The -V* scalar and what the user set explicitly.  The Perl parses every
+   * argument first, then picks, per option, the user's value over the default
+   * for the selected version (nu_estimate.in:499-505) -- so -V0.9 applies only
+   * to the iterations/stop/shrink the user did not give, whatever the order. */
+  int version = 1;
+  bool user_iterations = false, user_stop = false, user_shrink = false;
 
   std::vector<std::string> pos;
   for(int i = 1; i < argc; i++)
@@ -207,7 +230,7 @@ int main(int argc, char *argv[])
 
       if(tok[0] == '-' && tok.size() > 1)
         {
-          if(out_of_scope(tok)) continue;
+          out_of_scope(tok, program_name.c_str());
 
           if(tok == "-mask") { if(i+1>=argc) die("-mask needs a value"); A.mask = argv[++i]; }
           else if(tok == "-distance") { if(i+1>=argc) die("-distance needs a value"); A.distance = atof(argv[++i]); }
@@ -237,23 +260,25 @@ int main(int argc, char *argv[])
           else if(tok == "-parzen_sigma") { if(i+1>=argc) die("-parzen_sigma needs a value"); A.parzen_sigma = atof(argv[++i]); }
           else if(tok == "-bins") { if(i+1>=argc) die("-bins needs a value"); A.bins = atoi(argv[++i]); }
           else if(tok == "-nodeblur" || tok == "-blur") { A.blur = true; }
-          else if(tok == "-shrink") { if(i+1>=argc) die("-shrink needs a value"); A.shrink = atof(argv[++i]); }
+          else if(tok == "-shrink") { if(i+1>=argc) die("-shrink needs a value"); A.shrink = atof(argv[++i]); user_shrink = true; }
           else if(tok == "-iterations") {
             A.iterations.clear();
             while(i+1<argc && is_number(argv[i+1]) && strchr(argv[i+1], '.') == NULL)
               A.iterations.push_back(atoi(argv[++i]));
             if(A.iterations.empty()) die("-iterations needs values");
+            user_iterations = true;
           }
           else if(tok == "-stop") {
             A.stop.clear();
             while(i+1<argc && is_number(argv[i+1]))
               A.stop.push_back(atof(argv[++i]));
             if(A.stop.empty()) die("-stop needs values");
+            user_stop = true;
           }
           else if(tok == "-normalize_field") { A.normalize_field = true; }
           else if(tok == "-auto_mask") { A.auto_mask = true; }
           else if(tok == "-bimodalT") { A.bimodalT = true; }
-          else if(tok == "-background") { if(i+1>=argc) die("-background needs a value"); A.background = atof(argv[++i]); A.have_background = true; }
+          else if(tok == "-background") { if(i+1>=argc) die("-background needs a value"); A.background = atof(argv[++i]); }
           else if(tok == "-floor") { if(i+1>=argc) die("-floor needs a value"); A.floor = atof(argv[++i]); }
           else if(tok == "-mapping_dir") { if(i+1>=argc) die("-mapping_dir needs a value"); A.mapping_dir = argv[++i]; }
           else if(tok == "-estimate_only") { A.estimate_only = true; }
@@ -262,14 +287,14 @@ int main(int argc, char *argv[])
           else if(tok == "-noclobber") { A.clobber = false; }
           else if(tok == "-verbose") { A.verbose = true; }
           else if(tok == "-quiet") { A.verbose = false; }
-          else if(tok == "-V0.9") {
-            A.iterations.assign({10, 20});
-            A.stop.assign({0.001, 0.005});
-            A.shrink = 3.0;
-          }
-          else if(tok == "-V1.0") { /* defaults already are 1.0 */ }
+          else if(tok == "-V0.9") { version = 0; }
+          else if(tok == "-V1.0") { version = 1; }
           else if(tok == "-help" || tok == "-h") { usage(); return 0; }
-          else if(tok == "-version") { printf("nu_correct_cxx\n"); return 0; }
+          else if(tok == "-version") {
+            /* the Perl prints the named program, whatever it was called as */
+            printf("Program %s\n", program_name.c_str());
+            return 0;
+          }
           else die("unknown option %s", tok.c_str());
         }
       else pos.push_back(tok);
@@ -279,6 +304,21 @@ int main(int argc, char *argv[])
     die("-iterations and -stop must match in number of arguments");
   if(A.lambda <= 0) die("smoothing parameter must be positive");
   if(A.subsample <= 0) die("subsampling factor must be positive");
+  if(A.bins <= 1) die("Number of bins for histogram must be greater than one");
+  if(A.background < 0) die("Background threshold cannot be negative");
+  if(A.distance < 0) die("Distance parameter cannot be negative");
+  for(size_t k = 0; k < A.iterations.size(); k++)
+    if(A.iterations[k] < 0) die("Iterations parameter cannot be negative");
+
+  /* -V0.9's defaults fill only what the user did not set explicitly, so that
+   * `-shrink 2 -V0.9` and `-V0.9 -shrink 2` agree (Perl nu_estimate.in:499-505
+   * resolves each user option over the version's default after parsing). */
+  if(version == 0)
+    {
+      if(!user_iterations) A.iterations.assign({10, 20});
+      if(!user_stop) A.stop.assign({0.001, 0.005});
+      if(!user_shrink) A.shrink = 3.0;
+    }
 
   if(pos.size() != 2)
     {
@@ -293,6 +333,15 @@ int main(int argc, char *argv[])
     {
       FILE *f = fopen(A.output.c_str(), "r");
       if(f) { fclose(f); die("output %s exists; use -clobber", A.output.c_str()); }
+      if(!A.estimate_only)
+        {
+          /* the .imp is a second output of every correct run, and as
+           * nu_estimate_np_and_em's output it is covered by -noclobber too */
+          std::string ip = imp_path(A);
+          FILE *g = fopen(ip.c_str(), "r");
+          if(g)
+            { fclose(g); die("field %s exists; use -clobber", ip.c_str()); }
+        }
     }
 
   /* Load the input and, if given, the user mask (both at full resolution). */
@@ -318,7 +367,13 @@ int main(int argc, char *argv[])
   e.parzen_sigma = A.parzen_sigma;
   e.blur = A.blur;
   e.background_threshold = A.background;
-  e.bimodalT = A.bimodalT || (A.auto_mask && user_mask == NULL && !A.have_background);
+  /* The threshold is taken from volume_stats' bimodal rule whenever there is
+   * no user mask and either -bimodalT or -auto_mask is on (top-level always
+   * adds -auto_mask), which overwrites -background (nu_estimate_np_and_em.in
+   * :316-325).  A user mask overrides both flags (CreateMask computes nothing
+   * when one is given, and -bimodalT says it is overridden by -mask; :116-120,
+   * :300). */
+  e.bimodalT = user_mask == NULL && (A.bimodalT || A.auto_mask);
   e.iterations = A.iterations;
   e.stop = A.stop;
   e.normalize_field = A.normalize_field;
@@ -338,7 +393,9 @@ int main(int argc, char *argv[])
    * is the .imp itself, and a correct run leaves a record just as the Perl
    * always does (nu_estimate.in:57-58), relocated to -mapping_dir when given.
    * It is written here, from the estimation grid, so its world domain comes
-   * out right. */
+   * out right.  The .imp's command attribute carries the full invocation, as
+   * outputCompactField's caller splices it in the Perl. */
+  std::string cmdline = invocation(argc, argv);
   int iterations_run = 0;
   double final_change = 0.0;
   std::string imp;
@@ -346,8 +403,7 @@ int main(int argc, char *argv[])
   else imp = imp_path(A);              /* every correct run writes a record */
 
   n3::Field *field = n3::nu_estimate(input, user_mask, e, &iterations_run,
-                                      &final_change, NULL,
-                                      imp.empty() ? NULL : &imp);
+                                      &final_change, NULL, &imp, &cmdline);
 
   if(A.estimate_only)
     printf("Number of iterations: %d\nCV of field change: %g\n",
@@ -363,8 +419,7 @@ int main(int argc, char *argv[])
 
       VIO_BOOL signed_flag;
       nc_type type = n3::storage_type(A.input, &signed_flag);
-      std::string history = "nu_correct_cxx " + std::string(argv[0]);
-      n3::save(corrected, A.output, A.input, type, signed_flag, history);
+      n3::save(corrected, A.output, A.input, type, signed_flag, cmdline);
 
       delete_volume(corrected);
     }

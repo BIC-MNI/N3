@@ -1,10 +1,67 @@
-# backup files
+# Backup and editor droppings
 *~
+*.swp
+*.tmp
 
-# in-source CMake build artifacts (build out-of-source; see the driver's task)
-/CMakeCache.txt
-/CMakeFiles/
-/CPackConfig.cmake
-/CPackSourceConfig.cmake
-/DartConfiguration.tcl
-/Testing/
+# Out-of-source builds are the supported layout (see the driver task), but a
+# stray in-source configure should never show up in `git status`.  The C++
+# CMake clutter is identical in every directory, so the patterns are not
+# anchored; the configured templates behind them are tracked (config.h.cmake,
+# epm-header.in, include/version.h.in) and match nothing here.
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+CTestTestfile.cmake
+DartConfiguration.tcl
+Testing/
+CPack*.cmake
+install_manifest.txt
+*.o
+*.obj
+*.lo
+*.a
+*.so
+*.dylib
+
+# configure-time generated headers and launcher scripts (sources are the *.in /
+# *.cmake templates and are committed)
+/config.h
+/version.h
+/epm-header
+/field2imp
+/imp2field
+/make_template
+/nu_estimate
+/nu_correct
+/nu_estimate_np_and_em
+/nu_evaluate
+/resample_labels
+/sharpen_volume
+
+# built executables, by basename so a build under testing/ is covered too.
+# The C++ test sources (.cc) keep their own names and are not matched.
+correct_field
+evaluate_field
+extracttag
+sharpen_hist
+spline_smooth
+volume_hist
+volume_stats
+nu_correct_cxx
+nu_estimate_cxx
+test_harness
+test_shrink
+test_resample_label
+test_buffers
+test_histogram
+test_sharpen
+test_lookup
+test_bimodal
+test_spline
+test_extend
+test_stopping
+test_estimate
+test_evaluate
+test_driver_fwhm
+test_driver_properties
