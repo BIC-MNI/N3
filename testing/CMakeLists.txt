@@ -158,5 +158,21 @@ ENDIF(MINC_TEST_ENVIRONMENT)
 
 # A failing check must exit non-zero.  Asserted permanently rather than
 # demonstrated once and deleted.
+# Cycle 13: end-to-end properties, asserted by driving the binary (field > 0,
+# CV of the output below the input's, a no-nonuniformity volume -> constant
+# field within 1e-3, and iteration counts at -stop 0).
+ADD_EXECUTABLE(test_driver_properties n3pipeline/test_driver_properties.cc
+  $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+TARGET_INCLUDE_DIRECTORIES(test_driver_properties PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+TARGET_COMPILE_DEFINITIONS(test_driver_properties PRIVATE
+  N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
+  N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+ADD_TEST(n3cxx_driver_properties ${CMAKE_CURRENT_BINARY_DIR}/test_driver_properties)
+IF(MINC_TEST_ENVIRONMENT)
+  set_tests_properties(n3cxx_driver_properties PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+ENDIF(MINC_TEST_ENVIRONMENT)
+
+# A failing check must exit non-zero.  Asserted permanently rather than
+# demonstrated once and deleted.
 ADD_TEST(n3cxx_test_harness_red ${CMAKE_CURRENT_BINARY_DIR}/test_harness --fail)
 set_tests_properties(n3cxx_test_harness_red PROPERTIES WILL_FAIL TRUE)
