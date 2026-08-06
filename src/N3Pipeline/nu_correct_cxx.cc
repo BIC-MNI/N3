@@ -179,6 +179,28 @@ struct Parsed
   Arguments args;
 };
 
+/* A required numeric option value, checked with strtod/strtol's end pointer
+ * rather than atof/atoi, which have no error channel: `-distance foo` used to
+ * become 0.0 and reach spline_smooth as a crash (review, 2026-08-06). Dies
+ * naming the option and the offending text. */
+double parse_double(const char *text, const char *option)
+{
+  char *end = NULL;
+  double value = strtod(text, &end);
+  if(end == text || *end != '\0')
+    die("%s: expected a number, got '%s'", option, text);
+  return value;
+}
+
+int parse_int(const char *text, const char *option)
+{
+  char *end = NULL;
+  long value = strtol(text, &end, 10);
+  if(end == text || *end != '\0')
+    die("%s: expected an integer, got '%s'", option, text);
+  return (int) value;
+}
+
 /* The options that are out of the ported scope.  They must fail, not be
  * ignored: silently dropping -em would run the wrong algorithm.  Only the
  * process name is used in the message so that nu_estimate_cxx reports its own
@@ -221,6 +243,10 @@ int main(int argc, char *argv[])
    * to the iterations/stop/shrink the user did not give, whatever the order. */
   int version = 1;
   bool user_iterations = false, user_stop = false, user_shrink = false;
+  bool user_parzen_sigma = false;   /* 0 means "off" internally; only a value
+                                      * the user actually typed is validated
+                                      * (nu_estimate_np_and_em.in:1452-1453
+                                      * checks only `defined $parzen_sigma`). */
 
   std::vector<std::string> pos;
   for(int i = 1; i < argc; i++)
@@ -233,11 +259,11 @@ int main(int argc, char *argv[])
           out_of_scope(tok, program_name.c_str());
 
           if(tok == "-mask") { if(i+1>=argc) die("-mask needs a value"); A.mask = argv[++i]; }
-          else if(tok == "-distance") { if(i+1>=argc) die("-distance needs a value"); A.distance = atof(argv[++i]); }
-          else if(tok == "-lambda") { if(i+1>=argc) die("-lambda needs a value"); A.lambda = atof(argv[++i]); }
+          else if(tok == "-distance") { if(i+1>=argc) die("-distance needs a value"); A.distance = parse_double(argv[++i], "-distance"); }
+          else if(tok == "-lambda") { if(i+1>=argc) die("-lambda needs a value"); A.lambda = parse_double(argv[++i], "-lambda"); }
           else if(tok == "-b_spline") { A.type = b_spline; if(i+1<argc && is_number(argv[i+1])) A.lambda = atof(argv[++i]); }
           else if(tok == "-tp_spline") { A.type = thin_plate_spline; if(i+1<argc && is_number(argv[i+1])) A.lambda = atof(argv[++i]); }
-          else if(tok == "-subsample" || tok == "-spline_subsample") { if(i+1>=argc) die("-subsample needs a value"); A.subsample = atoi(argv[++i]); }
+          else if(tok == "-subsample" || tok == "-spline_subsample") { if(i+1>=argc) die("-subsample needs a value"); A.subsample = parse_int(argv[++i], "-subsample"); }
           else if(tok == "-sharpen") {
             /* sharpening is always on in the ported scope (there is no
              * -nosharpen; omitting -sharpen is what selects the Perl's EM
@@ -253,14 +279,14 @@ int main(int argc, char *argv[])
              * knots (:164-165).  Only the inner nu_estimate_np_and_em.in:1163
              * calls the sharpen width -fwhm. */
             if(i+1>=argc) die("-fwhm needs a value");
-            A.fwhm = atof(argv[++i]);
+            A.fwhm = parse_double(argv[++i], "-fwhm");
           }
           else if(tok == "-parzen") { A.window = true; }
           else if(tok == "-noparzen") { A.window = false; }
-          else if(tok == "-parzen_sigma") { if(i+1>=argc) die("-parzen_sigma needs a value"); A.parzen_sigma = atof(argv[++i]); }
-          else if(tok == "-bins") { if(i+1>=argc) die("-bins needs a value"); A.bins = atoi(argv[++i]); }
+          else if(tok == "-parzen_sigma") { if(i+1>=argc) die("-parzen_sigma needs a value"); A.parzen_sigma = parse_double(argv[++i], "-parzen_sigma"); user_parzen_sigma = true; }
+          else if(tok == "-bins") { if(i+1>=argc) die("-bins needs a value"); A.bins = parse_int(argv[++i], "-bins"); }
           else if(tok == "-nodeblur" || tok == "-blur") { A.blur = true; }
-          else if(tok == "-shrink") { if(i+1>=argc) die("-shrink needs a value"); A.shrink = atof(argv[++i]); user_shrink = true; }
+          else if(tok == "-shrink") { if(i+1>=argc) die("-shrink needs a value"); A.shrink = parse_double(argv[++i], "-shrink"); user_shrink = true; }
           else if(tok == "-iterations") {
             A.iterations.clear();
             while(i+1<argc && is_number(argv[i+1]) && strchr(argv[i+1], '.') == NULL)
@@ -278,8 +304,8 @@ int main(int argc, char *argv[])
           else if(tok == "-normalize_field") { A.normalize_field = true; }
           else if(tok == "-auto_mask") { A.auto_mask = true; }
           else if(tok == "-bimodalT") { A.bimodalT = true; }
-          else if(tok == "-background") { if(i+1>=argc) die("-background needs a value"); A.background = atof(argv[++i]); }
-          else if(tok == "-floor") { if(i+1>=argc) die("-floor needs a value"); A.floor = atof(argv[++i]); }
+          else if(tok == "-background") { if(i+1>=argc) die("-background needs a value"); A.background = parse_double(argv[++i], "-background"); }
+          else if(tok == "-floor") { if(i+1>=argc) die("-floor needs a value"); A.floor = parse_double(argv[++i], "-floor"); }
           else if(tok == "-mapping_dir") { if(i+1>=argc) die("-mapping_dir needs a value"); A.mapping_dir = argv[++i]; }
           else if(tok == "-estimate_only") { A.estimate_only = true; }
           else if(tok == "-correct") { A.estimate_only = false; }
@@ -300,25 +326,44 @@ int main(int argc, char *argv[])
       else pos.push_back(tok);
     }
 
-  if(A.iterations.size() != A.stop.size())
-    die("-iterations and -stop must match in number of arguments");
-  if(A.lambda <= 0) die("smoothing parameter must be positive");
-  if(A.subsample <= 0) die("subsampling factor must be positive");
-  if(A.bins <= 1) die("Number of bins for histogram must be greater than one");
-  if(A.background < 0) die("Background threshold cannot be negative");
-  if(A.distance < 0) die("Distance parameter cannot be negative");
-  for(size_t k = 0; k < A.iterations.size(); k++)
-    if(A.iterations[k] < 0) die("Iterations parameter cannot be negative");
-
   /* -V0.9's defaults fill only what the user did not set explicitly, so that
    * `-shrink 2 -V0.9` and `-V0.9 -shrink 2` agree (Perl nu_estimate.in:499-505
-   * resolves each user option over the version's default after parsing). */
+   * resolves each user option over the version's default after parsing).
+   * This must run before validation: the Perl validates
+   * nu_estimate_np_and_em's fully resolved arguments (:1449-1481), after
+   * AddDefaultArgs has already filled in the per-version default, so a
+   * `-V0.9 -iterations 5` that leaves -stop at its 1-element default must be
+   * checked against the *filled* 2-element -V0.9 stop, not the pre-fill one
+   * (review, 2026-08-06: the old order let the size check pass before the
+   * fill introduced the mismatch). */
   if(version == 0)
     {
       if(!user_iterations) A.iterations.assign({10, 20});
       if(!user_stop) A.stop.assign({0.001, 0.005});
       if(!user_shrink) A.shrink = 3.0;
     }
+
+  /* nu_estimate_np_and_em.in:1449-1481, on the fully resolved arguments. */
+  if(!(A.fwhm > 0 && A.noise > 0))
+    die("Invalid sharpen parameters: %g %g", A.fwhm, A.noise);
+  if(user_parzen_sigma && A.parzen_sigma <= 0)
+    die("Parzen window width must be positive: %g", A.parzen_sigma);
+  if(A.bins <= 1) die("Number of bins for histogram must be greater than one");
+  if(A.background < 0) die("Background threshold cannot be negative");
+  /* The Perl's own check only rejects a negative distance (:1463); at
+   * distance == 0 it instead runs several iterations with smoothing skipped
+   * (the `if($distance > 0)` gate at :120, not ported here) and then crashes
+   * inside spline_smooth's own validation when compact_spline_volume writes
+   * the .imp regardless ("Distance parameter must be positive", :202). This
+   * port always fits a spline, so it enforces that requirement up front
+   * instead of reaching the same crash by a longer, uglier route. */
+  if(A.distance <= 0) die("Distance parameter must be positive");
+  for(size_t k = 0; k < A.iterations.size(); k++)
+    if(A.iterations[k] < 0) die("Iterations parameter cannot be negative");
+  if(A.iterations.size() != A.stop.size())
+    die("-iterations and -stop must match in number of arguments");
+  if(A.lambda <= 0) die("smoothing parameter must be positive");
+  if(A.subsample <= 0) die("subsampling factor must be positive");
 
   if(pos.size() != 2)
     {
