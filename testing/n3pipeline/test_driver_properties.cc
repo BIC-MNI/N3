@@ -88,8 +88,13 @@ int main()
 
   std::string corr_path = tag_path("_corr.mnc");
   char cmd[1600];
+  /* -V1.0 -nolegacy_rounding pins every run in this file to the protocol its
+   * measured comments cite, independent of whichever protocol the driver's
+   * own implicit default currently selects (2026-08-06: that default moved
+   * to -V1.1). */
   snprintf(cmd, sizeof(cmd),
-           "\"%s\" -shrink 2 -iterations 20 -stop 0.001 -distance 200 "
+           "\"%s\" -V1.0 -nolegacy_rounding -shrink 2 -iterations 20 "
+           "-stop 0.001 -distance 200 "
            "-mask \"%s\" \"%s\" \"%s\" -clobber",
            N3_DRIVER_BIN, mask_in.c_str(), inp.c_str(), corr_path.c_str());
   if(system(cmd) != 0)
@@ -170,7 +175,8 @@ int main()
 
     std::string out_path = tag_path("_ph_out.mnc");
     snprintf(cmd, sizeof(cmd),
-             "\"%s\" -shrink 2 -iterations 15 -stop 0.0 -distance 100 "
+             "\"%s\" -V1.0 -nolegacy_rounding -shrink 2 -iterations 15 "
+             "-stop 0.0 -distance 100 "
              "-mask \"%s\" \"%s\" \"%s\" -clobber",
              N3_DRIVER_BIN, mask_in.c_str(), ph_path.c_str(), out_path.c_str());
     if(system(cmd) != 0)
@@ -243,7 +249,8 @@ int main()
     std::string outlog = tag_path("_est.log");
     std::string imp = tag_path("_est.imp");
     snprintf(cmd, sizeof(cmd),
-             "\"%s\" -shrink 2 -iterations 6 -stop 0.0 -distance 100 "
+             "\"%s\" -V1.0 -nolegacy_rounding -shrink 2 -iterations 6 "
+             "-stop 0.0 -distance 100 "
              "-mask \"%s\" -estimate_only \"%s\" \"%s\" > \"%s\" 2>&1",
              N3_DRIVER_BIN, mask_in.c_str(), inp.c_str(), imp.c_str(), outlog.c_str());
     if(system(cmd) != 0)

@@ -40,8 +40,13 @@ static std::string run(const std::string &opts, const char *tag)
   char path[256], cmd[1024];
   snprintf(path, sizeof(path), "%s/n3cxx_fwhm_%d_%s.mnc",
            outdir().c_str(), (int) getpid(), tag);
-  snprintf(cmd, sizeof(cmd), "\"%s\" -shrink 1 -iterations 1 -stop 0.0 "
-           "-distance 200 -mask \"%s/chunk_mask.mnc.gz\" %s "
+  /* -V1.0 -nolegacy_rounding pins this test's numerics to the protocol they
+   * were measured against (fwhm 0.15, triangular window, legacy_rounding
+   * off), independent of whichever protocol the driver's own implicit
+   * default currently selects (2026-08-06: that default moved to -V1.1). */
+  snprintf(cmd, sizeof(cmd), "\"%s\" -V1.0 -nolegacy_rounding -shrink 1 "
+           "-iterations 1 -stop 0.0 -distance 200 "
+           "-mask \"%s/chunk_mask.mnc.gz\" %s "
            "\"%s/chunk.mnc.gz\" \"%s\" -clobber",
            N3_DRIVER_BIN, N3_DATA_DIR, opts.c_str(),
            N3_DATA_DIR, path);

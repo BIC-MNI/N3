@@ -51,7 +51,11 @@ struct Arguments
   enum spline_type type = b_spline;
 
   double fwhm = 0.15, noise = 0.01; /* -sharpen/-fwhm width, and its noise */
-  bool window = true;           /* -parzen, on by default */
+  bool window = true;           /* linear interpolation between the two
+                                  * nearest bin centres (WHistogram.h:65-93),
+                                  * always on; only -parzen_sigma > 0
+                                  * overrides it. There is no CLI way to fall
+                                  * back to a plain, single-bin histogram. */
   double parzen_sigma = 0.0;    /* 0 = off */
   int bins = 200;
   bool blur = false;
@@ -69,6 +73,11 @@ struct Arguments
   double floor = 0.1;
   bool clobber = false;
   bool verbose = false;
+  bool legacy_rounding = false; /* -legacy_rounding: round the histogram, its
+                                  * domain and the lookup table to the six
+                                  * decimals the Perl's file round trips carry
+                                  * (NuEstimate.h's EstimateOptions field of
+                                  * the same name). On by -V1.0's default. */
 
   Arguments()
   {
@@ -100,25 +109,33 @@ void usage()
     "  -b_spline [-x]     tensor B-splines (default); optional lambda\n"
     "  -tp_spline [-x]    thin-plate splines; optional lambda\n"
     "  -subsample <n>     fit every n-th voxel each axis (also -spline_subsample)\n"
-    "  -sharpen <f> <n>   histogram deconvolution (default 0.15 0.01)\n"
+    "  -sharpen <f> <n>   histogram deconvolution (version default width, 0.01)\n"
     "  -fwhm <x>          sharpening width; same as -sharpen <x> <noise>\n"
-    "  -parzen            triangular window (default); -noparzen disables\n"
-    "  -parzen_sigma <x>  Gaussian Parzen window, in bin widths\n"
+    "  -parzen            linear interpolation between bin centres (default;\n"
+    "                     always on except when -parzen_sigma is given)\n"
+    "  -parzen_sigma <x>  Gaussian Parzen window, in bin widths; overrides\n"
+    "                     the default linear interpolation\n"
     "  -bins <n>          histogram bins (default 200)\n"
     "  -nodeblur          skip the deconvolution\n"
     "  -shrink <factor>   estimation grid (default 4)\n"
-    "  -iterations <n...> staged iteration counts (default 50)\n"
-    "  -stop <x...>       staged stopping thresholds (default 0.001)\n"
+    "  -iterations <n...> staged iteration counts (version default)\n"
+    "  -stop <x...>       staged stopping thresholds (version default)\n"
     "  -normalize_field   scale the field to mean 1 in the mask\n"
     "  -auto_mask         automatic background mask (default); -bimodalT\n"
     "  -background <t>    background threshold (default 1)\n"
     "  -floor <x>         field floor, applied only if needed (default 0.1)\n"
     "  -mapping_dir <dir>  where to write the .imp\n"
     "  -estimate_only     write only the .imp; -correct overrides\n"
+    "  -legacy_rounding    round intermediates to the Perl's six decimals\n"
+    "                     (version default); -nolegacy_rounding disables\n"
     "  -clobber           overwrite outputs\n"
     "  -verbose           be noisy\n"
     "  -V0.9              original protocol: shrink 3, stop 0.001 0.005,\n"
-    "                     iterations 10 20\n");
+    "                     iterations 10 20\n"
+    "  -V1.0              previous default: fwhm 0.15, linear interpolation,\n"
+    "                     iterations 50, stop 0.001, legacy_rounding on\n"
+    "  -V1.1              default: fwhm 0.1, parzen_sigma 4.0,\n"
+    "                     iterations 1000, stop 1e-5, legacy_rounding off\n");
 }
 
 /* The .imp path for a correct run: the output's directory and basename with
@@ -241,12 +258,15 @@ int main(int argc, char *argv[])
    * argument first, then picks, per option, the user's value over the default
    * for the selected version (nu_estimate.in:499-505) -- so -V0.9 applies only
    * to the iterations/stop/shrink the user did not give, whatever the order. */
-  int version = 1;
+  int version = 2;   /* 0 = -V0.9, 1 = -V1.0, 2 = -V1.1 (the default) */
   bool user_iterations = false, user_stop = false, user_shrink = false;
   bool user_parzen_sigma = false;   /* 0 means "off" internally; only a value
                                       * the user actually typed is validated
                                       * (nu_estimate_np_and_em.in:1452-1453
                                       * checks only `defined $parzen_sigma`). */
+  bool user_fwhm = false;           /* set by -fwhm, or by -sharpen only when
+                                      * it actually consumed a width. */
+  bool user_legacy_rounding = false;
 
   std::vector<std::string> pos;
   for(int i = 1; i < argc; i++)
@@ -269,7 +289,7 @@ int main(int argc, char *argv[])
              * -nosharpen; omitting -sharpen is what selects the Perl's EM
              * branch, which PLAN excludes). */
             if(i+1<argc && is_number(argv[i+1]))
-              { A.fwhm = atof(argv[++i]);
+              { A.fwhm = atof(argv[++i]); user_fwhm = true;
                 if(i+1<argc && is_number(argv[i+1])) A.noise = atof(argv[++i]); }
           }
           else if(tok == "-fwhm") {
@@ -280,9 +300,9 @@ int main(int argc, char *argv[])
              * calls the sharpen width -fwhm. */
             if(i+1>=argc) die("-fwhm needs a value");
             A.fwhm = parse_double(argv[++i], "-fwhm");
+            user_fwhm = true;
           }
-          else if(tok == "-parzen") { A.window = true; }
-          else if(tok == "-noparzen") { A.window = false; }
+          else if(tok == "-parzen") { A.window = true; } /* already the default; accepted for compatibility */
           else if(tok == "-parzen_sigma") { if(i+1>=argc) die("-parzen_sigma needs a value"); A.parzen_sigma = parse_double(argv[++i], "-parzen_sigma"); user_parzen_sigma = true; }
           else if(tok == "-bins") { if(i+1>=argc) die("-bins needs a value"); A.bins = parse_int(argv[++i], "-bins"); }
           else if(tok == "-nodeblur" || tok == "-blur") { A.blur = true; }
@@ -309,12 +329,15 @@ int main(int argc, char *argv[])
           else if(tok == "-mapping_dir") { if(i+1>=argc) die("-mapping_dir needs a value"); A.mapping_dir = argv[++i]; }
           else if(tok == "-estimate_only") { A.estimate_only = true; }
           else if(tok == "-correct") { A.estimate_only = false; }
+          else if(tok == "-legacy_rounding") { A.legacy_rounding = true; user_legacy_rounding = true; }
+          else if(tok == "-nolegacy_rounding") { A.legacy_rounding = false; user_legacy_rounding = true; }
           else if(tok == "-clobber") { A.clobber = true; }
           else if(tok == "-noclobber") { A.clobber = false; }
           else if(tok == "-verbose") { A.verbose = true; }
           else if(tok == "-quiet") { A.verbose = false; }
           else if(tok == "-V0.9") { version = 0; }
           else if(tok == "-V1.0") { version = 1; }
+          else if(tok == "-V1.1") { version = 2; }
           else if(tok == "-help" || tok == "-h") { usage(); return 0; }
           else if(tok == "-version") {
             /* the Perl prints the named program, whatever it was called as */
@@ -326,21 +349,42 @@ int main(int argc, char *argv[])
       else pos.push_back(tok);
     }
 
-  /* -V0.9's defaults fill only what the user did not set explicitly, so that
-   * `-shrink 2 -V0.9` and `-V0.9 -shrink 2` agree (Perl nu_estimate.in:499-505
-   * resolves each user option over the version's default after parsing).
-   * This must run before validation: the Perl validates
-   * nu_estimate_np_and_em's fully resolved arguments (:1449-1481), after
-   * AddDefaultArgs has already filled in the per-version default, so a
+  /* Each -V*'s defaults fill only what the user did not set explicitly, so
+   * that e.g. `-shrink 2 -V0.9` and `-V0.9 -shrink 2` agree (Perl
+   * nu_estimate.in:499-505 resolves each user option over the version's
+   * default after parsing). This must run before validation: the Perl
+   * validates nu_estimate_np_and_em's fully resolved arguments (:1449-1481),
+   * after AddDefaultArgs has already filled in the per-version default, so a
    * `-V0.9 -iterations 5` that leaves -stop at its 1-element default must be
    * checked against the *filled* 2-element -V0.9 stop, not the pre-fill one
    * (review, 2026-08-06: the old order let the size check pass before the
-   * fill introduced the mismatch). */
-  if(version == 0)
+   * fill introduced the mismatch). -V1.0 and -V1.1 are new (2026-08-06):
+   * -V1.0 names what used to be the only, implicit default; -V1.1 is now
+   * that implicit default (`version`'s initial value, above). */
+  if(version == 0)                      /* -V0.9: the original protocol */
     {
       if(!user_iterations) A.iterations.assign({10, 20});
       if(!user_stop) A.stop.assign({0.001, 0.005});
       if(!user_shrink) A.shrink = 3.0;
+    }
+  if(version == 1)                      /* -V1.0: the previous implicit
+                                          * default -- struct Arguments'
+                                          * defaults already carry its
+                                          * fwhm/window/iterations/stop, so
+                                          * only legacy_rounding needs filling
+                                          * here. On by default: -V1.0 is the
+                                          * mode meant to reproduce the Perl's
+                                          * own %lf rounding between stages. */
+    {
+      if(!user_legacy_rounding) A.legacy_rounding = true;
+    }
+  if(version == 2)                      /* -V1.1: the new default */
+    {
+      if(!user_iterations) A.iterations.assign({1000});
+      if(!user_stop) A.stop.assign({1e-5});
+      if(!user_fwhm) A.fwhm = 0.1;
+      if(!user_parzen_sigma) A.parzen_sigma = 4.0;
+      if(!user_legacy_rounding) A.legacy_rounding = false;
     }
 
   /* nu_estimate_np_and_em.in:1449-1481, on the fully resolved arguments. */
@@ -423,6 +467,7 @@ int main(int argc, char *argv[])
   e.stop = A.stop;
   e.normalize_field = A.normalize_field;
   e.verbose = A.verbose;
+  e.legacy_rounding = A.legacy_rounding;
 
   /* volume_stats sizes its histogram from the file's voxel range
    * (volumeStats.cc:286); in memory the file is gone, so the count has to be
