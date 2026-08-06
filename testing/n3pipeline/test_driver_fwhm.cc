@@ -13,6 +13,7 @@
  */
 
 #include "check.h"
+#include "fixture.h"
 
 #include "../../src/N3Pipeline/Buffers.h"
 
@@ -99,14 +100,16 @@ int main()
 
   /* A "the correction moved" check must clear the output's own quantisation:
    * chunk.mnc is 12-bit, so any corrected value can differ by one level of the
-   * (range/4095) quantum, and rel RMS of a single-level difference is of that
-   * order.  Requiring the movement to exceed one whole quantum -- derived from
-   * the data, not a round figure -- proves the channel changed the correction
-   * more than a least-significant-bit wobble could.  Measured: -fwhm 0.3 ~10x,
-   * -distance 100 ~3x that quantum (see print above). */
+   * (range/valid_steps) quantum, and rel RMS of a single-level difference is
+   * of that order.  Requiring the movement to exceed one whole quantum --
+   * derived from the data, not a round figure -- proves the channel changed
+   * the correction more than a least-significant-bit wobble could.  Measured
+   * (2026-08-06): quantum 5.4e-04 of the in-mask mean; -fwhm 0.3 moves it
+   * 18.7x that, -distance 100 moves it 2.23x (see print above). */
   VIO_Volume mask = n3::load(std::string(N3_DATA_DIR) + "/chunk_mask.mnc.gz");
   n3::Stats bs = n3::masked_stats(w_base, mask);
-  double quantum = (bs.maximum - bs.minimum) / 4095.0 / bs.mean;
+  double quantum = (bs.maximum - bs.minimum)
+    / n3fixture::valid_steps("chunk_valid_range.txt") / bs.mean;
   printf("  (one output quantum is %.3e of the in-mask mean)\n", quantum);
   CHECK_TRUE("-fwhm 0.3  moves the correction", d_fw > quantum);
   CHECK_TRUE("-distance 100 moves the correction", d_dist > quantum);

@@ -84,7 +84,6 @@ int main()
   VIO_Volume input = n3::load(inp);
   VIO_Volume mask = n3::load(mask_in);
   int n = n3::voxel_count(input);
-  const double *vi = n3::values(input);
   const double *mv = n3::values(mask);
 
   std::string corr_path = tag_path("_corr.mnc");
@@ -97,11 +96,11 @@ int main()
     {
       printf("driver did not finish the correction on chunk\n");
       n3check::failures()++;
+      delete_volume(mask); delete_volume(input); cleanup(corr_path);
       return n3check::report("driver_properties");
     }
 
   VIO_Volume corr = n3::load(corr_path.c_str());
-  const double *vo = n3::values(corr);
 
   /* ---- 1. the field is strictly positive in the mask ---- */
   {
@@ -206,8 +205,25 @@ int main()
      * bound below is a quarter of that contrast, so the property is "the
      * estimator does not absorb the structure it is meant to be blind to",
      * not a tautological near-constant ideal no N3 reaches.  Measured field CV
-     * is ~0.05 here (legacy ~0.0064), a port over-correction churned in cycle
-     * 14, so the 0.3 derived bound leaves that gap clearly under it. */
+     * is 0.071 here (legacy 0.035, the installed nu_correct on this same
+     * phantom under these same options -- re-measured 2026-08-06; an earlier
+     * 0.0064 was taken on the striped phantom this file's storage-order fix
+     * replaced and does not apply here), a port over-correction to chase in
+     * cycle 14, so the 0.214 derived bound (0.25x the contrast below) leaves
+     * that gap clearly under it.
+     *
+     * This criterion is a CV about the field's own mean and so does not
+     * constrain that mean: a bias-free volume's ideal field is the constant
+     * 1, but the measured means are 1.078 (port) and 1.064 (legacy), a
+     * larger departure than the dispersion the bound above does constrain
+     * (review, 2026-08-06, item 11).  Some of that is expected -- the field
+     * is exp(residue) and exp is convex, so a residue with any dispersion in
+     * log space has arithmetic mean > 1 by Jensen's inequality -- but at this
+     * CV that effect is of order 0.5*cv^2 =~ 0.0025, an order of magnitude
+     * short of the observed 6-8%.  No bound is asserted here: a bound on the
+     * mean derived now would be fitted to this measurement rather than to a
+     * property known in advance, which CLAUDE.md's tolerance rule excludes.
+     * The gap is left as a second, distinct chase item alongside the CV one. */
     double rms_cv = sqrt(fabs(sumsq/cnt - mean*mean))/mean;
     double contrast = (250.0 - 100.0) / ((250.0 + 100.0) / 2.0);
     printf("  no-bias phantom field: mean %.4g  RMS CV %.4g  (tissue contrast %.4g)\n",
