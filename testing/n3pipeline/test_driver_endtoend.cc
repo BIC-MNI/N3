@@ -54,39 +54,21 @@ static double round_trip_bound(VIO_Volume volume, VIO_Volume mask)
        / n3fixture::valid_steps("chunk_valid_range.txt");
 }
 
-static std::string outdir()
-{
-  const char *tmp = getenv("TMPDIR");
-  return std::string(tmp ? tmp : "/tmp");
-}
-
 /* Run the driver on chunk.mnc at the cycle-14 protocol with the given extra
  * options, writing to a per-pid file in TMPDIR.  Returns the output path, or
  * "" on failure. */
 static std::string run(const std::string &opts, const char *tag)
 {
-  char cmd[1024];
-  snprintf(cmd, sizeof(cmd),
-           "\"%s\" %s -shrink 1 -iterations 1 -stop 0.0 -distance 200 "
-           "-mask \"%s/chunk_mask.mnc.gz\" "
-           "\"%s/chunk.mnc.gz\" \"%s/n3cxx_e2e_%d_%s.mnc\" -clobber",
-           N3_DRIVER_BIN, opts.c_str(), N3_DATA_DIR, N3_DATA_DIR,
-           outdir().c_str(), (int) getpid(), tag);
-  if(system(cmd) != 0)
+  std::string data = N3_DATA_DIR;
+  std::string out = n3fixture::temp_path(std::string("e2e_") + tag + ".mnc");
+  std::string all = opts + " -shrink 1 -iterations 1 -stop 0.0 -distance 200"
+    " -mask \"" + data + "/chunk_mask.mnc.gz\"";
+  if(!n3fixture::run_driver(all, data + "/chunk.mnc.gz", out))
     {
       printf("FAIL: driver exited non-zero for the %s run\n", tag);
       return "";
     }
-  std::string out = std::string(outdir()) + "/n3cxx_e2e_" +
-    std::to_string((int) getpid()) + "_" + tag + ".mnc";
   return out;
-}
-
-static void cleanup(const char *path)
-{
-  std::string cmd = std::string("rm -f \"") + path + "\" \""
-    + path + ".imp\" \"" + path + "*.log\"";
-  (void) system(cmd.c_str());   /* cleanup is best-effort */
 }
 
 static void compare(const char *what, const char *path, double bound)
@@ -124,8 +106,8 @@ int main()
   compare("end to end vs nu_correct, -legacy_rounding off",
           legacy_off.c_str(), bound);
 
-  cleanup(legacy_on.c_str());
-  cleanup(legacy_off.c_str());
+  n3fixture::cleanup(legacy_on);
+  n3fixture::cleanup(legacy_off);
   delete_volume(mask);
   delete_volume(chunk);
   return n3check::report("driver_endtoend");

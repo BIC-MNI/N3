@@ -22,6 +22,7 @@
  */
 
 #include "check.h"
+#include "fixture.h"
 
 #include "../../src/N3Pipeline/Buffers.h"
 #include "../../src/N3Pipeline/FitField.h"
@@ -42,36 +43,15 @@
 #error "N3_DATA_DIR must be the data directory (testing/)"
 #endif
 
-static std::string outdir()
-{
-  const char *tmp = getenv("TMPDIR");
-  return std::string(tmp ? tmp : "/tmp");
-}
+/* outdir(), temp_path(), imp_of(), run_driver() and cleanup() are shared with
+ * the other two driver tests in fixture.h: each was copied per file before,
+ * and one copy of the .imp rule was wrong (2026-08-07 review, item 2). */
+using n3fixture::imp_of;
+using n3fixture::cleanup;
 
 static std::string tag_path(const char *ext)
 {
-  char p[256];
-  snprintf(p, sizeof(p), "%s/n3cxx_prop_%d%s",
-           outdir().c_str(), (int) getpid(), ext);
-  return p;
-}
-
-/* The .imp the driver writes beside a correct output: the final extension is
- * replaced by .imp (nu_correct_cxx.cc::imp_path, MNI::PathUtilities::replace_ext
- * = s/\.[^\.]*$/\.imp/), so _corr.mnc -> _corr.imp, never _corr.mnc.imp. */
-static std::string imp_of(const std::string &path)
-{
-  size_t dot = path.find_last_of('.');
-  return (dot == std::string::npos ? path : path.substr(0, dot)) + ".imp";
-}
-
-/* Remove a correct run's outputs: the volume, its .imp, and any log we asked
- * the shell to write as <volume>.log. */
-static void cleanup(const std::string &out_path)
-{
-  unlink(out_path.c_str());
-  unlink(imp_of(out_path).c_str());
-  unlink((out_path + ".log").c_str());
+  return n3fixture::temp_path(std::string("prop") + ext);
 }
 
 int main()
@@ -87,17 +67,14 @@ int main()
   const double *mv = n3::values(mask);
 
   std::string corr_path = tag_path("_corr.mnc");
-  char cmd[1600];
   /* -V1.0 -nolegacy_rounding pins every run in this file to the protocol its
    * measured comments cite, independent of whichever protocol the driver's
    * own implicit default currently selects (2026-08-06: that default moved
    * to -V1.1). */
-  snprintf(cmd, sizeof(cmd),
-           "\"%s\" -V1.0 -nolegacy_rounding -shrink 2 -iterations 20 "
-           "-stop 0.001 -distance 200 "
-           "-mask \"%s\" \"%s\" \"%s\" -clobber",
-           N3_DRIVER_BIN, mask_in.c_str(), inp.c_str(), corr_path.c_str());
-  if(system(cmd) != 0)
+  const std::string pinned = "-V1.0 -nolegacy_rounding";
+  if(!n3fixture::run_driver(pinned + " -shrink 2 -iterations 20"
+                            " -stop 0.001 -distance 200 -mask \"" + mask_in + "\"",
+                            inp, corr_path))
     {
       printf("driver did not finish the correction on chunk\n");
       n3check::failures()++;
@@ -174,12 +151,9 @@ int main()
     n3::save(ph, ph_path, inp, type, sf, "test_driver_properties");
 
     std::string out_path = tag_path("_ph_out.mnc");
-    snprintf(cmd, sizeof(cmd),
-             "\"%s\" -V1.0 -nolegacy_rounding -shrink 2 -iterations 15 "
-             "-stop 0.0 -distance 100 "
-             "-mask \"%s\" \"%s\" \"%s\" -clobber",
-             N3_DRIVER_BIN, mask_in.c_str(), ph_path.c_str(), out_path.c_str());
-    if(system(cmd) != 0)
+    if(!n3fixture::run_driver(pinned + " -shrink 2 -iterations 15"
+                              " -stop 0.0 -distance 100 -mask \"" + mask_in + "\"",
+                              ph_path, out_path))
       {
         printf("driver did not finish the correction on the phantom\n");
         n3check::failures()++;
@@ -248,12 +222,10 @@ int main()
   {
     std::string outlog = tag_path("_est.log");
     std::string imp = tag_path("_est.imp");
-    snprintf(cmd, sizeof(cmd),
-             "\"%s\" -V1.0 -nolegacy_rounding -shrink 2 -iterations 6 "
-             "-stop 0.0 -distance 100 "
-             "-mask \"%s\" -estimate_only \"%s\" \"%s\" > \"%s\" 2>&1",
-             N3_DRIVER_BIN, mask_in.c_str(), inp.c_str(), imp.c_str(), outlog.c_str());
-    if(system(cmd) != 0)
+    if(!n3fixture::run_driver(pinned + " -shrink 2 -iterations 6"
+                              " -stop 0.0 -distance 100 -mask \"" + mask_in + "\""
+                              " -estimate_only",
+                              inp, imp, outlog))
       {
         printf("driver did not finish the estimate on chunk\n");
         n3check::failures()++;

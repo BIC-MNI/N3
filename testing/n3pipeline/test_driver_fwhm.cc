@@ -27,49 +27,24 @@
 #error "N3_DRIVER_BIN must be the path of the built nu_correct_cxx binary"
 #endif
 
-static std::string outdir()
-{
-  const char *tmp = getenv("TMPDIR");
-  return std::string(tmp ? tmp : "/tmp");
-}
-
 /* Run the driver on chunk.mnc with the given extra options, writing to a
  * per-pid file in TMPDIR.  Returns the output path, or "" on failure. */
 static std::string run(const std::string &opts, const char *tag)
 {
-  char path[256], cmd[1024];
-  snprintf(path, sizeof(path), "%s/n3cxx_fwhm_%d_%s.mnc",
-           outdir().c_str(), (int) getpid(), tag);
+  std::string data = N3_DATA_DIR;
+  std::string path = n3fixture::temp_path(std::string("fwhm_") + tag + ".mnc");
   /* -V1.0 -nolegacy_rounding pins this test's numerics to the protocol they
    * were measured against (fwhm 0.15, triangular window, legacy_rounding
    * off), independent of whichever protocol the driver's own implicit
    * default currently selects (2026-08-06: that default moved to -V1.1). */
-  snprintf(cmd, sizeof(cmd), "\"%s\" -V1.0 -nolegacy_rounding -shrink 1 "
-           "-iterations 1 -stop 0.0 -distance 200 "
-           "-mask \"%s/chunk_mask.mnc.gz\" %s "
-           "\"%s/chunk.mnc.gz\" \"%s\" -clobber",
-           N3_DRIVER_BIN, N3_DATA_DIR, opts.c_str(),
-           N3_DATA_DIR, path);
-  if(system(cmd) != 0)
+  std::string all = "-V1.0 -nolegacy_rounding -shrink 1 -iterations 1"
+    " -stop 0.0 -distance 200 -mask \"" + data + "/chunk_mask.mnc.gz\" " + opts;
+  if(!n3fixture::run_driver(all, data + "/chunk.mnc.gz", path))
     {
       printf("FAIL: driver exited non-zero for -%s run\n", tag);
       return "";
     }
   return path;
-}
-
-static void cleanup(const char *path)
-{
-  /* The driver's .imp for a correct output <out>.mnc is <out>.imp (final
-   * extension replaced, MNI::PathUtilities::replace_ext) -- not <out>.mnc.imp
-   * -- so the volume, that .imp, and any <out>* .log all go here. */
-  std::string ip(path);
-  size_t dot = ip.find_last_of('.');
-  ip = (dot == std::string::npos ? ip : ip.substr(0, dot)) + ".imp";
-  char cmd[512];
-  snprintf(cmd, sizeof(cmd), "rm -f \"%s\" \"%s\" \"%s\"*.log",
-           path, ip.c_str(), path);
-  system(cmd);
 }
 
 int main()
@@ -125,9 +100,9 @@ int main()
   delete_volume(w_fw);
   delete_volume(w_same);
   delete_volume(w_base);
-  cleanup(base.c_str());
-  cleanup(same.c_str());
-  cleanup(fw.c_str());
-  cleanup(dist.c_str());
+  n3fixture::cleanup(base);
+  n3fixture::cleanup(same);
+  n3fixture::cleanup(fw);
+  n3fixture::cleanup(dist);
   return n3check::report("driver_fwhm");
 }

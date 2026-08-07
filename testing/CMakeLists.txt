@@ -183,7 +183,8 @@ ADD_EXECUTABLE(test_driver_properties n3pipeline/test_driver_properties.cc
 TARGET_INCLUDE_DIRECTORIES(test_driver_properties PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
 TARGET_COMPILE_DEFINITIONS(test_driver_properties PRIVATE
   N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
-  N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+  N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+  N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference")
 ADD_TEST(n3cxx_driver_properties ${CMAKE_CURRENT_BINARY_DIR}/test_driver_properties)
 IF(MINC_TEST_ENVIRONMENT)
   set_tests_properties(n3cxx_driver_properties PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")

@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 namespace n3fixture {
@@ -126,6 +127,71 @@ inline double valid_steps(const std::string &name)
   must(r[1] > r[0], name + " has an empty range");
   return r[1] - r[0];
 }
+
+/* ---- driving the compiled binary ------------------------------------------
+ *
+ * Only the driver tests define N3_DRIVER_BIN; the eleven block tests include
+ * this header for the readers above alone and must not pay for a declaration
+ * they cannot satisfy.
+ *
+ * These four are shared because each was previously copied per test file and
+ * one copy was wrong: test_driver_endtoend's cleanup removed <out>.mnc.imp
+ * where the driver writes <out>.imp, so every run leaked two .imp files into
+ * TMPDIR while the test stayed green (2026-08-07 review, item 2; predicted by
+ * the 2026-08-06 review's item 22).  PLAN §9: a rule implemented twice is a
+ * defect.
+ */
+#ifdef N3_DRIVER_BIN
+
+inline std::string outdir()
+{
+  const char *tmp = getenv("TMPDIR");
+  return std::string(tmp ? tmp : "/tmp");
+}
+
+/* The .imp the driver writes beside a correct output <out>.mnc is <out>.imp:
+ * nu_correct_cxx.cc's imp_path() replaces the FINAL extension
+ * (MNI::PathUtilities::replace_ext = s/\.[^\.]*$/\.imp/), so it is never
+ * <out>.mnc.imp, and out.mnc.gz gives out.mnc.imp. */
+inline std::string imp_of(const std::string &path)
+{
+  size_t dot = path.find_last_of('.');
+  return (dot == std::string::npos ? path : path.substr(0, dot)) + ".imp";
+}
+
+/* A per-pid path in TMPDIR, so concurrent ctest jobs do not collide. */
+inline std::string temp_path(const std::string &stem)
+{
+  return outdir() + "/n3cxx_" + std::to_string((int) getpid()) + "_" + stem;
+}
+
+/* Run the driver: <bin> <opts> "<input>" "<output>" -clobber, with stdout and
+ * stderr redirected to `log` when one is given.  Returns true if it exited
+ * zero.  The command is composed with std::string rather than into a fixed
+ * buffer: an snprintf whose return is discarded turns a long TMPDIR into a
+ * different, truncated command and the test then reports a driver failure
+ * that did not occur (2026-08-07 review, item 6; 2026-08-06's item 21). */
+inline bool run_driver(const std::string &opts,
+                       const std::string &input,
+                       const std::string &output,
+                       const std::string &log = std::string())
+{
+  std::string cmd = std::string("\"") + N3_DRIVER_BIN + "\" " + opts
+    + " \"" + input + "\" \"" + output + "\" -clobber";
+  if(!log.empty()) cmd += " > \"" + log + "\" 2>&1";
+  return system(cmd.c_str()) == 0;
+}
+
+/* Remove a correct run's outputs: the volume, its .imp, and a <volume>.log if
+ * the caller redirected one. */
+inline void cleanup(const std::string &output)
+{
+  unlink(output.c_str());
+  unlink(imp_of(output).c_str());
+  unlink((output + ".log").c_str());
+}
+
+#endif  /* N3_DRIVER_BIN */
 
 }  // namespace n3fixture
 
