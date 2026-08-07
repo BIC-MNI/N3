@@ -41,6 +41,17 @@ SET(long_version ${PACKAGE_STRING})
 IF(NOT MINC_TOOLKIT_BUILD)
   FIND_PACKAGE( LIBMINC REQUIRED )
   FIND_PACKAGE( EBTKS REQUIRED )
+ELSE(NOT MINC_TOOLKIT_BUILD)
+  # FIND_PACKAGE(EBTKS) is skipped under a superbuild, so EBTKSConfig.cmake is never read
+  # and these never arrive that way. Empty default matches EBTKS's own bundled default: a
+  # superbuild that built its own EBTKS with a non-bundled EBTKS_BLAS_BACKEND passes the
+  # same two values here directly, alongside the EBTKS_LIBRARIES/EBTKS_USE_FILE it already
+  # passes (/app/PLAN.md §10, "The superbuild hooks already exist").
+  SET(EBTKS_LAPACK_LIBRARIES "" CACHE STRING
+      "External LAPACK/BLAS legacy/N3 links, matching the EBTKS_BLAS_BACKEND the outer \
+superbuild built EBTKS with. Empty if EBTKS was built bundled.")
+  SET(EBTKS_LAPACK_LIBRARY_DIRS "" CACHE STRING
+      "Extra -L directories for EBTKS_LAPACK_LIBRARIES, when its entries are bare names.")
 ENDIF(NOT MINC_TOOLKIT_BUILD)
 
 # LIBMINCConfig.cmake records the absolute paths of the machine libminc was built
@@ -152,7 +163,7 @@ INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/include )
 
 ADD_LIBRARY(mincprog STATIC src/MincProg/print_version.c)
 
-LINK_LIBRARIES(mincprog ${EBTKS_LIBRARIES} ${VOLUME_IO_LIBRARIES} ${LIBMINC_LIBRARIES})
+LINK_LIBRARIES(mincprog ${EBTKS_LIBRARIES} ${EBTKS_LAPACK_LIBRARIES} ${VOLUME_IO_LIBRARIES} ${LIBMINC_LIBRARIES})
 
 ADD_EXECUTABLE(correct_field src/CorrectField/correctField.cc)
 
