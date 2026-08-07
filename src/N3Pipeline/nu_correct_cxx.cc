@@ -340,8 +340,15 @@ int main(int argc, char *argv[])
           else if(tok == "-V1.1") { version = 2; }
           else if(tok == "-help" || tok == "-h") { usage(); return 0; }
           else if(tok == "-version") {
-            /* the Perl prints the named program, whatever it was called as */
-            printf("Program %s\n", program_name.c_str());
+            /* The Perl prints the name the program was invoked as, then a
+             * program-and-version line (nu_estimate.in:119-122): "Program
+             * nu_correct, built from:" and, under it, "N3 1.12.00".  config.h
+             * carries the version: PACKAGE_STRING is the configured
+             * "<name> <version>".  Whatever it was called as, the name is
+             * program_name's -- both the Perl's $ProgramName and this
+             * argv[0] basename. */
+            printf("Program %s, built from:\n%s\n", program_name.c_str(),
+                   PACKAGE_STRING);
             return 0;
           }
           else die("unknown option %s", tok.c_str());
