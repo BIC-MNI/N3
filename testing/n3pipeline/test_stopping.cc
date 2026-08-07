@@ -53,15 +53,19 @@ int main()
                n3::should_stop(0, 0.0001, s, t));
   }
 
-  /* The -V0.9 protocol: -iterations 10 20 -stop 0.01 0.001.
+  /* A *stricter* second threshold: -iterations 10 20 -stop 0.01 0.001.
    *
    * The first threshold applies from the start and the second only once the
    * first stage's iteration count has been reached -- but the two are tested
-   * independently, so a *stricter* second threshold can never change the
+   * independently, so a stricter second threshold can never change the
    * outcome: anything below 0.001 is already below 0.01 and has stopped the
-   * run.  With the shipped ordering the staged rule is therefore the first
-   * threshold alone.  Recorded because it reads as though it tightens over
-   * time and does not. */
+   * run.  Under this ordering the staged rule is the first threshold alone.
+   * Recorded because it reads as though it tightens over time and does not.
+   *
+   * This is NOT the -V0.9 ordering, which an earlier version of this comment
+   * claimed it was: V0.9 is -stop 0.001 0.005 (nu_estimate.in:438,
+   * 'np:stop:0.9' => '0.001 0.005'), the looser-second case in the next
+   * block, where the staged rule is not the first threshold alone. */
   {
     std::vector<int> s = stages(10, 20);
     std::vector<double> t = thresholds(0.01, 0.001);
@@ -88,7 +92,11 @@ int main()
 
   /* A *looser* second threshold does change it: the stages are tested
    * independently, so the later one fires once its iteration count is
-   * reached and not before. */
+   * reached and not before.
+   *
+   * This is the -V0.9 ordering (-iterations 10 20 -stop 0.001 0.005,
+   * nu_estimate.in:436-441), so on the one protocol that ships a second
+   * threshold the staged rule really does relax after the first stage. */
   {
     std::vector<int> s = stages(10, 20);
     std::vector<double> t = thresholds(0.001, 0.01);
