@@ -71,16 +71,23 @@ static std::string run(const std::string &opts, const char *tag)
   return out;
 }
 
-static void compare(const char *what, const char *path, double bound)
+/* The driver's output on the same stride the oracle was recorded at. */
+static std::vector<double> corrected(const std::string &path)
 {
-  VIO_Volume mine = n3::load(path);
-  int n = n3::voxel_count(mine);
-  std::vector<double> ours = n3fixture::strided(n3::values(mine), n);
+  VIO_Volume v = n3::load(path);
+  std::vector<double> out = n3fixture::strided(n3::values(v),
+                                               n3::voxel_count(v));
+  delete_volume(v);
+  return out;
+}
+
+static void compare(const char *what, const std::vector<double> &ours,
+                    double bound)
+{
   std::vector<double> oracle = n3fixture::read_f64("nu_correct_shrink1.f64");
   n3fixture::must(ours.size() == oracle.size(),
                   "nu_correct_shrink1.f64: size mismatch");
   CHECK_RMS(what, &ours[0], &oracle[0], (int) ours.size(), bound);
-  delete_volume(mine);
 }
 
 int main()
@@ -101,10 +108,35 @@ int main()
   bool ok = !legacy_on.empty() && !legacy_off.empty();
   if(!ok) { n3check::failures()++; return n3check::report("driver_endtoend"); }
 
-  compare("end to end vs nu_correct, -legacy_rounding on",
-          legacy_on.c_str(), bound);
-  compare("end to end vs nu_correct, -legacy_rounding off",
-          legacy_off.c_str(), bound);
+  std::vector<double> on = corrected(legacy_on), off = corrected(legacy_off);
+
+  compare("end to end vs nu_correct, -legacy_rounding on", on, bound);
+  compare("end to end vs nu_correct, -legacy_rounding off", off, bound);
+
+  /* Both comparisons above go against the same oracle under the same bound,
+   * and both land at 1.84e-04.  That alone would pass unchanged if
+   * -legacy_rounding did nothing, which is not hypothetical: the option had
+   * no CLI counterpart until 9154eac, and EstimateOptions::legacy_rounding
+   * was left at its false default by the driver, so "every driver run to date
+   * has been the equivalent of -nolegacy_rounding" and no test noticed.
+   *
+   * So the two runs are also compared against each other, with no bound
+   * fitted to the result.  Below: they must differ at all -- a property, and
+   * the one an inert flag fails.  Above: the difference must stay under the
+   * same round-trip quantum the cycle is already bounded by, since a rounding
+   * of intermediates to six decimals cannot legitimately move the output by
+   * more than the 12-bit file quantisation those intermediates pass through.
+   * For scale, PLAN §4 records the lookup-position component of this rounding
+   * at 5.114e-07 on chunk.mnc, measured in cycle 6; end to end at one
+   * iteration the whole flag is worth 8.740e-07 here, the remainder being the
+   * counts and the histogram domain, which are rounded too. */
+  double rounding = n3check::rel_rms(&on[0], &off[0], (int) on.size());
+  printf("  (-legacy_rounding moves the output by %.3e; cycle 6 measured the\n"
+         "   lookup-position component at 5.114e-07)\n", rounding);
+  CHECK_TRUE("-legacy_rounding is not inert: the two runs differ",
+             rounding > 0.0);
+  CHECK_RMS("and it moves less than one round trip of the intermediates",
+            &on[0], &off[0], (int) on.size(), bound);
 
   n3fixture::cleanup(legacy_on);
   n3fixture::cleanup(legacy_off);
