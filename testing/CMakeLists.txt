@@ -157,6 +157,23 @@ IF(MINC_TEST_ENVIRONMENT)
   set_tests_properties(n3cxx_driver_fwhm PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
 ENDIF(MINC_TEST_ENVIRONMENT)
 
+# Cycle 14: the one end-to-end comparison whose bound is justified in advance -
+# one iteration at -stop 0.0 against the installed nu_correct, driven with and
+# without -legacy_rounding, within 0.5 (log max - log min)/valid_steps
+# (PLAN §4, §7).  The driver's final n3::save is exercised here: no other test
+# reads the corrected output the binary writes, so this is what keeps it honest.
+ADD_EXECUTABLE(test_driver_endtoend n3pipeline/test_driver_endtoend.cc
+  $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+TARGET_INCLUDE_DIRECTORIES(test_driver_endtoend PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+TARGET_COMPILE_DEFINITIONS(test_driver_endtoend PRIVATE
+  N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
+  N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+  N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference")
+ADD_TEST(n3cxx_driver_endtoend ${CMAKE_CURRENT_BINARY_DIR}/test_driver_endtoend)
+IF(MINC_TEST_ENVIRONMENT)
+  set_tests_properties(n3cxx_driver_endtoend PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+ENDIF(MINC_TEST_ENVIRONMENT)
+
 # Cycle 13: end-to-end properties of the whole pipeline, asserted by driving
 # the binary (field > 0 in the mask, CV of the correct output below the
 # input's, a no-nonuniformity phantom -> bounded finite field with CV below a
