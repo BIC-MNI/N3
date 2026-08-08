@@ -46,12 +46,28 @@ ELSE(NOT MINC_TOOLKIT_BUILD)
   # and these never arrive that way. Empty default matches EBTKS's own bundled default: a
   # superbuild that built its own EBTKS with a non-bundled EBTKS_BLAS_BACKEND passes the
   # same two values here directly, alongside the EBTKS_LIBRARIES/EBTKS_USE_FILE it already
-  # passes (/app/PLAN.md §10, "The superbuild hooks already exist").
-  SET(EBTKS_LAPACK_LIBRARIES "" CACHE STRING
+  # passes (/app/PLAN.md §10, "The superbuild hooks already exist"). CACHE INTERNAL, not
+  # STRING: under MINC_TOOLKIT_BUILD (this branch) they're superbuild-computed plumbing,
+  # not something to hand-tune -- keep them out of ccmake/cmake-gui/cmake -L. This mirrors
+  # EBTKS/CMakeLists.txt's own MINC_TOOLKIT_BUILD-gated CACHE type for the same variables.
+  #
+  # CACHE INTERNAL entries are always overwritten on every configure regardless of FORCE, so
+  # a bare SET(... "" CACHE INTERNAL ...) here would stomp right back over the value EBTKS's
+  # own CMakeLists.txt (processed earlier, via add_subdirectory(EBTKS) above) already set
+  # from the superbuild's forwarded BLAS. Read the current value first and write it back --
+  # this only (re)asserts the CACHE type, it never silently resets the value to empty.
+  IF(NOT DEFINED EBTKS_LAPACK_LIBRARIES)
+    SET(EBTKS_LAPACK_LIBRARIES "")
+  ENDIF()
+  SET(EBTKS_LAPACK_LIBRARIES "${EBTKS_LAPACK_LIBRARIES}" CACHE INTERNAL
       "External LAPACK/BLAS legacy/N3 links, matching the EBTKS_BLAS_BACKEND the outer \
-superbuild built EBTKS with. Empty if EBTKS was built bundled.")
-  SET(EBTKS_LAPACK_LIBRARY_DIRS "" CACHE STRING
-      "Extra -L directories for EBTKS_LAPACK_LIBRARIES, when its entries are bare names.")
+superbuild built EBTKS with. Empty if EBTKS was built bundled." FORCE)
+
+  IF(NOT DEFINED EBTKS_LAPACK_LIBRARY_DIRS)
+    SET(EBTKS_LAPACK_LIBRARY_DIRS "")
+  ENDIF()
+  SET(EBTKS_LAPACK_LIBRARY_DIRS "${EBTKS_LAPACK_LIBRARY_DIRS}" CACHE INTERNAL
+      "Extra -L directories for EBTKS_LAPACK_LIBRARIES, when its entries are bare names." FORCE)
 ENDIF(NOT MINC_TOOLKIT_BUILD)
 
 # EBTKS's "lapacke" backend provides dsysv_ under the name EBTKS_dsysv, not dsysv_ itself
