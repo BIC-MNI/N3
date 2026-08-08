@@ -66,10 +66,27 @@ typedef long int _integer;
 typedef float _real;
 typedef double _doublereal;
 
+// EBTKS_BLAS_BACKEND=lapacke provides its dsysv_ implementation under the name
+// EBTKS_dsysv, not dsysv_ itself -- a shim built over LAPACKE_dsysv_work cannot
+// safely be named dsysv_: doing so exports a symbol that collides with the one
+// libopenblas.so (or any other LAPACKE-providing library) uses internally,
+// which under ELF symbol interposition redirects the library's own internal
+// calls back into the shim (infinite recursion). See EBTKS/shim/dsysv_lapacke.c.
+// EBTKS_DSYSV_LAPACKE_SHIM is set by N3/CMakeLists.txt only for that backend;
+// every other backend (bundled/lapack/cblas) still resolves a real, unambiguous
+// dsysv_ directly, unchanged from before.
 extern "C" {
+#ifdef EBTKS_DSYSV_LAPACKE_SHIM
+int EBTKS_dsysv(char *uplo, _integer *n, _integer *nrhs, _doublereal
+        *a, _integer *lda, _integer *ipiv, _doublereal *b, _integer *ldb,
+        _doublereal *work, _integer *lwork, _integer *info);
+#define _ebtks_dsysv_call EBTKS_dsysv
+#else
 int dsysv_(char *uplo, _integer *n, _integer *nrhs, _doublereal
         *a, _integer *lda, _integer *ipiv, _doublereal *b, _integer *ldb,
         _doublereal *work, _integer *lwork, _integer *info);
+#define _ebtks_dsysv_call dsysv_
+#endif
 }
 //-----------------------------------------------------------------------
 // static initializations
@@ -645,7 +662,7 @@ TBSpline::solveSymmetricSystem(DblMat &A, DblMat b, int *info)
   _integer lwork = 1;
   _integer w_info;
 
-  dsysv_("U", &n, &nrhs, (_doublereal *) *A.getEl(), &lda, ipiv, 
+  _ebtks_dsysv_call("U", &n, &nrhs, (_doublereal *) *A.getEl(), &lda, ipiv,
 	 (_doublereal *) *b.getEl(), &ldb,
 	 &work, &lwork, &w_info);
 

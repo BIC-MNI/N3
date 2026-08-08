@@ -54,6 +54,15 @@ superbuild built EBTKS with. Empty if EBTKS was built bundled.")
       "Extra -L directories for EBTKS_LAPACK_LIBRARIES, when its entries are bare names.")
 ENDIF(NOT MINC_TOOLKIT_BUILD)
 
+# EBTKS's "lapacke" backend provides dsysv_ under the name EBTKS_dsysv, not dsysv_ itself
+# (see EBTKS/shim/dsysv_lapacke.c -- a real dsysv_ here would collide with the one the
+# linked LAPACKE library uses internally). TBSpline.cc picks which symbol to call via this
+# define; every other backend is unaffected and keeps calling dsysv_ directly as before.
+IF(EBTKS_BLAS_BACKEND STREQUAL "lapacke")
+  SET_SOURCE_FILES_PROPERTIES(src/Splines/TBSpline.cc PROPERTIES
+    COMPILE_DEFINITIONS EBTKS_DSYSV_LAPACKE_SHIM)
+ENDIF()
+
 # LIBMINCConfig.cmake records the absolute paths of the machine libminc was built
 # on.  Where such a path no longer exists, look the same file up by name in
 # LIBMINC_LIBRARY_DIRS instead.  A no-op on an install whose paths are intact.
