@@ -62,8 +62,8 @@ static std::string run(const std::string &opts, const char *tag)
   std::string data = N3_DATA_DIR;
   std::string out = n3fixture::temp_path(std::string("e2e_") + tag + ".mnc");
   std::string all = opts + " -shrink 1 -iterations 1 -stop 0.0 -distance 200"
-    " -mask \"" + data + "/chunk_mask.mnc.gz\"";
-  if(!n3fixture::run_driver(all, data + "/chunk.mnc.gz", out))
+    " -mask \"" + data + "/chunk_mask.mnc\"";
+  if(!n3fixture::run_driver(all, data + "/chunk.mnc", out))
     {
       printf("FAIL: driver exited non-zero for the %s run\n", tag);
       return "";
@@ -93,8 +93,8 @@ static void compare(const char *what, const std::vector<double> &ours,
 int main()
 {
   std::string data = std::string(N3_DATA_DIR);
-  VIO_Volume chunk = n3::load(data + "/chunk.mnc.gz");
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume chunk = n3::load(data + "/chunk.mnc");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
 
   double bound = round_trip_bound(chunk, mask);
   printf("  (a 12-bit round trip of the log volume is worth %.3e)\n", bound);

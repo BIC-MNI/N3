@@ -43,8 +43,8 @@ static void check_geometry(const char *what, VIO_Volume volume,
 int main()
 {
   std::string data = std::string(N3_DATA_DIR);
-  VIO_Volume chunk = n3::load(data + "/chunk.mnc.gz");
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume chunk = n3::load(data + "/chunk.mnc");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
 
   /* A mask resampled onto its own grid is that mask.  True whatever the
    * interpolation, so it holds before any oracle is consulted. */

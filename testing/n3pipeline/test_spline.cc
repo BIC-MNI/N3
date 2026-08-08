@@ -46,7 +46,7 @@ int main()
   std::string reference = std::string(N3_REFERENCE_DIR);
 
   VIO_Volume chunk = n3::load(reference + "/chunk_float.mnc");
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
 
   /* The two bases are given different domains, and not by accident: the driver
    * passes -full_support for one and not the other, so one covers the volume

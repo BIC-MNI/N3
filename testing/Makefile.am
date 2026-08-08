@@ -9,8 +9,8 @@ EXTRA_DIST = $(check_SCRIPTS) $(data_files) test_ref.log do_test.in rms_diff.in
 
 CLEANFILES =
 
-data_files = block.mnc.gz brain_mask.mnc.gz brain.mnc.gz brain_nu_ref.mnc.gz \
-             chunk_mask.mnc.gz chunk.mnc.gz 
+data_files = block.mnc brain_mask.mnc brain.mnc brain_nu_ref.mnc \
+             chunk_mask.mnc chunk.mnc
 
 SEDFLAGS = -e 's,\@PERL\@,$(PERL),g'
 

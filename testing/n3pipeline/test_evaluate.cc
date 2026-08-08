@@ -48,8 +48,8 @@ int main()
   std::string data = std::string(N3_DATA_DIR);
   std::string reference = std::string(N3_REFERENCE_DIR);
 
-  VIO_Volume chunk = n3::load(data + "/chunk.mnc.gz");
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume chunk = n3::load(data + "/chunk.mnc");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
   int n = n3::voxel_count(chunk);
 
   double bound = round_trip_bound(chunk, mask);

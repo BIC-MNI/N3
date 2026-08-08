@@ -63,7 +63,7 @@ static void check_geometry(const char *what, VIO_Volume volume,
 
 int main()
 {
-  std::string data = std::string(N3_DATA_DIR) + "/chunk.mnc.gz";
+  std::string data = std::string(N3_DATA_DIR) + "/chunk.mnc";
   VIO_Volume chunk = n3::load(data);
 
   check_geometry("the input grid is read as the file has it",

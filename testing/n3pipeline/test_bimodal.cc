@@ -28,10 +28,10 @@ static double printed_precision(double value, int digits)
 int main()
 {
   std::string data = std::string(N3_DATA_DIR);
-  std::string chunk_path = data + "/chunk.mnc.gz";
+  std::string chunk_path = data + "/chunk.mnc";
 
   VIO_Volume chunk = n3::load(chunk_path);
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
 
   /* volume_stats sizes its histogram from the file's valid_range, not from the
    * intensities, so the bin count is a property of how the volume was stored.

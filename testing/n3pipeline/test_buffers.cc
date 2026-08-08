@@ -52,8 +52,8 @@ static void check_stats(const char *label, const n3::Stats &s, const char *tag)
 int main()
 {
   std::string data = std::string(N3_DATA_DIR);
-  VIO_Volume chunk = n3::load(data + "/chunk.mnc.gz");
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume chunk = n3::load(data + "/chunk.mnc");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
 
   /* ------------------------------------------------ the buffer itself */
   {
@@ -119,12 +119,12 @@ int main()
   /* ---------------------------------------------------------- save/load */
   {
     VIO_BOOL signed_flag;
-    nc_type type = n3::storage_type(data + "/chunk.mnc.gz", &signed_flag);
+    nc_type type = n3::storage_type(data + "/chunk.mnc", &signed_flag);
     CHECK_TRUE("chunk.mnc is 16-bit", type == NC_SHORT);
 
     /* Written as double and read back, a buffer is unchanged.  This is the
      * property the whole in-memory pipeline rests on. */
-    n3::save(chunk, "test_buffers_double.mnc", data + "/chunk.mnc.gz",
+    n3::save(chunk, "test_buffers_double.mnc", data + "/chunk.mnc",
              NC_DOUBLE, FALSE, "test_buffers");
     VIO_Volume back = n3::load("test_buffers_double.mnc");
     int n = n3::voxel_count(chunk);
@@ -135,7 +135,7 @@ int main()
     /* Written in the file's own storage type it is not, and the amount is the
      * quantum of that type over the volume's range -- the cost the Perl
      * drivers pay at every step. */
-    n3::save(chunk, "test_buffers_short.mnc", data + "/chunk.mnc.gz",
+    n3::save(chunk, "test_buffers_short.mnc", data + "/chunk.mnc",
              type, signed_flag, "test_buffers");
     back = n3::load("test_buffers_short.mnc");
     n3::Stats s = n3::masked_stats(chunk, NULL);

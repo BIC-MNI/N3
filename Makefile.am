@@ -122,8 +122,8 @@ EXTRA_DIST = \
 
 pkgdatadir = $(prefix)/share/N3
 
-dist_pkgdata_DATA := model_data/N3/average_305_mask_1mm.mnc.gz \
-                     model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc.gz
+dist_pkgdata_DATA := model_data/N3/average_305_mask_1mm.mnc \
+                     model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc
 
 CLEANFILES = $(bin_SCRIPTS)
 

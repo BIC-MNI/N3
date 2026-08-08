@@ -57,8 +57,8 @@ static std::string tag_path(const char *ext)
 int main()
 {
   const std::string data = N3_DATA_DIR;
-  const std::string inp = data + "/chunk.mnc.gz";
-  const std::string mask_in = data + "/chunk_mask.mnc.gz";
+  const std::string inp = data + "/chunk.mnc";
+  const std::string mask_in = data + "/chunk_mask.mnc";
 
   /* ---- a correction run of the real volume: properties 1 and 2 ---- */
   VIO_Volume input = n3::load(inp);

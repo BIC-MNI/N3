@@ -38,8 +38,8 @@ static std::string run(const std::string &opts, const char *tag)
    * off), independent of whichever protocol the driver's own implicit
    * default currently selects (2026-08-06: that default moved to -V1.1). */
   std::string all = "-V1.0 -nolegacy_rounding -shrink 1 -iterations 1"
-    " -stop 0.0 -distance 200 -mask \"" + data + "/chunk_mask.mnc.gz\" " + opts;
-  if(!n3fixture::run_driver(all, data + "/chunk.mnc.gz", path))
+    " -stop 0.0 -distance 200 -mask \"" + data + "/chunk_mask.mnc\" " + opts;
+  if(!n3fixture::run_driver(all, data + "/chunk.mnc", path))
     {
       printf("FAIL: driver exited non-zero for -%s run\n", tag);
       return "";
@@ -86,7 +86,7 @@ int main()
    * the correction more than a least-significant-bit wobble could.  Measured
    * (2026-08-06): quantum 5.4e-04 of the in-mask mean; -fwhm 0.3 moves it
    * 18.7x that, -distance 100 moves it 2.23x (see print above). */
-  VIO_Volume mask = n3::load(std::string(N3_DATA_DIR) + "/chunk_mask.mnc.gz");
+  VIO_Volume mask = n3::load(std::string(N3_DATA_DIR) + "/chunk_mask.mnc");
   n3::Stats bs = n3::masked_stats(w_base, mask);
   double quantum = (bs.maximum - bs.minimum)
     / n3fixture::valid_steps("chunk_valid_range.txt") / bs.mean;

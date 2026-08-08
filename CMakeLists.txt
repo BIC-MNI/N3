@@ -291,9 +291,9 @@ INSTALL(PROGRAMS
 
 #install masks
 INSTALL(FILES
-    model_data/N3/average_305_mask_1mm.mnc.gz
-    model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc.gz
-  DESTINATION 
+    model_data/N3/average_305_mask_1mm.mnc
+    model_data/N3/icbm_avg_152_t1_tal_nlin_symmetric_VI_mask.mnc
+  DESTINATION
     share/N3 )
 
 # testing

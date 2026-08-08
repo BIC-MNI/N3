@@ -21,8 +21,8 @@ trap "rm -rf $work" 0
 N3_LOCAL_BIN=${N3_LOCAL_BIN:-/app/legacy/_install/bin}
 
 mkdir -p $out
-chunk=$data/chunk.mnc.gz
-mask=$data/chunk_mask.mnc.gz
+chunk=$data/chunk.mnc
+mask=$data/chunk_mask.mnc
 
 # Volume-sized oracles are recorded on every fourth voxel in file order.  A
 # relative RMS over a systematic quarter of a volume says what one over all of

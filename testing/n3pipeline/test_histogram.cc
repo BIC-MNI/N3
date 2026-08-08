@@ -61,8 +61,8 @@ static void compare(const char *label, DHistogram *mine, const char *fixture)
 int main()
 {
   std::string data = std::string(N3_DATA_DIR);
-  VIO_Volume chunk = n3::load(data + "/chunk.mnc.gz");
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume chunk = n3::load(data + "/chunk.mnc");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
 
   /* The range is taken over the selected voxels only, so it must be the
    * masked extrema and not the volume's.  Established before the oracle is

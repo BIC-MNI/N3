@@ -32,7 +32,7 @@ int main()
   std::vector<double> lut(entries);
   for(int i = 0; i < entries; i++) lut[i] = table[2 * i + 1];
 
-  VIO_Volume chunk = n3::load(data + "/chunk.mnc.gz");
+  VIO_Volume chunk = n3::load(data + "/chunk.mnc");
   int n = n3::voxel_count(chunk);
 
   /* Properties first, on a table small enough to reason about.  A two-entry
@@ -88,7 +88,7 @@ int main()
 
     /* What the six decimals cost.  This is the in-memory pipeline's own
      * answer, and it is deliberately not the oracle's. */
-    VIO_Volume exact = n3::load(data + "/chunk.mnc.gz");
+    VIO_Volume exact = n3::load(data + "/chunk.mnc");
     n3::apply_lookup(exact, lut, lo, hi);
     std::vector<double> exact_strided = n3fixture::strided(n3::values(exact), n);
     double drift = n3check::rel_rms(&exact_strided[0], &oracle[0], m);
@@ -100,7 +100,7 @@ int main()
     /* Nearest neighbour instead of interpolation would be a plausible port and
      * is measurably wrong; establish the size of the difference so that a
      * regression to it cannot hide inside the bound above. */
-    VIO_Volume again = n3::load(data + "/chunk.mnc.gz");
+    VIO_Volume again = n3::load(data + "/chunk.mnc");
     double *nn = n3::values(again);
     double step = (hi - lo) / (entries - 1);
     for(int i = 0; i < n; i++)

@@ -34,7 +34,7 @@ int main()
   std::string reference = std::string(N3_REFERENCE_DIR);
 
   VIO_Volume field = n3::load(reference + "/field_masked.mnc");
-  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc.gz");
+  VIO_Volume mask  = n3::load(data + "/chunk_mask.mnc");
   int n = n3::voxel_count(field);
 
   /* What the input looks like before extension, so that the comparison below
