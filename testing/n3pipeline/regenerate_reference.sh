@@ -110,12 +110,37 @@ $N3_LOCAL_BIN/volume_hist $hist -gaussian_window 2 $chunk $out/hist_gauss2.txt
 # input from the same text the test reads keeps the comparison to the
 # deconvolution itself: the six decimals that text carries are a separate
 # divergence, measured where the pipeline is assembled.
+#
+# Note that this pair is DEGENERATE and is kept only because cycle 6 needs a
+# lookup table and test_sharpen.cc uses it as a sub-bin-kernel edge case.
+# hist_window.txt is a raw-intensity histogram whose bins are 4021 units wide,
+# so -fwhm 0.15 is 3.7e-05 of a bin: gaussian() underflows to a discrete
+# delta, weiner() becomes exactly its reciprocal, and the whole transform is
+# the identity.  Nothing here measures the deconvolution -- cycle 5b does.
 
 range=`grep domain: $out/hist_window.txt | sed 's/.*domain: *//'`
 sharpen_hist -clobber -quiet -fwhm 0.15 -noise 0.01 -range $range \
     $out/hist_window.txt $out/sharp_window.txt
 sharpen_hist -clobber -quiet -blur -fwhm 0.15 -noise 0.01 -range $range \
     $out/hist_window.txt $out/sharp_window_blur.txt
+
+# --------------------------------------------------------------- cycle 5b
+# The same deconvolution in the domain the pipeline actually uses.  Cycle 5
+# runs sharpen_hist on a raw-intensity histogram, where the kernel is narrower
+# than one bin (see above).  nu_estimate sharpens the log volume
+# (nu_estimate_np_and_em.in:661-662), where 0.15 spans ~13.6 bins, the Wiener
+# filter is a real one, the density never collapses to a few ulps, and the
+# mapping contracts the range by ~5%.
+
+mincmath -clobber -quiet -clamp -const2 1 1.7e308 $chunk $work/clamped.mnc
+mincmath -clobber -quiet -zero -log $work/clamped.mnc $work/log.mnc
+
+volume_hist $hist -window $work/log.mnc $out/hist_log.txt
+logrange=`grep domain: $out/hist_log.txt | sed 's/.*domain: *//'`
+sharpen_hist -clobber -quiet -fwhm 0.15 -noise 0.01 -range $logrange \
+    $out/hist_log.txt $out/sharp_log.txt
+sharpen_hist -clobber -quiet -blur -fwhm 0.15 -noise 0.01 -range $logrange \
+    $out/hist_log.txt $out/sharp_log_blur.txt
 
 # ---------------------------------------------------------------- cycle 6
 # minclookup applied to the whole volume, written as double so that the
