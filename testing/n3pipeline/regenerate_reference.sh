@@ -246,6 +246,27 @@ nu_correct -shrink 1 -iterations 1 -stop 0.0 -distance 200 \
     -mask $mask $chunk $work/nu.mnc -clobber > /dev/null 2>&1
 dump_strided $work/nu.mnc $out/nu_correct_shrink1.f64
 
+# --------------------------------------------------------------- cycle 15
+# The full default protocol (-V1.0: fwhm 0.15, linear interpolation, shrink 4,
+# iterations 50, stop 0.001, distance 200) on brain.mnc, where cycle 14's
+# single -stop 0.0 iteration on chunk.mnc does not exercise the real
+# multi-iteration stopping loop.
+#
+# brain.mnc's own brain_mask.mnc, not the ICBM standard-space model mask
+# nu_reference_1 (../compare_nu_result.pl) uses: nu_correct forwards -mask to
+# nu_evaluate as well as nu_estimate (nu_estimate.in:62-63), and
+# evaluate_field requires the mask and the volume it is -like to already be
+# the same grid, with no resampling (evaluateField.cc's compareVolumes) --
+# confirmed by running it: a standard-space mask on a subject volume crashes
+# nu_correct itself with "Mask volume and input volume must be the same
+# size." nu_reference_1 only gets away with the ICBM mask by calling
+# nu_estimate and nu_evaluate as two separate steps and never passing it to
+# the second; nu_correct_cxx, like nu_correct, does not offer that.
+
+nu_correct -mask $data/brain_mask.mnc $data/brain.mnc $work/brain_nu_correct.mnc \
+    -clobber > /dev/null 2>&1
+dump_strided $work/brain_nu_correct.mnc $out/brain_nu_correct.f64
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask

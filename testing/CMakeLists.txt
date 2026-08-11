@@ -198,6 +198,24 @@ IF(MINC_TEST_ENVIRONMENT)
   set_tests_properties(n3cxx_driver_endtoend PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
 ENDIF(MINC_TEST_ENVIRONMENT)
 
+# Cycle 15: nu_correct_cxx's cxx equivalent of nu_reference_1 -- the real
+# default (-V1.0) protocol on brain.mnc, run to convergence rather than cycle
+# 14's single -stop 0.0 pass. brain_mask.mnc, not the ICBM mask nu_reference_1
+# uses: nu_correct itself crashes on that mask (see test_driver_reference.cc).
+# One oracle covers every EBTKS_BLAS_BACKEND, unlike nu_reference_1's two --
+# also explained there, and measured directly before picking the bound.
+ADD_EXECUTABLE(test_driver_reference n3pipeline/test_driver_reference.cc
+  $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+TARGET_INCLUDE_DIRECTORIES(test_driver_reference PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+TARGET_COMPILE_DEFINITIONS(test_driver_reference PRIVATE
+  N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
+  N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+  N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference")
+ADD_TEST(n3cxx_driver_reference ${CMAKE_CURRENT_BINARY_DIR}/test_driver_reference)
+IF(MINC_TEST_ENVIRONMENT)
+  set_tests_properties(n3cxx_driver_reference PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+ENDIF(MINC_TEST_ENVIRONMENT)
+
 # Cycle 13: end-to-end properties of the whole pipeline, asserted by driving
 # the binary (field > 0 in the mask, CV of the correct output below the
 # input's, a no-nonuniformity phantom -> bounded finite field with CV below a

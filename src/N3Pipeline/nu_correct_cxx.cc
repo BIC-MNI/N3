@@ -440,11 +440,14 @@ int main(int argc, char *argv[])
         }
     }
 
-  /* Load the input and, if given, the user mask (both at full resolution). */
+  /* Load the input and, if given, the user mask, on whatever grid each was
+   * stored on: n3::nu_estimate resamples the mask onto the estimation grid
+   * through world coordinates (NuEstimate.cc's resample_label), the same way
+   * CreateMask's mincresample does for the Perl.  A standard-space mask (e.g.
+   * the ICBM model masks) is the ordinary case, not an error -- it is not
+   * expected to share the subject volume's grid. */
   VIO_Volume input = n3::load(A.input);
   VIO_Volume user_mask = A.mask.empty() ? NULL : n3::load(A.mask);
-  if(user_mask && n3::voxel_count(user_mask) != n3::voxel_count(input))
-    die("mask and input have different sizes");
 
   /* Assemble the estimation options.  With no explicit threshold, -background
    * defaults to 1 (nu_estimate_np_and_em.in:1564); -auto_mask, which is on by

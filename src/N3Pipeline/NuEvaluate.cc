@@ -22,6 +22,19 @@ VIO_Volume nu_evaluate(VIO_Volume input, VIO_Volume user_mask, Field *field,
     double *m = values(mask), *v = values(input);
     if(user_mask)
       {
+        /* evaluate_field requires the mask and the -like volume to be the
+         * same size, with no resampling (evaluateField.cc's compareVolumes,
+         * "Mask volume and input volume must be the same size."); real
+         * nu_correct crashes exactly this way if -mask is not already on the
+         * input's grid. Matched here rather than silently reading past
+         * user_mask's buffer, which a size mismatch would otherwise do. */
+        if(voxel_count(user_mask) != n)
+          {
+            fprintf(stderr,
+                    "n3::nu_evaluate: mask and input volume must be the "
+                    "same size.\n");
+            exit(1);
+          }
         double *u = values(user_mask);
         for(int i = 0; i < n; i++) m[i] = (u[i] != 0.0) ? 1.0 : 0.0;
       }
