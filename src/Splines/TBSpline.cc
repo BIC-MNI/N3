@@ -87,7 +87,30 @@ int dsysv_(char *uplo, _integer *n, _integer *nrhs, _doublereal
         _doublereal *work, _integer *lwork, _integer *info);
 #define _ebtks_dsysv_call dsysv_
 #endif
+
+// N3_SPLINE_MODERN_SOLVE is set by N3/CMakeLists.txt for n3pipeline_core only,
+// so it applies to nu_correct_cxx/nu_estimate_cxx and the n3cxx tests.  The
+// spline_smooth executable compiles this file as a separate translation unit
+// without the definition and keeps the original dsysv solve, unchanged, which
+// is what the Perl nu_correct/nu_estimate drivers shell out to.
+//
+// Cholesky is available only through the lapacke shim: the bundled CLAPACK in
+// EBTKS/clapack/ ships dsysv, dsytrf, dsytf2, dsytrs and dlasyf and no
+// Cholesky at all.  Under the other backends the modern path still applies
+// equilibration and then solves with dsysv.
+#if defined(N3_SPLINE_MODERN_SOLVE) && defined(EBTKS_DSYSV_LAPACKE_SHIM)
+#define N3_HAVE_LAPACK_CHOLESKY 1
+int EBTKS_dposv(char *uplo, _integer *n, _integer *nrhs, _doublereal *a,
+        _integer *lda, _doublereal *b, _integer *ldb, _integer *info);
+#endif
 }
+
+#ifdef N3_SPLINE_MODERN_SOLVE
+#include <cmath>
+#include <cstdio>
+#include <cstring>
+#include <vector>
+#endif
 //-----------------------------------------------------------------------
 // static initializations
 double TBSpline::_default_lambda = 0.1;
@@ -657,16 +680,102 @@ TBSpline::solveSymmetricSystem(DblMat &A, DblMat b, int *info)
   _integer nrhs = 1;
   _integer lda = n;
   _integer ldb = n;
+  _integer w_info;
+
+#ifdef N3_SPLINE_MODERN_SOLVE
+
+  _doublereal *Ael = (_doublereal *) *A.getEl();
+  _doublereal *bel = (_doublereal *) *b.getEl();
+
+  // Symmetric (Jacobi) equilibration.  A x = b becomes
+  // (D A D)(D^-1 x) = D b with D = diag(1/sqrt(Aii)), which sets every
+  // diagonal entry to one.  The diagonal of this matrix spans about five
+  // orders of magnitude, and on the production fit the scaling takes the
+  // condition number from 1.5e13 to 6.0e9.  Cost is O(n^2) against the
+  // O(n^3) factorization.
+  //
+  // Plain row normalization is not usable here: it destroys symmetry, and
+  // both solves are given uplo="U" and read one triangle only.  By van der
+  // Sluis' theorem, scaling an SPD matrix to unit diagonal is within a
+  // factor of n of the best condition number attainable by any diagonal
+  // scaling.
+  //
+  // The scale factor is symmetric in (r,c), so scaling the whole buffer is
+  // correct even though only one triangle is read.  A non-positive diagonal
+  // means the matrix is not positive definite; leave it alone in that case
+  // and let dsysv handle it.
+  std::vector<_doublereal> d((size_t) n);
+  bool scaled = true;
+  for(_integer i = 0; i < n; i++)
+    {
+      double aii = Ael[(size_t) i * (size_t) n + (size_t) i];
+      if(!(aii > 0.0)) { scaled = false; break; }
+      d[(size_t) i] = sqrt(aii);
+    }
+  if(scaled)
+    {
+      for(_integer r = 0; r < n; r++)
+        for(_integer c = 0; c < n; c++)
+          Ael[(size_t) r * (size_t) n + (size_t) c] /=
+            (d[(size_t) r] * d[(size_t) c]);
+      for(_integer i = 0; i < n; i++)
+        bel[i] /= d[(size_t) i];
+    }
+
+  int solved = 0;
+#ifdef N3_HAVE_LAPACK_CHOLESKY
+  // Cholesky first.  It performs no pivoting, so the factorization depends
+  // on A alone rather than on the pivot sequence a particular LAPACK build
+  // happens to choose.  Keep a copy so a matrix that turns out not to be
+  // numerically positive definite can still be solved by dsysv, matching the
+  // robustness of the original path; the copy costs one extra n-by-n array
+  // for the duration of the solve.
+  {
+    std::vector<_doublereal> Acopy(Ael, Ael + (size_t) n * (size_t) n);
+    std::vector<_doublereal> bcopy(bel, bel + (size_t) n);
+
+    EBTKS_dposv("U", &n, &nrhs, Ael, &lda, bel, &ldb, &w_info);
+
+    if(w_info == 0)
+      solved = 1;
+    else
+      {
+        fprintf(stderr, "TBSpline: dposv info=%ld, matrix is not numerically "
+                "positive definite; falling back to dsysv\n", (long) w_info);
+        memcpy(Ael, &Acopy[0], sizeof(_doublereal) * (size_t) n * (size_t) n);
+        memcpy(bel, &bcopy[0], sizeof(_doublereal) * (size_t) n);
+      }
+  }
+#endif
+
+  if(!solved)
+    {
+      _integer *ipiv = new _integer[n];
+      _doublereal work;
+      _integer lwork = 1;
+      _ebtks_dsysv_call("U", &n, &nrhs, Ael, &lda, ipiv, bel, &ldb,
+             &work, &lwork, &w_info);
+      delete [] ipiv;
+    }
+
+  if(scaled)   // recover x from the scaled unknown y = D^-1 x
+    for(_integer i = 0; i < n; i++)
+      bel[i] /= d[(size_t) i];
+
+#else   /* original path: spline_smooth, driven by the Perl nu_correct */
+
   _integer *ipiv = new _integer[n];
   _doublereal work;
   _integer lwork = 1;
-  _integer w_info;
 
   _ebtks_dsysv_call("U", &n, &nrhs, (_doublereal *) *A.getEl(), &lda, ipiv,
 	 (_doublereal *) *b.getEl(), &ldb,
 	 &work, &lwork, &w_info);
 
   delete [] ipiv;
+
+#endif
+
   *info = (int) w_info;
   return(b);
 }

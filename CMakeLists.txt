@@ -264,6 +264,19 @@ ADD_LIBRARY(n3pipeline_core OBJECT
         src/VolumeHist/WHistogram.cc
         src/VolumeHist/GHistogram.cc)
 
+# The C++ pipeline solves the spline normal equations by symmetric
+# equilibration followed by Cholesky, instead of Bunch-Kaufman on the
+# unscaled matrix.  Equilibration takes the condition number of the
+# production fit from 1.5e13 to 6.0e9; Cholesky removes the dependence on
+# which pivot sequence a given LAPACK build chooses, and is faster.  See
+# TBSpline::solveSymmetricSystem.
+#
+# This is deliberately scoped to n3pipeline_core.  The spline_smooth
+# executable above compiles src/Splines/TBSpline.cc as its own translation
+# unit without this definition, so the Perl nu_correct/nu_estimate drivers,
+# which shell out to that binary, keep the original solve untouched.
+TARGET_COMPILE_DEFINITIONS(n3pipeline_core PRIVATE N3_SPLINE_MODERN_SOLVE=1)
+
 # The in-memory driver: nu_correct and nu_estimate collapsed into one binary,
 # chosen by argv[0] (an installed name of nu_estimate*) or -estimate_only.  The
 # two installed names are the same source, so the estimate-only program is a
