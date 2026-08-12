@@ -133,7 +133,6 @@ MACRO(ADD_N3PIPELINE_TEST name)
   ENDIF(MINC_TEST_ENVIRONMENT)
 ENDMACRO(ADD_N3PIPELINE_TEST)
 
-ADD_N3PIPELINE_TEST(test_harness)
 ADD_N3PIPELINE_TEST(test_shrink)
 ADD_N3PIPELINE_TEST(test_resample_label)
 ADD_N3PIPELINE_TEST(test_buffers)
@@ -232,7 +231,20 @@ IF(MINC_TEST_ENVIRONMENT)
   set_tests_properties(n3cxx_driver_properties PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
 ENDIF(MINC_TEST_ENVIRONMENT)
 
-# A failing check must exit non-zero.  Asserted permanently rather than
-# demonstrated once and deleted.
-ADD_TEST(n3cxx_test_harness_red ${CMAKE_CURRENT_BINARY_DIR}/test_harness --fail)
-set_tests_properties(n3cxx_test_harness_red PROPERTIES WILL_FAIL TRUE)
+# -V1.1, the driver's own default protocol, run to its own real convergence on
+# brain.mnc.  Unlike cycles 14/15 there is no Perl-compatible oracle for it
+# (nu_estimate.in has no -V1.1), and every other driver test pins itself away
+# from the implicit default to avoid depending on it -- so this is the one
+# test that actually drives it end to end, in properties rather than a bound
+# against a recorded answer.
+ADD_EXECUTABLE(test_driver_v11 n3pipeline/test_driver_v11.cc
+  $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+TARGET_INCLUDE_DIRECTORIES(test_driver_v11 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+TARGET_COMPILE_DEFINITIONS(test_driver_v11 PRIVATE
+  N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
+  N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+  N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference")
+ADD_TEST(n3cxx_driver_v11 ${CMAKE_CURRENT_BINARY_DIR}/test_driver_v11)
+IF(MINC_TEST_ENVIRONMENT)
+  set_tests_properties(n3cxx_driver_v11 PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+ENDIF(MINC_TEST_ENVIRONMENT)

@@ -7,20 +7,17 @@
 
 namespace n3 {
 
-/* correctField.cc:25-205 over flat arrays.  The sweep stays in raster order:
- * Gauss-Seidel reads values already updated in the same pass, so reordering it
- * would be a different iteration.  The working type is a parameter only so
- * that the original's float can be run alongside the double the pipeline
- * uses. */
-template <typename Real>
-static void relax(Real *val, const char *mm, const int sizes[3],
+/* correctField.cc:25-205 over flat arrays, in double.  The sweep stays in
+ * raster order: Gauss-Seidel reads values already updated in the same pass,
+ * so reordering it would be a different iteration. */
+static void relax(double *val, const char *mm, const int sizes[3],
                   const double seps[3])
 {
-  Real SOR = 1.9;
+  double SOR = 1.9;
 
-  Real fx = 1.0 / (seps[0] * seps[0]);
-  Real fy = 1.0 / (seps[1] * seps[1]);
-  Real fz = 1.0 / (seps[2] * seps[2]);
+  double fx = 1.0 / (seps[0] * seps[0]);
+  double fy = 1.0 / (seps[1] * seps[1]);
+  double fz = 1.0 / (seps[2] * seps[2]);
 
   /* The coarsest grid is at least 4 mm. */
   double min_sep = fabs(seps[0]);
@@ -29,7 +26,7 @@ static void relax(Real *val, const char *mm, const int sizes[3],
   int inc = 2;
   while(inc < (int) (4.0 / min_sep)) inc *= 2;
 
-  Real thresh = 1.0e-10;
+  double thresh = 1.0e-10;
   int n_iters = 4 * 200;
 
   for(; inc >= 2; inc /= 2)
@@ -37,15 +34,15 @@ static void relax(Real *val, const char *mm, const int sizes[3],
       for(int iter = 0; iter < n_iters; iter++)
         {
           int count = 0;
-          Real res = 0.0;
+          double res = 0.0;
           for(int i = 0; i < sizes[0]; i += inc)
             for(int j = 0; j < sizes[1]; j += inc)
               for(int k = 0; k < sizes[2]; k += inc)
                 {
                   if(mm[(i * sizes[1] + j) * sizes[2] + k] != 0) continue;
 
-                  Real norm = 0.0;
-                  Real uxx = 0.0, uyy = 0.0, uzz = 0.0;
+                  double norm = 0.0;
+                  double uxx = 0.0, uyy = 0.0, uzz = 0.0;
                   if(i > (inc - 1))
                     { uxx += fx * val[((i-inc)*sizes[1]+j)*sizes[2]+k]; norm += fx; }
                   if(i < sizes[0] - inc)
@@ -59,14 +56,14 @@ static void relax(Real *val, const char *mm, const int sizes[3],
                   if(k < sizes[2] - inc)
                     { uzz += fz * val[(i*sizes[1]+j)*sizes[2]+k+inc]; norm += fz; }
 
-                  Real oldValue = val[(i*sizes[1]+j)*sizes[2]+k];
-                  Real tmpValue = (uxx + uyy + uzz) / norm;
-                  Real newValue = oldValue + SOR * (tmpValue - oldValue);
+                  double oldValue = val[(i*sizes[1]+j)*sizes[2]+k];
+                  double tmpValue = (uxx + uyy + uzz) / norm;
+                  double newValue = oldValue + SOR * (tmpValue - oldValue);
                   val[(i*sizes[1]+j)*sizes[2]+k] = newValue;
                   count++;
                   res += fabs(oldValue - newValue);
                 }
-          if(count > 0) res /= (Real) count;
+          if(count > 0) res /= (double) count;
           if(res < thresh) break;
         }
       n_iters = n_iters / 2 + 1;
@@ -153,7 +150,6 @@ static void zyx_permutation(VIO_Volume volume, int perm[3])
   delete_dimension_names(volume, names);
 }
 
-template <typename Real>
 static void extend(VIO_Volume volume, VIO_Volume mask)
 {
   int perm[3];
@@ -170,7 +166,7 @@ static void extend(VIO_Volume volume, VIO_Volume mask)
     { sizes[a] = own_sizes[perm[a]]; seps[a] = own_seps[perm[a]]; }
 
   int total = sizes[0] * sizes[1] * sizes[2];
-  Real *val = new Real[total];
+  double *val = new double[total];
   char *mm = new char[total];
 
   int index[VIO_N_DIMENSIONS];
@@ -193,7 +189,7 @@ static void extend(VIO_Volume volume, VIO_Volume mask)
             }
         }
 
-  relax<Real>(val, mm, sizes, seps);
+  relax(val, mm, sizes, seps);
 
   for(int i = 0; i < sizes[0]; i++)
     for(int j = 0; j < sizes[1]; j++)
@@ -210,12 +206,7 @@ static void extend(VIO_Volume volume, VIO_Volume mask)
 
 void extend_field(VIO_Volume volume, VIO_Volume mask)
 {
-  extend<double>(volume, mask);
-}
-
-void extend_field_single_precision(VIO_Volume volume, VIO_Volume mask)
-{
-  extend<float>(volume, mask);
+  extend(volume, mask);
 }
 
 }  // namespace n3

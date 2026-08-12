@@ -22,19 +22,6 @@ namespace n3 {
  * replaced by the harmonic extension of them. */
 void extend_field(VIO_Volume volume, VIO_Volume mask);
 
-/* The same routine with float working storage: what correct_field itself
- * runs.  A verification instrument, not a feature.
- *
- * The two do not differ by rounding alone.  The relaxation stops when the mean
- * absolute update falls below 1e-10, an absolute threshold on values of order
- * 1e5, where the smallest update float can represent is about 1e-2: the
- * original therefore stops when its updates vanish into its own precision
- * while the double solve goes on converging.  That is worth 6.2e-07 relative
- * on chunk.mnc, and it is the double solve that is closer to solving the
- * equation -- testing/n3pipeline/test_extend.cc measures the residual of each,
- * 1.7e-10 against 9.0e-02. */
-void extend_field_single_precision(VIO_Volume volume, VIO_Volume mask);
-
 }  // namespace n3
 
 #endif
