@@ -204,14 +204,45 @@ ADD_EXECUTABLE(sharpen_hist
         src/SharpenHist/sharpen_hist.cc 
         src/SharpenHist/args.cc )
 
-ADD_EXECUTABLE(spline_smooth  
-        src/SplineSmooth/splineSmooth.cc 
-        src/SplineSmooth/splineSmoothArgs.cc 
-        src/SplineSmooth/fieldIO.cc 
-        src/Splines/Spline.cc 
+ADD_EXECUTABLE(spline_smooth
+        src/SplineSmooth/splineSmooth.cc
+        src/SplineSmooth/splineSmoothArgs.cc
+        src/SplineSmooth/fieldIO.cc
+        src/Splines/Spline.cc
         src/Splines/TBSpline.cc)
-        
-ADD_EXECUTABLE(volume_hist  
+
+# *** APPLE WARNING: -ffp-contract=off on the spline_smooth target ***
+#
+# TBSpline::addDataPoint accumulates the normal-equation matrix/vector
+# (_AtA/_AtF) that TBSpline::solveSymmetricSystem then solves via EBTKS's
+# dsysv_ (condition number ~1.5e13 on the production fit -- see the
+# equilibration comment on n3pipeline_core below). spline_smooth is the only
+# one of N3's 6 legacy binaries that fits a spline (correct_field and
+# evaluate_field only evaluate an already-fitted one), and its own compiled
+# TBSpline.cc/Spline.cc is a SEPARATE translation unit from evaluate_field's
+# copy of the same source files, compiled with this target's own flags only.
+#
+# Isolated by the same file-by-file bisection described in
+# EBTKS/CMakeLists.txt: with EBTKS's dger.c/dsyr.c also flagged (and
+# EBTKS_BLAS_BACKEND forced to "bundled" on APPLE, see the top-level
+# CMakeLists.txt), dropping this flag from spline_smooth alone was the one
+# change that made N3/testing's nu_reference_1 fail again -- every other N3
+# legacy binary, including evaluate_field's own copy of these same two
+# files, tested numerically inert for that test. Applied to the whole
+# target rather than just TBSpline.cc/Spline.cc because
+# SET_SOURCE_FILES_PROPERTIES on a source file is directory-scoped in CMake,
+# not target-scoped, and evaluate_field (defined above, same directory)
+# compiles the identical two source paths -- scoping by source file would
+# silently also flag evaluate_field's copy.
+IF(APPLE)
+  MESSAGE(WARNING "macOS: disabling floating-point contraction "
+    "(-ffp-contract=off) on the spline_smooth target -- found necessary by "
+    "the same bisection as EBTKS/clapack/dger.c,dsyr.c to keep "
+    "nu_reference_1 passing against its Linux-generated reference.")
+  TARGET_COMPILE_OPTIONS(spline_smooth PRIVATE -ffp-contract=off)
+ENDIF(APPLE)
+
+ADD_EXECUTABLE(volume_hist
         src/VolumeHist/minchist.cc 
         src/VolumeHist/DHistogram.cc
         src/VolumeHist/WHistogram.cc
