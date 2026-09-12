@@ -277,14 +277,15 @@ dump_strided $work/brain_nu_correct.mnc $out/brain_nu_correct.f64
 #
 # -denoise_threads 1 because NLM's block aggregation is partitioned across
 # threads: the same count reproduces bit for bit, but 1 vs 2 threads moved the
-# corrected volume by 1.98e5 on a 9.0e5 range.  The test pins the same count.
+# corrected volume by up to 7.2e3 on a 9.0e5 range.  The test pins the same
+# count, and the same -iterations 30 protocol.
 #
 # N3_CXX_BIN points at this tree's own nu_correct_cxx (a build directory is
 # fine); it defaults to $N3_LOCAL_BIN, where an installed copy would be.
 
 N3_CXX_BIN=${N3_CXX_BIN:-$N3_LOCAL_BIN}
 
-$N3_CXX_BIN/nu_correct_cxx -V1.0 -shrink 1 -iterations 1 -stop 0.0 -distance 200 \
+$N3_CXX_BIN/nu_correct_cxx -V1.0 -shrink 1 -iterations 30 -stop 0.0 -distance 200 \
     -denoise -denoise_threads 1 -verbose -mask $mask $chunk $work/denoise.mnc \
     -clobber > $work/denoise.log 2>&1
 dump_strided $work/denoise.mnc $out/nu_correct_denoise.f64

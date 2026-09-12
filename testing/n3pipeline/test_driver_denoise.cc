@@ -15,10 +15,11 @@
  *      `est_input`).  That one argument is what a future tidy-up would
  *      "simplify", and every other test here would stay green while the
  *      output quietly became a denoised image.  Pinned by the identity
- *      corrected * field == original, which holds to 1.0e-5 today.  Measured,
- *      not argued: passing est_input to nu_evaluate and rebuilding moves that
- *      residual to 6.4e-2, 64x this file's bound, while the control below
- *      stays at 1.0e-5.  That is the heart of this file.
+ *      corrected * field == original, which holds to 5.5e-04 today -- twice
+ *      the stored output's own quantisation and no more.  Measured, not
+ *      argued: passing est_input to nu_evaluate and rebuilding moves that
+ *      residual to 6.4e-02, 23x this file's bound, while the control run
+ *      stays at 3.1e-04.  That is the principal assertion of this file.
  *   3. -denoise_sigma / -denoise_beta / -denoise_rician cross two translation
  *      units and a library boundary to reach nlm.  A dropped assignment is
  *      invisible, so each is asserted to move the result at all -- a property,
@@ -27,10 +28,11 @@
  *
  * -denoise_threads 1 everywhere.  NLM's block aggregation is partitioned
  * across threads, so its output is reproducible at a fixed thread count and
- * not across counts: 1 vs 2 threads moved the corrected volume by 1.98e5 on a
- * 9.0e5 range.  That is pre-existing mincnlm behaviour, not something the
- * -denoise work introduced, but it is why both this test and the fixture pin
- * the count.
+ * not across counts: at this protocol 1 vs 2 threads moved the corrected
+ * volume by up to 7.2e3 on a 9.0e5 range, and at a single iteration by far
+ * more.  That is pre-existing mincnlm behaviour, not something the -denoise
+ * work introduced, but it is why both this test and the fixture pin the
+ * count.
  *
  * Not covered here, deliberately:
  *   - nu_estimate_cxx -denoise: built from this same source file
@@ -67,13 +69,19 @@
 using n3fixture::imp_of;
 using n3fixture::cleanup;
 
-/* The protocol every run in this file shares: one iteration at -stop 0.0 runs
- * a fixed count, so nothing here depends on the stopping rule, and -shrink 1
- * keeps the resampling out of it.  -V1.0 pins the protocol independently of
- * whichever default the driver currently selects (test_driver_endtoend.cc). */
+/* The protocol every run in this file shares.  -stop 0.0 prevents any stage
+ * from stopping early, so every run here executes exactly 30 iterations and
+ * nothing depends on the stopping rule; -shrink 1 keeps the resampling out of
+ * it; -V1.0 pins the protocol independently of whichever default the driver
+ * currently selects (test_driver_endtoend.cc).
+ *
+ * 30 iterations rather than the single one the other driver tests use: the
+ * denoised volume is the input to EVERY iteration of the estimation loop, so
+ * a one-iteration run measures the option in a regime it is not used in.  The
+ * six successful runs take about 33 s together at this count. */
 static std::string protocol()
 {
-  return std::string("-V1.0 -shrink 1 -iterations 1 -stop 0.0 -distance 200"
+  return std::string("-V1.0 -shrink 1 -iterations 30 -stop 0.0 -distance 200"
                      " -mask \"") + N3_DATA_DIR + "/chunk_mask.mnc\"";
 }
 
@@ -112,6 +120,28 @@ static std::vector<double> field_of(const std::string &out,
   std::vector<double> v(d, d + n3::voxel_count(f));
   delete_volume(f);
   return v;
+}
+
+/* The precision the identity can hold to.  It passes through two files: the
+ * corrected volume is stored in the input's type (12 bits for chunk.mnc, from
+ * chunk_valid_range.txt) and the field is read back from the .imp.  Half a
+ * quantum of the output's range, relative to the in-mask RMS of the input, is
+ * the first of those and is computed here from the data rather than assumed --
+ * a fixed figure would be wrong for a file stored at any other depth.  It is
+ * the same derivation test_driver_endtoend.cc's round_trip_bound uses.
+ *
+ * The .imp round trip is not separately derivable, so the assertions take ten
+ * times this figure.  For scale: the default run measures 1.1x it, the
+ * -denoise run 1.9x (a more strongly varying field multiplies the stored
+ * volume's rounding error), and correcting the wrong volume measures 225x it.
+ * The factor of ten therefore sits well clear of both sides. */
+static double quantisation(VIO_Volume input, VIO_Volume mask)
+{
+  n3::Stats whole = n3::masked_stats(input, NULL);
+  n3::Stats inside = n3::masked_stats(input, mask);
+  double rms = sqrt(inside.mean*inside.mean + inside.stddev*inside.stddev);
+  return 0.5 * (whole.maximum - whole.minimum)
+       / n3fixture::valid_steps("chunk_valid_range.txt") / rms;
 }
 
 /* rel RMS of corrected * field against the original, over the mask only:
@@ -228,10 +258,12 @@ int main()
                     "nu_correct_denoise.f64: size mismatch");
     /* 1e-4 rather than exact equality: the comparison should survive a
      * compiler or libm change, not only this machine.  It still
-     * discriminates -- -denoise moves the output from the undenoised run by
-     * 1.15e-3, so the bound sits at ~9% of the effect being locked. */
+     * discriminates -- the printed figure below is how far -denoise moves the
+     * corrected volume at this protocol, and the bound is well under it. */
     CHECK_RMS("-denoise output matches the recorded answer",
               &ours[0], &oracle[0], (int) ours.size(), 1e-4);
+
+    printf("  (-denoise moves the corrected volume by %.3e)\n", rel(dn, base));
 
     double got = sigma_from_log(p_dn), want = n3fixture::read_scalar("denoise_sigma.txt");
     printf("  (auto-estimated sigma %g, recorded %g)\n", got, want);
@@ -268,18 +300,22 @@ int main()
      * says the bound measures the correction's own round trip and not the
      * denoising.  A regression that corrected est_input instead of input
      * would leave the removed noise in the residual: the same build with
-     * est_input passed to nu_evaluate measures 6.4e-2 here, 64x this bound,
-     * against 1.0e-5 for the correct one -- and the control below stays
-     * unmoved, so the check separates the two volumes and not the two runs. */
+     * est_input passed to nu_evaluate measures 6.375e-02 here, 23x this
+     * bound, against 5.489e-04 for the correct one -- and the control below
+     * stays unmoved at 3.102e-04, so the check separates the two volumes and
+     * not the two runs. */
+    double q = quantisation(input, mask);
+    double bound = 10.0 * q;
     double m_dn = identity(dn, f_dn, orig, mv);
     double m_base = identity(base, f_base, orig, mv);
-    printf("  (corrected * field vs original: %.3e with -denoise, %.3e without;\n"
-           "   correcting the denoised copy instead measures 6.4e-2)\n",
-           m_dn, m_base);
+    printf("  (a half quantum of the stored output is worth %.3e;\n"
+           "   corrected * field vs original: %.3e with -denoise, %.3e without;\n"
+           "   correcting the denoised copy instead measures 6.375e-02)\n",
+           q, m_dn, m_base);
     n3check::record("-denoise corrects the ORIGINAL, not the denoised copy",
-                    m_dn < 1e-3, m_dn, 1e-3);
+                    m_dn < bound, m_dn, bound);
     n3check::record("  (control) the same identity for the default run",
-                    m_base < 1e-3, m_base, 1e-3);
+                    m_base < bound, m_base, bound);
   }
 
   /* ---- D. every option reaches nlm -------------------------------------
