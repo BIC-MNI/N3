@@ -267,6 +267,29 @@ nu_correct -mask $data/brain_mask.mnc $data/brain.mnc $work/brain_nu_correct.mnc
     -clobber > /dev/null 2>&1
 dump_strided $work/brain_nu_correct.mnc $out/brain_nu_correct.f64
 
+# --------------------------------------------------------------- cycle 16
+# nu_correct_cxx -denoise.  Unlike every other oracle here this is NOT a
+# legacy answer: the Perl nu_correct has no -denoise, so there is nothing to
+# record this against.  It is a regression lock on what this tree produces
+# today, which is worth having because the run is deterministic -- and worth
+# distrusting as a statement about correctness, which the driver test's
+# property checks carry instead.
+#
+# -denoise_threads 1 because NLM's block aggregation is partitioned across
+# threads: the same count reproduces bit for bit, but 1 vs 2 threads moved the
+# corrected volume by 1.98e5 on a 9.0e5 range.  The test pins the same count.
+#
+# N3_CXX_BIN points at this tree's own nu_correct_cxx (a build directory is
+# fine); it defaults to $N3_LOCAL_BIN, where an installed copy would be.
+
+N3_CXX_BIN=${N3_CXX_BIN:-$N3_LOCAL_BIN}
+
+$N3_CXX_BIN/nu_correct_cxx -V1.0 -shrink 1 -iterations 1 -stop 0.0 -distance 200 \
+    -denoise -denoise_threads 1 -verbose -mask $mask $chunk $work/denoise.mnc \
+    -clobber > $work/denoise.log 2>&1
+dump_strided $work/denoise.mnc $out/nu_correct_denoise.f64
+sed -n 's/^Denoised with sigma //p' $work/denoise.log > $out/denoise_sigma.txt
+
 # ---------------------------------------------------------------- cycle 3
 # Masked statistics.  volume_stats prints through cout at its default six
 # significant digits, which is the bound the test holds these to.  Its mask

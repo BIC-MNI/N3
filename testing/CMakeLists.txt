@@ -274,3 +274,23 @@ ADD_TEST(n3cxx_driver_v11 ${CMAKE_CURRENT_BINARY_DIR}/test_driver_v11)
 IF(MINC_TEST_ENVIRONMENT)
   set_tests_properties(n3cxx_driver_v11 PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
 ENDIF(MINC_TEST_ENVIRONMENT)
+
+# nu_correct_cxx -denoise, driven through the binary: off by default is inert,
+# the field is estimated from the denoised copy while the ORIGINAL is the
+# volume corrected, every -denoise* option reaches nlm, and both error paths
+# fail loudly.  Inside IF(TARGET nlm) rather than guarding only the link, as
+# the five tests above do: without nlm there is no -denoise to test at all.
+IF(TARGET nlm)
+  ADD_EXECUTABLE(test_driver_denoise n3pipeline/test_driver_denoise.cc
+    $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+  TARGET_INCLUDE_DIRECTORIES(test_driver_denoise PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+  TARGET_LINK_LIBRARIES(test_driver_denoise nlm)
+  TARGET_COMPILE_DEFINITIONS(test_driver_denoise PRIVATE
+    N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
+    N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference")
+  ADD_TEST(n3cxx_driver_denoise ${CMAKE_CURRENT_BINARY_DIR}/test_driver_denoise)
+  IF(MINC_TEST_ENVIRONMENT)
+    set_tests_properties(n3cxx_driver_denoise PROPERTIES ENVIRONMENT "${MINC_TEST_ENVIRONMENT}")
+  ENDIF(MINC_TEST_ENVIRONMENT)
+ENDIF()
