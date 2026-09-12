@@ -124,6 +124,12 @@ MACRO(ADD_N3PIPELINE_TEST name)
   ADD_EXECUTABLE(${name} n3pipeline/${name}.cc
     $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core> ${ARGN})
   TARGET_INCLUDE_DIRECTORIES(${name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+  # n3pipeline_core now carries Denoise.cc, so every one of these needs the same
+  # nlm link nu_correct_cxx has.  Absent in a standalone N3 build, where
+  # Denoise.cc is the no-NLM stub and needs nothing.
+  IF(TARGET nlm)
+    TARGET_LINK_LIBRARIES(${name} nlm)
+  ENDIF()
   TARGET_COMPILE_DEFINITIONS(${name} PRIVATE
     N3_REFERENCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline/reference"
     N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
@@ -145,6 +151,9 @@ ADD_N3PIPELINE_TEST(test_extend)
 ADD_N3PIPELINE_TEST(test_stopping)
 ADD_N3PIPELINE_TEST(test_estimate)
 ADD_N3PIPELINE_TEST(test_evaluate)
+IF(TARGET nlm)
+  ADD_N3PIPELINE_TEST(test_denoise)
+ENDIF()
 
 # The in-memory driver.  Smoke tests only: the estimate produces its .imp and
 # the correct run produces a volume, both by driving the compiled binary as a
@@ -171,6 +180,11 @@ ADD_TEST(n3cxx_driver_correct
 ADD_EXECUTABLE(test_driver_fwhm n3pipeline/test_driver_fwhm.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
 TARGET_INCLUDE_DIRECTORIES(test_driver_fwhm PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+# These link n3pipeline_core, which now carries Denoise.cc; same nlm link as
+# ADD_N3PIPELINE_TEST makes, and absent in a standalone N3 build.
+IF(TARGET nlm)
+  TARGET_LINK_LIBRARIES(test_driver_fwhm nlm)
+ENDIF()
 TARGET_COMPILE_DEFINITIONS(test_driver_fwhm PRIVATE
   N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
   N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
@@ -188,6 +202,9 @@ ENDIF(MINC_TEST_ENVIRONMENT)
 ADD_EXECUTABLE(test_driver_endtoend n3pipeline/test_driver_endtoend.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
 TARGET_INCLUDE_DIRECTORIES(test_driver_endtoend PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+IF(TARGET nlm)
+  TARGET_LINK_LIBRARIES(test_driver_endtoend nlm)
+ENDIF()
 TARGET_COMPILE_DEFINITIONS(test_driver_endtoend PRIVATE
   N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
   N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
@@ -206,6 +223,9 @@ ENDIF(MINC_TEST_ENVIRONMENT)
 ADD_EXECUTABLE(test_driver_reference n3pipeline/test_driver_reference.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
 TARGET_INCLUDE_DIRECTORIES(test_driver_reference PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+IF(TARGET nlm)
+  TARGET_LINK_LIBRARIES(test_driver_reference nlm)
+ENDIF()
 TARGET_COMPILE_DEFINITIONS(test_driver_reference PRIVATE
   N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
   N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
@@ -222,6 +242,9 @@ ENDIF(MINC_TEST_ENVIRONMENT)
 ADD_EXECUTABLE(test_driver_properties n3pipeline/test_driver_properties.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
 TARGET_INCLUDE_DIRECTORIES(test_driver_properties PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+IF(TARGET nlm)
+  TARGET_LINK_LIBRARIES(test_driver_properties nlm)
+ENDIF()
 TARGET_COMPILE_DEFINITIONS(test_driver_properties PRIVATE
   N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
   N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
@@ -240,6 +263,9 @@ ENDIF(MINC_TEST_ENVIRONMENT)
 ADD_EXECUTABLE(test_driver_v11 n3pipeline/test_driver_v11.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
 TARGET_INCLUDE_DIRECTORIES(test_driver_v11 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/n3pipeline)
+IF(TARGET nlm)
+  TARGET_LINK_LIBRARIES(test_driver_v11 nlm)
+ENDIF()
 TARGET_COMPILE_DEFINITIONS(test_driver_v11 PRIVATE
   N3_DRIVER_BIN="${CMAKE_CURRENT_BINARY_DIR}/../nu_correct_cxx"
   N3_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}"

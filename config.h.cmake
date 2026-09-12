@@ -39,6 +39,10 @@
 /* Define to 1 if you have the <values.h> header file. */
 #cmakedefine HAVE_VALUES_H 1
 
+/* Define to 1 if the `nlm' denoising library is available (nu_correct_cxx
+   -denoise). */
+#cmakedefine N3_WITH_NLM 1
+
 #define PACKAGE "@PACKAGE_NAME@"
 #define PACKAGE_NAME "@PACKAGE_NAME@"
 #define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"

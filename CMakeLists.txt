@@ -167,6 +167,17 @@ ENDIF(APPLE)
 
 
 # others
+# Does this build have the `nlm` denoising library?  Inside the superbuild NLM is
+# added before N3 so the target already exists; a standalone N3 checkout has no
+# NLM at all.  Decided here, ahead of config.h, because N3_WITH_NLM is a
+# #cmakedefine in it -- the link itself is wired further down, once the targets
+# that need it exist.
+IF(TARGET nlm)
+  SET(N3_WITH_NLM ON)
+ELSE()
+  MESSAGE(STATUS "N3: no nlm target -- nu_correct_cxx -denoise will be unavailable")
+ENDIF()
+
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/epm-header.in ${CMAKE_CURRENT_BINARY_DIR}/epm-header)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/include/version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
@@ -280,6 +291,7 @@ TARGET_COMPILE_DEFINITIONS(splinesmooth_core PRIVATE
 
 ADD_LIBRARY(n3pipeline_core OBJECT
         src/N3Pipeline/Buffers.cc
+        src/N3Pipeline/Denoise.cc
         src/N3Pipeline/Histogram.cc
         src/N3Pipeline/Sharpen.cc
         src/N3Pipeline/MincTools.cc
@@ -316,6 +328,19 @@ ADD_EXECUTABLE(nu_correct_cxx src/N3Pipeline/nu_correct_cxx.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
 ADD_EXECUTABLE(nu_estimate_cxx src/N3Pipeline/nu_correct_cxx.cc
   $<TARGET_OBJECTS:n3pipeline_core> $<TARGET_OBJECTS:sharpenhist_core> $<TARGET_OBJECTS:splinesmooth_core>)
+
+# Optional spatial denoising (nu_correct_cxx -denoise) comes from the `nlm`
+# library in the NLM submodule.  Inside the superbuild NLM is added before this
+# directory so the target exists; a standalone N3 build has no NLM at all, and
+# Denoise.cc then compiles to a stub that exits with "built without NLM support".
+# TARGET_LINK_LIBRARIES on the OBJECT library carries only usage requirements
+# (nlm's include directories), which is what lets Denoise.cc find nlm_denoise.h;
+# the archive itself has to be linked into each final executable.
+IF(TARGET nlm)
+  TARGET_LINK_LIBRARIES(n3pipeline_core PRIVATE nlm)
+  TARGET_LINK_LIBRARIES(nu_correct_cxx  nlm)
+  TARGET_LINK_LIBRARIES(nu_estimate_cxx nlm)
+ENDIF()
 
 
 SET(PERL ${PERL_EXECUTABLE})

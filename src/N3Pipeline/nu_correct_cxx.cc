@@ -25,12 +25,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include <volume_io.h>
 
 #include "Buffers.h"
+#include "Denoise.h"
 #include "FitField.h"
 #include "NuEstimate.h"
 #include "NuEvaluate.h"
@@ -69,6 +71,15 @@ struct Arguments
   bool auto_mask = true;             /* nu_estimate.in adds -auto_mask always */
   bool bimodalT = false;
   double background = 1.0;
+
+  /* -denoise: filter the volume the field is ESTIMATED from, while still
+   * correcting the original.  Off by default, so nothing here changes unless
+   * it is asked for.  Needs N3_WITH_NLM; Denoise.cc otherwise exits. */
+  bool denoise = false;
+  double denoise_sigma = 0.0;   /* 0 = estimate the noise from the volume */
+  double denoise_beta = 1.0;
+  bool denoise_rician = false;
+  int denoise_threads = 4;
 
   double floor = 0.1;
   bool clobber = false;
@@ -124,6 +135,12 @@ void usage()
     "  -auto_mask         automatic background mask (default); -bimodalT\n"
     "  -background <t>    background threshold (default 1)\n"
     "  -floor <x>         field floor, applied only if needed (default 0.1)\n"
+    "  -denoise           NLM-denoise the volume the field is estimated from;\n"
+    "                     the correction is still applied to the original\n"
+    "  -denoise_sigma <x>  noise sigma for -denoise (default: estimated)\n"
+    "  -denoise_beta <x>   -denoise smoothing strength (default 1)\n"
+    "  -denoise_rician    -denoise with a Rician noise model\n"
+    "  -denoise_threads <n>  threads for -denoise (default 4)\n"
     "  -mapping_dir <dir>  where to write the .imp\n"
     "  -estimate_only     write only the .imp; -correct overrides\n"
     "  -legacy_rounding    round intermediates to the Perl's six decimals\n"
@@ -326,6 +343,12 @@ int main(int argc, char *argv[])
           else if(tok == "-bimodalT") { A.bimodalT = true; }
           else if(tok == "-background") { if(i+1>=argc) die("-background needs a value"); A.background = parse_double(argv[++i], "-background"); }
           else if(tok == "-floor") { if(i+1>=argc) die("-floor needs a value"); A.floor = parse_double(argv[++i], "-floor"); }
+          else if(tok == "-denoise") { A.denoise = true; }
+          else if(tok == "-nodenoise") { A.denoise = false; }
+          else if(tok == "-denoise_sigma") { if(i+1>=argc) die("-denoise_sigma needs a value"); A.denoise_sigma = parse_double(argv[++i], "-denoise_sigma"); A.denoise = true; }
+          else if(tok == "-denoise_beta") { if(i+1>=argc) die("-denoise_beta needs a value"); A.denoise_beta = parse_double(argv[++i], "-denoise_beta"); A.denoise = true; }
+          else if(tok == "-denoise_rician") { A.denoise_rician = true; A.denoise = true; }
+          else if(tok == "-denoise_threads") { if(i+1>=argc) die("-denoise_threads needs a value"); A.denoise_threads = parse_int(argv[++i], "-denoise_threads"); }
           else if(tok == "-mapping_dir") { if(i+1>=argc) die("-mapping_dir needs a value"); A.mapping_dir = argv[++i]; }
           else if(tok == "-estimate_only") { A.estimate_only = true; }
           else if(tok == "-correct") { A.estimate_only = false; }
@@ -502,8 +525,37 @@ int main(int argc, char *argv[])
   if(A.estimate_only) imp = A.output;  /* the output is the .imp itself */
   else imp = imp_path(A);              /* every correct run writes a record */
 
-  n3::Field *field = n3::nu_estimate(input, user_mask, e, &iterations_run,
+  /* -denoise estimates the field from an NLM-filtered copy, because the fit is
+   * sensitive to noise, but the correction below is still applied to the
+   * ORIGINAL volume -- denoising is meant to improve the field, not to become
+   * part of the output.  est_input aliases input when -denoise is off, so
+   * nothing is copied and the default path is byte for byte what it was. */
+  VIO_Volume est_input = input;
+  if(A.denoise)
+    {
+      n3::DenoiseOptions d;
+      d.sigma = A.denoise_sigma;
+      d.beta = A.denoise_beta;
+      d.rician = A.denoise_rician;
+      d.threads = A.denoise_threads;
+      d.verbose = A.verbose;
+
+      double sigma_used = 0.0;
+      /* nlm reports an unusable parameter combination by throwing; this
+       * program reports everything else through die(), so translate. */
+      try {
+        est_input = n3::denoise(input, d, &sigma_used);
+      } catch(const std::runtime_error &err) {
+        die("%s", err.what());
+      }
+      if(A.verbose)
+        printf("Denoised with sigma %g\n", sigma_used);
+    }
+
+  n3::Field *field = n3::nu_estimate(est_input, user_mask, e, &iterations_run,
                                       &final_change, NULL, &imp, &cmdline);
+
+  if(est_input != input) delete_volume(est_input);
 
   if(A.estimate_only)
     printf("Number of iterations: %d\nCV of field change: %g\n",
