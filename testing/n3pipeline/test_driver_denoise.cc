@@ -124,32 +124,6 @@ static double injected_field(int i0, int i1, int i2, const int sizes[])
                                * cos(0.5*M_PI*u2);
 }
 
-/* Write a volume built here rather than loaded from a file.
- *
- * A volume's real range is what output_modified_volume quantises the stored
- * integer type over (output_volume.c:355), and n3::like() inherits that range
- * from the model -- here the header donor, which spans 0 to 9.0e5.  Written as
- * it stands a phantom whose intensities are of order 100 would come back on a
- * 13.7 unit grid, coarser than its own noise, and a 0/1 mask would come back
- * empty.  Setting the range to the data's own makes the quantum
- * (max-min)/65535 instead, which is what a short is worth.  On an NC_DOUBLE
- * volume this sets the voxel range only and leaves the identity voxel-to-real
- * mapping that n3::values() depends on (volumes.c:2500). */
-static void save_built(VIO_Volume v, const std::string &path,
-                       const std::string &like, nc_type type, VIO_BOOL sf)
-{
-  const double *d = n3::values(v);
-  int n = n3::voxel_count(v);
-  double lo = d[0], hi = d[0];
-  for(int i = 1; i < n; i++)
-    {
-      if(d[i] < lo) lo = d[i];
-      if(d[i] > hi) hi = d[i];
-    }
-  set_volume_real_range(v, lo, hi);
-  n3::save(v, path, like, type, sf, "test_driver_denoise");
-}
-
 /* The protocol every run in this file shares.  -stop 0.0 prevents any stage
  * from stopping early, so every run here executes exactly 30 iterations and
  * nothing depends on the stopping rule; -shrink 1 keeps the resampling out of
@@ -328,8 +302,10 @@ int main()
   VIO_BOOL sf; nc_type type = n3::storage_type(like, &sf);
   g_input = n3fixture::temp_path("dn_phantom.mnc");
   g_mask = n3fixture::temp_path("dn_phantom_mask.mnc");
-  save_built(biased_v, g_input, like, type, sf);
-  save_built(mask_v, g_mask, like, type, sf);
+  n3fixture::save_phantom(biased_v, g_input, like, type, sf,
+                          "test_driver_denoise");
+  n3fixture::save_phantom(mask_v, g_mask, like, type, sf,
+                          "test_driver_denoise");
   delete_volume(biased_v);
   delete_volume(mask_v);
 

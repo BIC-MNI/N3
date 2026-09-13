@@ -20,6 +20,10 @@
 #include <unistd.h>
 #include <vector>
 
+#ifdef N3_DRIVER_BIN
+#include "../../src/N3Pipeline/Buffers.h"
+#endif
+
 namespace n3fixture {
 
 inline std::string dir()
@@ -134,7 +138,7 @@ inline double valid_steps(const std::string &name)
  * this header for the readers above alone and must not pay for a declaration
  * they cannot satisfy.
  *
- * These four are shared because each was previously copied per test file and
+ * These five are shared because each was previously copied per test file and
  * one copy was wrong: test_driver_endtoend's cleanup removed <out>.mnc.imp
  * where the driver writes <out>.imp, so every run leaked two .imp files into
  * TMPDIR while the test stayed green (2026-08-07 review, item 2; predicted by
@@ -189,6 +193,38 @@ inline void cleanup(const std::string &output)
   unlink(output.c_str());
   unlink(imp_of(output).c_str());
   unlink((output + ".log").c_str());
+}
+
+/* Write a volume this test built in memory, rather than one it loaded.
+ *
+ * A volume's real range is what output_modified_volume quantises the stored
+ * integer type over (output_volume.c:355), and n3::like() inherits that range
+ * from its model -- for a phantom built on a real volume's grid, the real
+ * volume's range.  chunk.mnc spans 0 to 9.0e5, so a phantom whose intensities
+ * are of order 100 came back on a 13.7 unit grid, coarser than the noise it
+ * was given, and a 0/1 mask came back empty.  Setting the range to the data's
+ * own first makes the quantum (max-min)/65535, which is what the storage type
+ * is worth.
+ *
+ * On an NC_DOUBLE volume set_volume_real_range sets the voxel range and
+ * leaves the identity voxel-to-real mapping n3::values() depends on
+ * (volumes.c:2500), so this is safe to call on a buffer that has already been
+ * filled through values().  Call it last: the volume is written immediately
+ * and nothing should touch the buffer afterwards. */
+inline void save_phantom(VIO_Volume volume, const std::string &path,
+                         const std::string &like_path, nc_type type,
+                         VIO_BOOL signed_flag, const std::string &history)
+{
+  const double *d = n3::values(volume);
+  int n = n3::voxel_count(volume);
+  double lo = d[0], hi = d[0];
+  for(int i = 1; i < n; i++)
+    {
+      if(d[i] < lo) lo = d[i];
+      if(d[i] > hi) hi = d[i];
+    }
+  set_volume_real_range(volume, lo, hi);
+  n3::save(volume, path, like_path, type, signed_flag, history);
 }
 
 #endif  /* N3_DRIVER_BIN */

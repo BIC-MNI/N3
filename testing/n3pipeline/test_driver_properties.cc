@@ -148,7 +148,11 @@ int main()
       }
     VIO_BOOL sf; nc_type type = n3::storage_type(inp, &sf);
     std::string ph_path = tag_path("_ph.mnc");
-    n3::save(ph, ph_path, inp, type, sf, "test_driver_properties");
+    /* save_phantom, not n3::save: a volume built here inherits chunk's real
+     * range, and writing it through that range would quantise a phantom of
+     * order 100 on a 13.7 unit grid -- coarser than the noise above, which
+     * the estimation needs (fixture.h). */
+    n3fixture::save_phantom(ph, ph_path, inp, type, sf, "test_driver_properties");
 
     std::string out_path = tag_path("_ph_out.mnc");
     if(!n3fixture::run_driver(pinned + " -shrink 2 -iterations 15"
@@ -184,26 +188,33 @@ int main()
      * absorbed the anatomy would sit at a CV of order the tissue spread; the
      * bound below is a quarter of that contrast, so the property is "the
      * estimator does not absorb the structure it is meant to be blind to",
-     * not a tautological near-constant ideal no N3 reaches.  Measured field CV
-     * is 0.071 here (legacy 0.035, the installed nu_correct on this same
-     * phantom under these same options -- re-measured 2026-08-06; an earlier
-     * 0.0064 was taken on the striped phantom this file's storage-order fix
-     * replaced and does not apply here), a port over-correction to chase in
-     * cycle 14, so the 0.214 derived bound (0.25x the contrast below) leaves
-     * that gap clearly under it.
+     * not a tautological near-constant ideal no N3 reaches.
      *
-     * This criterion is a CV about the field's own mean and so does not
-     * constrain that mean: a bias-free volume's ideal field is the constant
-     * 1, but the measured means are 1.078 (port) and 1.064 (legacy), a
-     * larger departure than the dispersion the bound above does constrain
-     * (review, 2026-08-06, item 11).  Some of that is expected -- the field
-     * is exp(residue) and exp is convex, so a residue with any dispersion in
-     * log space has arithmetic mean > 1 by Jensen's inequality -- but at this
-     * CV that effect is of order 0.5*cv^2 =~ 0.0025, an order of magnitude
-     * short of the observed 6-8%.  No bound is asserted here: a bound on the
-     * mean derived now would be fitted to this measurement rather than to a
-     * property known in advance, which CLAUDE.md's tolerance rule excludes.
-     * The gap is left as a second, distinct chase item alongside the CV one. */
+     * Measured field CV is 0.014287, against the derived bound of 0.214.  The
+     * legacy nu_correct on this same phantom under these same options gives
+     * 0.014287 as well, and a field mean of 0.98444 against this port's
+     * 0.98443: the two agree to five significant figures (2026-09-13).
+     *
+     * Both halves of that agreement are new, and the reason is worth keeping.
+     * Until 2026-09-13 this phantom was written through n3::save, which
+     * quantises the stored short over the volume's real range -- inherited
+     * from chunk.mnc, which spans 0 to 9.0e5.  The phantom therefore reached
+     * the driver on a 13.7 unit grid, coarser than its own noise of 15, and
+     * the estimation had a staircase to fit that the test never intended to
+     * put there.  On that phantom the port measured a CV of 0.071 against the
+     * legacy's 0.035 and a field mean of 1.078 against 1.064, and both gaps
+     * were recorded here as port defects to chase (review 2026-08-06, item
+     * 11).  Neither was a port defect: writing the phantom through
+     * n3fixture::save_phantom, which sets the real range from the data,
+     * removes both.  What is left is a port that reproduces the legacy on
+     * this input.
+     *
+     * The criterion is a CV about the field's own mean and so does not
+     * constrain that mean; a bias-free volume's ideal field is the constant
+     * 1 and the measured mean is 0.9844, a 1.6% departure.  No bound is
+     * asserted on it: one derived now would be fitted to this measurement
+     * rather than to a property known in advance, which CLAUDE.md's tolerance
+     * rule excludes. */
     double rms_cv = sqrt(fabs(sumsq/cnt - mean*mean))/mean;
     double contrast = (250.0 - 100.0) / ((250.0 + 100.0) / 2.0);
     printf("  no-bias phantom field: mean %.4g  RMS CV %.4g  (tissue contrast %.4g)\n",
