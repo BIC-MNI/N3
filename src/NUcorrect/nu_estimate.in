@@ -36,7 +36,7 @@
 
 use MNI::Startup qw(nocputimes);
 use MNI::Spawn;
-use MNI::FileUtilities qw(search_directories);
+use MNI::FileUtilities qw(search_directories check_output_path);
 use MNI::PathUtilities qw(replace_ext replace_dir);
 use MNI::MincUtilities qw(:history);
 use Getopt::Tabular;
@@ -50,14 +50,18 @@ my (@Outputs, @Inputs);
 $nu_estimate = ($estimation_type eq 'wm') ? 
    'nu_estimate_wm' : 'nu_estimate_np_and_em';
 
+# What the field is estimated from.  The inputs themselves, unless -denoise
+# was given; what gets corrected below is always the input the caller named.
+@Estimates = ($denoise_flag) ? &DenoiseVolumes(@Inputs) : @Inputs;
+
 if($program_type eq 'estimate') {
-      Spawn("$nu_estimate $estimation_options @Inputs @Outputs");
+      Spawn("$nu_estimate $estimation_options @Estimates @Outputs");
 }
 else { #run nu_correct
    @Imps = &replace_ext('imp', @Outputs);
    (defined $mapping_dir) && (@Imps = &replace_dir($mapping_dir,@Imps));
 
-   Spawn("$nu_estimate $estimation_options @Inputs @Imps");
+   Spawn("$nu_estimate $estimation_options @Estimates @Imps");
    for($i = 0; $i < $#Inputs+1; $i++) {
       Spawn(['nu_evaluate', ($Verbose) ? '-verbose' : '-quiet',
              ($user_options{'mask'}) ? ('-mask', $user_options{'mask'}) : (),
@@ -168,6 +172,15 @@ sub SetupArgTables
         "regularization coefficient for splines", "<value>"],
       ["-iterations", "integer", 1, \$user_options{'iterations'},
        "maximum number of iterations to run", "<number>"],
+      ["-denoise|-nodenoise", "boolean", undef, \$denoise_flag,
+       "estimate the field from a denoised copy of the volume.  What is"
+       ." written out remains the volume the caller named, divided by the"
+       ." field, and is never itself denoised.  Requires a denoising program"
+       ." on the path; none ships with N3 (default -nodenoise)"],
+      ["-denoise_program", "string", 1, \$denoise_program,
+       "program to filter with under -denoise, called as <program> <in.mnc>"
+       ." <out.mnc> [default: the first of @denoise_programs found on the"
+       ." path]", "<program>"],
       ["-options", "string", 1, \$estimation_options,
         "method specific options (quoted if more than one)",<'options ...'>]); 
 
@@ -387,6 +400,101 @@ sub search_for_programs
 }
 
 # ------------------------------ MNI Header ----------------------------------
+#@NAME       : &ResolveDenoiseProgram
+#@INPUT      : 
+#@OUTPUT     : 
+#@RETURNS    : 
+#@DESCRIPTION: Settles which program -denoise will filter with, and dies if
+#              there is none.  N3 ships no filter, so this is the one place
+#              where the option can fail for a reason the user can act on.
+#@METHOD     : 
+#@GLOBALS    : $denoise_program, @denoise_programs
+#@CALLS      : 
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub ResolveDenoiseProgram
+{
+   my (@path_list) = split(':', $ENV{'PATH'});
+   my ($program);
+
+   if(defined $denoise_program) {
+      search_directories($denoise_program, \@path_list, "-x") ||
+         die("Cannot find $denoise_program, named by -denoise_program,"
+             ." on the path.\n");
+      return;
+   }
+
+   foreach $program (@denoise_programs) {
+      if(search_directories($program, \@path_list, "-x")) {
+         $denoise_program = $program;
+         return;
+      }
+   }
+
+   die("-denoise needs a denoising program and none was found on the path."
+       ."  N3 does not ship one; install @denoise_programs, or name another"
+       ." with -denoise_program.\n");
+}
+
+# ------------------------------ MNI Header ----------------------------------
+#@NAME       : &DenoiseVolumes
+#@INPUT      : list of volumes
+#@OUTPUT     : 
+#@RETURNS    : list of filtered volumes in $TmpDir
+#@DESCRIPTION: Filters each volume, so that the field can be estimated from a
+#              copy with less noise in it.  N3's data term is the intensity
+#              histogram, so noise enters the field estimate directly rather
+#              than averaging out, and since the histogram is rebuilt at every
+#              iteration a longer run returns more of it to the intensity
+#              mapping rather than less.
+#
+#              Only the estimate is affected.  The caller divides the volume
+#              it was given by the field, so what is written out is corrected
+#              and never itself denoised.
+#@METHOD     : 
+#@GLOBALS    : $denoise_program, $TmpDir
+#@CALLS      : $denoise_program, mincinfo, minc_modify_header
+#@CREATED    : 
+#@MODIFIED   : 
+#-----------------------------------------------------------------------------
+sub DenoiseVolumes
+{
+   my (@volumes) = @_;
+   my (@denoised, @spacetype, $filtered, $output, $i);
+
+   check_output_path($TmpDir) ||
+      die("Cannot create temporary directory $TmpDir\n");
+
+   for($i = 0; $i < @volumes; $i++) {
+      $filtered = "${TmpDir}denoised_$i.mnc";
+      Spawn([$denoise_program, $volumes[$i], $filtered]);
+
+      # The filter is not part of N3 and need not preserve the header.  Both
+      # of the programs looked for drop the spacetype attributes, and without
+      # those nu_estimate_np_and_em's -auto_mask falls back from the average
+      # brain mask to a bimodal threshold with no diagnostic, which is a
+      # different estimation region and a different answer.
+      Spawn(['mincinfo', '-attvalue', 'xspace:spacetype',
+             qw(-attvalue yspace:spacetype -attvalue zspace:spacetype),
+             $volumes[$i]],
+            err_action => 'ignore', verbose => 0, stdout => \$output);
+      @spacetype = split('\n', $output);
+      if(@spacetype == 3 && !grep(/^\s*$|\s/, @spacetype)) {
+         Spawn(['minc_modify_header',
+                '-sinsert', "xspace:spacetype=$spacetype[0]",
+                '-sinsert', "yspace:spacetype=$spacetype[1]",
+                '-sinsert', "zspace:spacetype=$spacetype[2]",
+                $filtered]);
+      }
+
+      push(@denoised, $filtered);
+   }
+
+   return @denoised;
+}
+
+# ------------------------------ MNI Header ----------------------------------
 #@NAME       : &Initialize
 #@INPUT      : 
 #@OUTPUT     : 
@@ -431,6 +539,13 @@ sub Initialize
    undef $user_options{'parzen_sigma'};
    $version_number = '1.0'; 
    undef $mapping_dir; 
+
+   # Denoising is not part of N3 and no filter ships with it.  These are the
+   # ones the MINC tools provide, in order of preference; both take their
+   # arguments as <program> <in.mnc> <out.mnc>.
+   @denoise_programs = qw(minc_anlm mincnlm);
+   $denoise_flag = 0;
+   undef $denoise_program;
 
    @option_names = ('iterations', 'stop', 'shrink');
    %defaults = ('np:iterations:0.9' => '10 20',         
@@ -491,6 +606,11 @@ sub Initialize
       @programs = ('nu_estimate_np_and_em', 'nu_estimate_wm', 'nu_evaluate');
    }
    RegisterPrograms(\@programs);
+
+   if($denoise_flag) {
+      &ResolveDenoiseProgram;
+      RegisterPrograms([$denoise_program, 'mincinfo', 'minc_modify_header']);
+   }
 
    # assemble options for N3 method
    if($estimation_type eq 'np') {
