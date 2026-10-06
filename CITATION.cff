@@ -1,0 +1,73 @@
+# Citation metadata for N3 (Citation File Format, https://citation-file-format.github.io/).
+# The author list comes from the commit history and from the history comments in the files.
+
+cff-version: 1.2.0
+title: N3
+message: >-
+  If you use this software, please cite it using the metadata from this file.
+  The method is described in the article listed under references.
+type: software
+authors:
+  - given-names: John G.
+    family-names: Sled
+    orcid: "https://orcid.org/0000-0002-4461-283X"
+  - given-names: Vladimir
+    family-names: Fonov
+    email: vladimir.fonov@gmail.com
+    affiliation: McGill University
+    orcid: "https://orcid.org/0000-0003-3402-7749"
+  - given-names: Robert D.
+    family-names: Vincent
+  - given-names: Claude
+    family-names: Lepage
+  - given-names: Alex P.
+    family-names: Zijdenbos
+  - given-names: Andrew L.
+    family-names: Janke
+    orcid: "https://orcid.org/0000-0003-0547-5171"
+  - given-names: Steve M.
+    family-names: Robbins
+  - given-names: Vasken
+    family-names: Kollokian
+  - given-names: D. Louis
+    family-names: Collins
+    affiliation: McGill University
+    orcid: "https://orcid.org/0000-0002-8432-7021"
+  - given-names: Jason
+    family-names: Lerch
+    orcid: "https://orcid.org/0000-0001-6164-2881"
+  - given-names: Peter
+    family-names: Neelin
+  - given-names: Greg
+    family-names: Ward
+  - given-names: Dave
+    family-names: MacFarlane
+repository-code: "https://github.com/BIC-MNI/N3"
+abstract: >-
+  N3, Non-parametric Non-uniform intensity Normalization: automatic correction
+  of intensity non-uniformity in MRI data.
+keywords:
+  - MINC
+  - medical imaging
+  - neuroimaging
+  - MRI
+  - intensity non-uniformity
+  - bias field correction
+license-url: "https://github.com/BIC-MNI/N3/blob/master/COPYING"
+references:
+  - type: article
+    title: A nonparametric method for automatic correction of intensity nonuniformity in MRI data
+    authors:
+      - given-names: John G.
+        family-names: Sled
+      - given-names: Alex P.
+        family-names: Zijdenbos
+      - given-names: Alan C.
+        family-names: Evans
+    journal: IEEE Transactions on Medical Imaging
+    volume: 17
+    issue: 1
+    start: 87
+    end: 97
+    year: 1998
+    doi: "10.1109/42.668698"
